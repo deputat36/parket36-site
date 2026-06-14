@@ -2,12 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://parket36.ru/</loc><lastmod>2026-06-14</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://parket36.ru/uslugi/parket-i-poly/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://parket36.ru/uslugi/ciklevka-parketa/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://parket36.ru/uslugi/restavraciya-parketa/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://parket36.ru/uslugi/ukladka-parketa/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://parket36.ru/uslugi/ukladka-laminata/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://parket36.ru/uslugi/shlifovka-doshchatogo-pola/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://parket36.ru/uslugi/terrasy-i-derevyannye-poly/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://parket36.ru/uslugi/pokrytie-lakom-i-maslom/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
   <url><loc>https://parket36.ru/o-mastere/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://parket36.ru/portfolio/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://parket36.ru/ceny/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://parket36.ru/kontakty/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://parket36.ru/uslugi/muzh-na-chas/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://parket36.ru/uslugi/master-na-chas/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://parket36.ru/uslugi/melkiy-remont/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
   <url><loc>https://parket36.ru/uslugi/otdelka/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://parket36.ru/uslugi/elektrika/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
@@ -16,4 +22,10 @@
   <url><loc>https://parket36.ru/uslugi/demontazh/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://parket36.ru/uslugi/pereezdy/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://parket36.ru/uslugi/sborka-mebeli/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://parket36.ru/resheniya/podgotovka-kvartiry-k-prodazhe/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://parket36.ru/resheniya/remont-posle-arendatorov/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://parket36.ru/sovety/</loc><lastmod>2026-06-14</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://parket36.ru/sovety/mozhno-li-vosstanovit-staryy-parket/</loc><lastmod>2026-06-14</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://parket36.ru/sovety/lak-ili-maslo-dlya-parketa/</loc><lastmod>2026-06-14</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://parket36.ru/sovety/kak-podgotovit-komnatu-k-ciklevke/</loc><lastmod>2026-06-14</lastmod><changefreq>yearly</changefreq><priority>0.7</priority></url>
 </urlset>
