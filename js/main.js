@@ -1,1 +1,6 @@
-const menuToggle=document.querySelector('[data-menu-toggle]');const nav=document.querySelector('[data-nav]');if(menuToggle&&nav){menuToggle.addEventListener('click',()=>nav.classList.toggle('open'));}
+const toggle=document.querySelector('[data-menu-toggle]');const nav=document.querySelector('[data-nav]');if(toggle&&nav)toggle.addEventListener('click',()=>nav.classList.toggle('open'));const form=document.getElementById('request-form');if(form)form.addEventListener('submit',async e=>{e.preventDefault();const service=document.getElementById('request-service').value.trim();const location=document.getElementById('request-location').value.trim()||'не указан';const task=document.getElementById('request-task').value.trim();const contact=document.getElementById('request-contact').value.trim()||'не указан';const status=document.getElementById('request-status');if(!task){status.textContent='Опишите, что нужно сделать.';return;}const text=`Здравствуйте, Иван!
+Услуга: ${service}
+Район/населённый пункт: ${location}
+Задача: ${task}
+Контакт: ${contact}
+Фотографии отправлю отдельными сообщениями.`;try{await navigator.clipboard.writeText(text);status.textContent='Заявка скопирована. Откройте MAX и вставьте текст в сообщение Ивану.';}catch(err){status.textContent='Не удалось скопировать автоматически. Выделите текст ниже:';const ta=document.createElement('textarea');ta.value=text;ta.rows=8;ta.readOnly=true;status.after(ta);ta.select();}});
