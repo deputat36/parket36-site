@@ -2,11 +2,13 @@
 """Static checks for parket36.ru.
 
 Runs without third-party dependencies and fails CI on broken local links,
-missing SEO essentials, obsolete navigation and accidental legacy content.
+missing SEO essentials, accessibility regressions, obsolete navigation and
+accidental legacy content.
 """
 
 from __future__ import annotations
 
+from collections import defaultdict
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -16,6 +18,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 DOMAIN = "https://parket36.ru"
 IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
+CURRENT_THEME = "#6f4628"
 
 
 class PageParser(HTMLParser):
@@ -26,15 +29,26 @@ class PageParser(HTMLParser):
         self.title_text: list[str] = []
         self.h1_count = 0
         self.description_count = 0
+        self.description_values: list[str] = []
         self.canonicals: list[str] = []
         self.robots = ""
+        self.og_counts: dict[str, int] = defaultdict(int)
+        self.theme_colors: list[str] = []
         self.links: list[tuple[str, str]] = []
+        self.ids: set[str] = set()
+        self.images_without_alt = 0
+        self.main_scripts_without_defer = 0
         self.visible_text: list[str] = []
         self.skip_text_depth = 0
 
     def handle_starttag(self, tag: str, attrs_list: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
         attrs = {k.lower(): (v or "") for k, v in attrs_list}
+
+        element_id = attrs.get("id", "").strip()
+        if element_id:
+            self.ids.add(element_id)
+
         if tag == "title":
             self.title_count += 1
             self.in_title = True
@@ -45,12 +59,24 @@ class PageParser(HTMLParser):
             prop = attrs.get("property", "").lower()
             if name == "description":
                 self.description_count += 1
-            if name == "robots":
+                self.description_values.append(attrs.get("content", "").strip())
+            elif name == "robots":
                 self.robots = attrs.get("content", "").lower()
-            if prop == "og:image":
-                self.links.append(("og:image", attrs.get("content", "")))
+            elif name == "theme-color":
+                self.theme_colors.append(attrs.get("content", "").strip().lower())
+            if prop in {"og:title", "og:description", "og:image", "og:url"}:
+                self.og_counts[prop] += 1
+                if prop == "og:image":
+                    self.links.append(("og:image", attrs.get("content", "")))
         elif tag == "link" and attrs.get("rel", "").lower() == "canonical":
             self.canonicals.append(attrs.get("href", ""))
+        elif tag == "img" and "alt" not in attrs:
+            self.images_without_alt += 1
+        elif tag == "script":
+            src = attrs.get("src", "")
+            if src.endswith("/js/main.js") or src == "/js/main.js":
+                if "defer" not in attrs and "async" not in attrs:
+                    self.main_scripts_without_defer += 1
         elif tag in {"script", "style", "svg"}:
             self.skip_text_depth += 1
 
@@ -118,11 +144,18 @@ def page_url(path: Path) -> str:
     return DOMAIN + "/" + rel
 
 
+def normalized_title(parser: PageParser) -> str:
+    return " ".join("".join(parser.title_text).split())
+
+
 def main() -> int:
     errors: list[str] = []
     warnings: list[str] = []
     indexable_urls: set[str] = set()
     html_files = iter_html_files()
+    parsed_pages: dict[Path, PageParser] = {}
+    titles: dict[str, list[str]] = defaultdict(list)
+    canonicals_seen: dict[str, list[str]] = defaultdict(list)
 
     if not html_files:
         errors.append("No HTML files found")
@@ -132,19 +165,36 @@ def main() -> int:
         text = path.read_text(encoding="utf-8")
         parser = PageParser()
         parser.feed(text)
-        visible = " ".join(parser.visible_text)
+        parsed_pages[path] = parser
         noindex = "noindex" in parser.robots
+        title = normalized_title(parser)
 
         if parser.title_count != 1:
             errors.append(f"{rel}: expected one <title>, found {parser.title_count}")
+        elif title:
+            titles[title].append(rel)
+            if len(title) < 25:
+                warnings.append(f"{rel}: title is very short ({len(title)} chars)")
+            elif len(title) > 75:
+                warnings.append(f"{rel}: title is long ({len(title)} chars)")
+
         if parser.description_count != 1:
             errors.append(f"{rel}: expected one meta description, found {parser.description_count}")
+        elif parser.description_values:
+            length = len(parser.description_values[0])
+            if length < 70:
+                warnings.append(f"{rel}: meta description is short ({length} chars)")
+            elif length > 190:
+                warnings.append(f"{rel}: meta description is long ({length} chars)")
+
         if parser.h1_count != 1:
             errors.append(f"{rel}: expected one <h1>, found {parser.h1_count}")
         if len(parser.canonicals) != 1:
             errors.append(f"{rel}: expected one canonical, found {len(parser.canonicals)}")
         elif not parser.canonicals[0].startswith(DOMAIN):
             errors.append(f"{rel}: canonical must use {DOMAIN}")
+        else:
+            canonicals_seen[parser.canonicals[0]].append(rel)
 
         if rel == "404.html" and not noindex:
             errors.append("404.html must be noindex, follow")
@@ -153,12 +203,24 @@ def main() -> int:
 
         if not noindex and rel != "404.html":
             indexable_urls.add(page_url(path))
+            for prop in ("og:title", "og:description", "og:image", "og:url"):
+                if parser.og_counts[prop] != 1:
+                    errors.append(f"{rel}: expected one {prop}, found {parser.og_counts[prop]}")
+            if parser.theme_colors != [CURRENT_THEME]:
+                errors.append(f"{rel}: theme-color must be {CURRENT_THEME}")
+
+        if parser.images_without_alt:
+            errors.append(f"{rel}: {parser.images_without_alt} image(s) without alt attribute")
+        if parser.main_scripts_without_defer:
+            errors.append(f"{rel}: /js/main.js must use defer or async")
 
         forbidden = {
             "WhatsApp": "legacy messenger reference",
             "wa.me": "legacy WhatsApp URL",
             "Ключевые запросы по услуге": "visible SEO keyword block",
             "/#process": "obsolete process anchor",
+            "og-master36.svg": "legacy Open Graph image",
+            'content="#164e63"': "legacy theme color",
         }
         for needle, label in forbidden.items():
             if needle in text:
@@ -174,6 +236,13 @@ def main() -> int:
             target = resolve_local(value)
             if target is not None and not target.exists():
                 errors.append(f"{rel}: broken local {attr}={value} -> {target.relative_to(ROOT)}")
+
+    for title, pages in sorted(titles.items()):
+        if len(pages) > 1:
+            errors.append(f"Duplicate title in {', '.join(pages)}: {title}")
+    for canonical, pages in sorted(canonicals_seen.items()):
+        if len(pages) > 1:
+            errors.append(f"Duplicate canonical in {', '.join(pages)}: {canonical}")
 
     robots = ROOT / "robots.txt"
     if not robots.exists():
