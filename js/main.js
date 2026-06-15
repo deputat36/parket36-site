@@ -1,4 +1,23 @@
 (() => {
+  if (!document.querySelector('link[href="/css/enhancements.css"]')) {
+    const enhancements = document.createElement('link');
+    enhancements.rel = 'stylesheet';
+    enhancements.href = '/css/enhancements.css';
+    document.head.appendChild(enhancements);
+  }
+
+  const main = document.querySelector('main');
+  if (main) {
+    main.id = main.id || 'main-content';
+    if (!document.querySelector('.skip-link')) {
+      const skipLink = document.createElement('a');
+      skipLink.className = 'skip-link';
+      skipLink.href = `#${main.id}`;
+      skipLink.textContent = 'Перейти к содержанию';
+      document.body.prepend(skipLink);
+    }
+  }
+
   const toggle = document.querySelector('[data-menu-toggle]');
   const nav = document.querySelector('[data-nav]');
 
@@ -49,6 +68,12 @@
 
   const form = document.getElementById('request-form');
   if (form) {
+    const status = document.getElementById('request-status');
+    if (status) {
+      status.setAttribute('aria-live', 'polite');
+      status.setAttribute('role', 'status');
+    }
+
     form.addEventListener('submit', async event => {
       event.preventDefault();
 
@@ -57,7 +82,6 @@
       const taskField = document.getElementById('request-task');
       const task = taskField?.value.trim() || '';
       const contact = document.getElementById('request-contact')?.value.trim() || 'не указан';
-      const status = document.getElementById('request-status');
 
       if (!task) {
         if (status) status.textContent = 'Опишите, что нужно сделать.';
