@@ -6,6 +6,13 @@
     document.head.appendChild(enhancements);
   }
 
+  if (!document.querySelector('link[rel="manifest"]')) {
+    const manifest = document.createElement('link');
+    manifest.rel = 'manifest';
+    manifest.href = '/manifest.webmanifest';
+    document.head.appendChild(manifest);
+  }
+
   const main = document.querySelector('main');
   if (main) {
     main.id = main.id || 'main-content';
