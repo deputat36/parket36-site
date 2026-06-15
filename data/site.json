@@ -1,0 +1,14 @@
+{
+  "brand": "Паркет36",
+  "person": "Иван",
+  "phone_display": "8 (900) 926-79-29",
+  "phone_e164": "+79009267929",
+  "domain": "https://parket36.ru",
+  "service_area": [
+    "Воронеж",
+    "Воронежская область"
+  ],
+  "max_url": "",
+  "default_request_path": "/#request",
+  "current_year": 2026
+}
