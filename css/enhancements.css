@@ -1,0 +1,142 @@
+/* Дополнительные стили поверх основного оформления Паркет36 */
+:focus-visible {
+  outline: 3px solid #d7a86e;
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.skip-link {
+  position: fixed;
+  left: 12px;
+  top: -90px;
+  z-index: 1000;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #21170f;
+  color: #fff;
+  font-weight: 900;
+  transition: top .2s ease;
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+.proof-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.proof-card,
+.service-note {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 22px;
+  box-shadow: 0 8px 26px rgba(68, 42, 24, .06);
+}
+
+.proof-card strong {
+  display: block;
+  margin-bottom: 7px;
+  color: #3a2416;
+  font-size: 19px;
+}
+
+.proof-card p,
+.service-note p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.service-note {
+  margin-top: 22px;
+  background: #fff7ed;
+}
+
+.service-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  background: #f1dfca;
+  padding: 8px 12px;
+  color: #5c361e;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.audience-banner {
+  display: grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap: 28px;
+  align-items: center;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #2f2118, #6f4628);
+  padding: 34px;
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+
+.audience-banner h2 {
+  color: #fff;
+}
+
+.audience-banner p {
+  color: #f0dfcf;
+  font-size: 18px;
+}
+
+.audience-banner__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.form-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+[data-request-fallback] {
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 13px;
+  background: #fff;
+}
+
+@media (max-width: 900px) {
+  .proof-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .audience-banner {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .proof-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .audience-banner {
+    padding: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
