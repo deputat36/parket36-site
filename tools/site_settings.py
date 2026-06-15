@@ -5,8 +5,8 @@ Usage:
     python tools/site_settings.py --check
     python tools/site_settings.py --write
 
-The script intentionally touches only predictable contact values. It does not
-rewrite page structure or marketing copy.
+The script intentionally touches only predictable contact values inside HTML
+pages. It does not rewrite JavaScript, documentation or marketing copy.
 """
 
 from __future__ import annotations
@@ -26,17 +26,14 @@ DISPLAY_PHONE_RE = re.compile(r"8\s*\(\d{3}\)\s*\d{3}[\-– ]\d{2}[\-– ]\d{2}"
 MAX_HREF_RE = re.compile(r'href="https://max\.ru[^\"]*"')
 
 
-def iter_text_files() -> list[Path]:
+def iter_html_files() -> list[Path]:
     result: list[Path] = []
-    for pattern in ("*.html", "*.md", "*.js", "*.json"):
-        for path in ROOT.rglob(pattern):
-            rel_parts = path.relative_to(ROOT).parts
-            if any(part in IGNORED_DIRS for part in rel_parts):
-                continue
-            if path == CONFIG_PATH:
-                continue
-            result.append(path)
-    return sorted(set(result))
+    for path in ROOT.rglob("*.html"):
+        rel_parts = path.relative_to(ROOT).parts
+        if any(part in IGNORED_DIRS for part in rel_parts):
+            continue
+        result.append(path)
+    return sorted(result)
 
 
 def load_config() -> dict[str, object]:
@@ -82,7 +79,7 @@ def main() -> int:
         return 1
 
     changed: list[str] = []
-    for path in iter_text_files():
+    for path in iter_html_files():
         original = path.read_text(encoding="utf-8")
         updated = update_text(original, config)
         if original == updated:
