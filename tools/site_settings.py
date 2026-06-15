@@ -52,15 +52,12 @@ def update_text(text: str, config: dict[str, object]) -> str:
     phone_e164 = str(config["phone_e164"])
     phone_display = str(config["phone_display"])
     max_url = str(config.get("max_url", "")).strip()
-    request_path = str(config["default_request_path"])
 
     text = TEL_RE.sub(f"tel:{phone_e164}", text)
     text = DISPLAY_PHONE_RE.sub(phone_display, text)
 
     if max_url:
         text = MAX_HREF_RE.sub(f'href="{max_url}"', text)
-    else:
-        text = MAX_HREF_RE.sub(f'href="{request_path}"', text)
 
     return text
 
