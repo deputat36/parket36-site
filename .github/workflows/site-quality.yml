@@ -3,7 +3,10 @@ name: Site quality
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
+  schedule:
+    - cron: "17 5 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -18,6 +21,6 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Run static audit
         run: python tools/check_site.py

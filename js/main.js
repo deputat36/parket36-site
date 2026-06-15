@@ -1,4 +1,59 @@
 (() => {
+  const ATTRIBUTION_KEY = 'parket36_attribution';
+
+  const safeSessionGet = key => {
+    try {
+      return sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  };
+
+  const safeSessionSet = (key, value) => {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch {
+      // The site remains fully functional when browser storage is unavailable.
+    }
+  };
+
+  const referrerHost = (() => {
+    if (!document.referrer) return '';
+    try {
+      return new URL(document.referrer).hostname;
+    } catch {
+      return '';
+    }
+  })();
+
+  const createAttribution = () => {
+    const params = new URLSearchParams(location.search);
+    const stored = safeSessionGet(ATTRIBUTION_KEY);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        // Ignore damaged session data and create a new attribution record.
+      }
+    }
+
+    const attribution = {
+      source: params.get('utm_source') || referrerHost || 'direct',
+      medium: params.get('utm_medium') || '',
+      campaign: params.get('utm_campaign') || '',
+      content: params.get('utm_content') || '',
+      term: params.get('utm_term') || '',
+      landing: location.pathname,
+      firstSeen: new Date().toISOString()
+    };
+
+    safeSessionSet(ATTRIBUTION_KEY, JSON.stringify(attribution));
+    return attribution;
+  };
+
+  const attribution = createAttribution();
+  window.parket36Attribution = Object.freeze({ ...attribution });
+
   if (!document.querySelector('link[href="/css/enhancements.css"]')) {
     const enhancements = document.createElement('link');
     enhancements.rel = 'stylesheet';
@@ -62,22 +117,26 @@
   }
 
   const emitLead = detail => {
-    window.dispatchEvent(new CustomEvent('parket36:lead', { detail }));
+    window.dispatchEvent(new CustomEvent('parket36:lead', {
+      detail: {
+        ...detail,
+        page: location.pathname,
+        attribution: { ...attribution }
+      }
+    }));
   };
 
   document.querySelectorAll('a[href^="tel:"]').forEach(link => {
     link.addEventListener('click', () => emitLead({
       type: 'phone',
-      href: link.getAttribute('href'),
-      page: location.pathname
+      href: link.getAttribute('href')
     }));
   });
 
   document.querySelectorAll('a[href*="max.ru"]').forEach(link => {
     link.addEventListener('click', () => emitLead({
       type: 'max',
-      href: link.getAttribute('href'),
-      page: location.pathname
+      href: link.getAttribute('href')
     }));
   });
 
@@ -104,13 +163,22 @@
         return;
       }
 
+      const attributionLines = [
+        `Источник: ${attribution.source}`,
+        attribution.medium ? `Канал: ${attribution.medium}` : '',
+        attribution.campaign ? `Кампания: ${attribution.campaign}` : '',
+        `Страница входа: ${attribution.landing}`
+      ].filter(Boolean);
+
       const text = [
         'Здравствуйте, Иван!',
         `Услуга: ${service}`,
         `Район/населённый пункт: ${locationValue}`,
         `Задача: ${task}`,
         `Контакт: ${contact}`,
-        'Фотографии отправлю отдельными сообщениями.'
+        'Фотографии отправлю отдельными сообщениями.',
+        '',
+        ...attributionLines
       ].join('\n');
 
       try {
@@ -123,7 +191,7 @@
         if (!fallback) {
           fallback = document.createElement('textarea');
           fallback.dataset.requestFallback = 'true';
-          fallback.rows = 8;
+          fallback.rows = 10;
           fallback.readOnly = true;
           fallback.setAttribute('aria-label', 'Готовый текст заявки');
           form.appendChild(fallback);
@@ -134,7 +202,7 @@
         if (status) status.textContent = 'Скопируйте готовый текст из поля ниже.';
       }
 
-      emitLead({ type: 'request-copy', service, page: location.pathname });
+      emitLead({ type: 'request-copy', service });
     });
   }
 
