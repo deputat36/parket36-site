@@ -25,6 +25,14 @@
     }
   }
 
+  document.querySelectorAll('a[href="https://max.ru/"], a[href="https://max.ru"]').forEach(link => {
+    link.href = '/#request';
+    link.title = 'Персональная ссылка MAX будет подключена позже';
+    link.textContent = link.classList.contains('max') || link.closest('.mobile-cta')
+      ? 'Заявка'
+      : 'Подготовить заявку';
+  });
+
   const toggle = document.querySelector('[data-menu-toggle]');
   const nav = document.querySelector('[data-nav]');
 
