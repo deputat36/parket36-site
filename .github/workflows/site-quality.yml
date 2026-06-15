@@ -22,5 +22,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Validate shared settings
+        run: python tools/site_settings.py --check
       - name: Run static audit
         run: python tools/check_site.py
+      - name: Build public directory
+        run: python tools/build_pages.py
