@@ -88,8 +88,37 @@
       : 'Подготовить заявку';
   });
 
+  const normalizePath = value => {
+    if (!value) return '/';
+    const path = value.split('#')[0].split('?')[0] || '/';
+    if (path === '/') return '/';
+    return path.endsWith('/') ? path : `${path}/`;
+  };
+
   const toggle = document.querySelector('[data-menu-toggle]');
   const nav = document.querySelector('[data-nav]');
+
+  if (nav) {
+    const currentPath = normalizePath(location.pathname);
+    nav.querySelectorAll('a').forEach(link => {
+      const href = link.getAttribute('href') || '';
+      if ((href === '#services' || href === '/#services') && currentPath !== '/') {
+        link.href = '/uslugi/';
+      }
+
+      let linkPath;
+      try {
+        linkPath = normalizePath(new URL(link.getAttribute('href') || href, location.origin).pathname);
+      } catch {
+        return;
+      }
+
+      if (linkPath === currentPath || (linkPath !== '/' && currentPath.startsWith(linkPath))) {
+        link.classList.add('active');
+        link.setAttribute('aria-current', 'page');
+      }
+    });
+  }
 
   const closeMenu = () => {
     if (!toggle || !nav) return;
@@ -117,13 +146,24 @@
   }
 
   const emitLead = detail => {
-    window.dispatchEvent(new CustomEvent('parket36:lead', {
-      detail: {
-        ...detail,
-        page: location.pathname,
-        attribution: { ...attribution }
+    const payload = {
+      ...detail,
+      page: location.pathname,
+      attribution: { ...attribution }
+    };
+
+    window.dispatchEvent(new CustomEvent('parket36:lead', { detail: payload }));
+
+    if (typeof window.ym === 'function') {
+      const counterId = window.parket36MetrikaId;
+      if (counterId) {
+        try {
+          window.ym(counterId, 'reachGoal', detail.type, payload);
+        } catch {
+          // Analytics must never break the public site.
+        }
       }
-    }));
+    }
   };
 
   document.querySelectorAll('a[href^="tel:"]').forEach(link => {
@@ -136,6 +176,13 @@
   document.querySelectorAll('a[href*="max.ru"]').forEach(link => {
     link.addEventListener('click', () => emitLead({
       type: 'max',
+      href: link.getAttribute('href')
+    }));
+  });
+
+  document.querySelectorAll('a[href$="#request"], a[href="/#request"], a[href="#request"]').forEach(link => {
+    link.addEventListener('click', () => emitLead({
+      type: 'request-open',
       href: link.getAttribute('href')
     }));
   });
