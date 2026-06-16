@@ -190,17 +190,42 @@
   const form = document.getElementById('request-form');
   if (form) {
     const status = document.getElementById('request-status');
+    const serviceField = document.getElementById('request-service');
+    const taskField = document.getElementById('request-task');
+
     if (status) {
       status.setAttribute('aria-live', 'polite');
       status.setAttribute('role', 'status');
     }
 
+    document.querySelectorAll('[data-request-template]').forEach(button => {
+      button.addEventListener('click', () => {
+        const template = button.dataset.requestTemplate || '';
+        const service = button.dataset.requestService || '';
+
+        if (serviceField && service) {
+          const option = Array.from(serviceField.options).find(item => item.value === service || item.textContent === service);
+          if (option) serviceField.value = option.value;
+        }
+
+        if (taskField && template) {
+          taskField.value = taskField.value.trim()
+            ? `${taskField.value.trim()}\n\n${template}`
+            : template;
+          taskField.focus();
+          taskField.setSelectionRange(taskField.value.length, taskField.value.length);
+        }
+
+        if (status) status.textContent = 'Шаблон добавлен. Уточните детали и скопируйте заявку.';
+        emitLead({ type: 'request-template', service: service || 'не указана' });
+      });
+    });
+
     form.addEventListener('submit', async event => {
       event.preventDefault();
 
-      const service = document.getElementById('request-service')?.value.trim() || 'не указана';
+      const service = serviceField?.value.trim() || 'не указана';
       const locationValue = document.getElementById('request-location')?.value.trim() || 'не указан';
-      const taskField = document.getElementById('request-task');
       const task = taskField?.value.trim() || '';
       const contact = document.getElementById('request-contact')?.value.trim() || 'не указан';
 
@@ -223,7 +248,7 @@
         `Район/населённый пункт: ${locationValue}`,
         `Задача: ${task}`,
         `Контакт: ${contact}`,
-        'Фотографии отправлю отдельными сообщениями.',
+        'Фотографии отправлю отдельными сообщениями: общий вид, проблемное место крупно, доступ к объекту и примерный объём.',
         '',
         ...attributionLines
       ].join('\n');
