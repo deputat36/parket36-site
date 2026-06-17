@@ -81,6 +81,17 @@
     img.setAttribute('aria-hidden', 'true');
   });
 
+  document.querySelectorAll('.services-grid').forEach(grid => {
+    const icons = Array.from(grid.querySelectorAll('.service-card__icon'));
+    icons.forEach((icon, index) => {
+      const value = (icon.textContent || '').trim();
+      if (/^[0-9A-Za-zА-Яа-я]{1,3}$/.test(value)) return;
+      icon.textContent = String(index + 1).padStart(2, '0');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.title = 'Номер карточки';
+    });
+  });
+
   const main = document.querySelector('main');
   if (main) {
     main.id = main.id || 'main-content';
