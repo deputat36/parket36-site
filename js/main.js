@@ -54,12 +54,16 @@
   const attribution = createAttribution();
   window.parket36Attribution = Object.freeze({ ...attribution });
 
-  if (!document.querySelector('link[href="/css/enhancements.css"]')) {
-    const enhancements = document.createElement('link');
-    enhancements.rel = 'stylesheet';
-    enhancements.href = '/css/enhancements.css';
-    document.head.appendChild(enhancements);
-  }
+  const ensureStylesheet = href => {
+    if (document.querySelector(`link[href="${href}"]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  };
+
+  ensureStylesheet('/css/enhancements.css');
+  ensureStylesheet('/css/photo-brief.css');
 
   if (!document.querySelector('link[rel="manifest"]')) {
     const manifest = document.createElement('link');
@@ -67,6 +71,15 @@
     manifest.href = '/manifest.webmanifest';
     document.head.appendChild(manifest);
   }
+
+  document.querySelectorAll('.side-card > img[src*="/img/"]').forEach(img => {
+    const card = img.closest('.side-card');
+    if (!card) return;
+    card.classList.add('side-card--photo-plan');
+    card.dataset.photoSlot = img.getAttribute('alt') || 'Место для реального фото объекта';
+    img.dataset.placeholderImage = 'true';
+    img.setAttribute('aria-hidden', 'true');
+  });
 
   const main = document.querySelector('main');
   if (main) {
