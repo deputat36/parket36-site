@@ -21,6 +21,7 @@ PUBLIC_DIRS = {
     "o-mastere",
     "kontakty",
     "portfolio",
+    "foto-dlya-sajta",
     "ceny",
     "resheniya",
     "sovety",
