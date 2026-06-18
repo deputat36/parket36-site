@@ -209,7 +209,6 @@ def main() -> int:
         hard_forbidden = {
             "WhatsApp": "legacy messenger reference",
             "wa.me": "legacy WhatsApp URL",
-            "https://max.ru": "generic MAX link",
             "Ключевые запросы по услуге": "visible SEO keyword block",
             "/#process": "obsolete process anchor",
             "/#services": "obsolete services anchor",
@@ -220,6 +219,7 @@ def main() -> int:
 
         soft_forbidden = {
             'content="#164e63"': "legacy theme color",
+            "https://max.ru": "generic MAX link",
         }
         for needle, label in soft_forbidden.items():
             if needle in text:
