@@ -135,6 +135,57 @@
   transform: translateY(-2px);
 }
 
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(255, 247, 237, .72);
+  border: 1px solid rgba(111, 70, 40, .14);
+  padding: 9px 13px;
+  line-height: 1.25;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.text-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(111, 70, 40, .28);
+  box-shadow: 0 12px 26px rgba(68, 42, 24, .09);
+}
+
+.prose,
+.section__head,
+.intro-grid > div,
+.service-page-grid > div,
+.scenario-grid article p,
+.price-grid article p,
+.proof-card p,
+.service-card p,
+.faq p,
+.side-card p,
+.lead-card p {
+  text-wrap: pretty;
+}
+
+.service-card a,
+.quick-choice__grid a {
+  min-height: 100%;
+}
+
+.service-card a:focus-visible,
+.quick-choice__grid a:focus-visible,
+.text-link:focus-visible,
+.mobile-cta a:focus-visible {
+  outline: 3px solid rgba(215, 168, 110, .55);
+  outline-offset: 3px;
+}
+
+.footer a:not(.brand):hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 @media (min-width: 641px) {
   .mobile-cta {
     display: none !important;
@@ -191,5 +242,11 @@
   .back-to-top {
     right: 18px;
     bottom: 82px;
+  }
+
+  .text-link {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 }
