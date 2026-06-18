@@ -125,14 +125,9 @@
   if (nav) {
     const currentPath = normalizePath(location.pathname);
     nav.querySelectorAll('a').forEach(link => {
-      const href = link.getAttribute('href') || '';
-      if ((href === '#services' || href === '/#services') && currentPath !== '/') {
-        link.href = '/uslugi/';
-      }
-
       let linkPath;
       try {
-        linkPath = normalizePath(new URL(link.getAttribute('href') || href, location.origin).pathname);
+        linkPath = normalizePath(new URL(link.getAttribute('href') || '/', location.origin).pathname);
       } catch {
         return;
       }
@@ -218,7 +213,6 @@
     const taskField = document.getElementById('request-task');
 
     if (status) {
-      status.setAttribute('aria-live', 'polite');
       status.setAttribute('role', 'status');
     }
 
