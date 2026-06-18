@@ -104,14 +104,6 @@
     }
   }
 
-  document.querySelectorAll('a[href="https://max.ru/"], a[href="https://max.ru"]').forEach(link => {
-    link.href = '/#request';
-    link.title = 'Персональная ссылка MAX будет подключена позже';
-    link.textContent = link.classList.contains('max') || link.closest('.mobile-cta')
-      ? 'Заявка'
-      : 'Подготовить заявку';
-  });
-
   const normalizePath = value => {
     if (!value) return '/';
     const path = value.split('#')[0].split('?')[0] || '/';
@@ -188,13 +180,6 @@
   document.querySelectorAll('a[href^="tel:"]').forEach(link => {
     link.addEventListener('click', () => emitLead({
       type: 'phone',
-      href: link.getAttribute('href')
-    }));
-  });
-
-  document.querySelectorAll('a[href*="max.ru"]').forEach(link => {
-    link.addEventListener('click', () => emitLead({
-      type: 'max',
       href: link.getAttribute('href')
     }));
   });
