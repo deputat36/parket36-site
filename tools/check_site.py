@@ -217,7 +217,6 @@ def main() -> int:
                 errors.append(f"{rel}: contains {label}: {needle}")
 
         soft_forbidden = {
-            "og-master36.svg": "legacy Open Graph image",
             'content="#164e63"': "legacy theme color",
         }
         for needle, label in soft_forbidden.items():
@@ -231,6 +230,9 @@ def main() -> int:
             warnings.append(f"{rel}: generic MAX link is still used")
 
         for attr, value in parser.links:
+            if attr == "og:image" and any(part in value for part in ("/img/work-", "/img/hero-master.svg", "/img/ivan-hero.svg")):
+                warnings.append(f"{rel}: uses service placeholder as og:image: {value}")
+
             target = resolve_local(value)
             if target is not None and not target.exists():
                 errors.append(f"{rel}: broken local {attr}={value} -> {target.relative_to(ROOT)}")
