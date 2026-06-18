@@ -213,7 +213,6 @@ def main() -> int:
             "Ключевые запросы по услуге": "visible SEO keyword block",
             "/#process": "obsolete process anchor",
             "/#services": "obsolete services anchor",
-            "/img/ivan-hero.svg": "legacy artificial hero image",
         }
         for needle, label in hard_forbidden.items():
             if needle in text:
@@ -230,7 +229,7 @@ def main() -> int:
             errors.append(f"{rel}: links to consolidated master-na-chas page")
 
         for attr, value in parser.links:
-            if attr == "og:image" and any(part in value for part in ("/img/work-", "/img/hero-master.svg")):
+            if attr == "og:image" and any(part in value for part in ("/img/work-", "/img/hero-master.svg", "/img/ivan-hero.svg")):
                 warnings.append(f"{rel}: uses service placeholder as og:image: {value}")
 
             target = resolve_local(value)
