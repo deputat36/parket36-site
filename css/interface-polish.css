@@ -1,0 +1,159 @@
+/* Точечная полировка удобства: форма, мобильные CTA, быстрые действия */
+.pill-row {
+  gap: 9px;
+}
+
+.pill-row .pill,
+.request-form .pill {
+  appearance: none;
+  border: 1px solid rgba(111, 70, 40, .18);
+  background: linear-gradient(180deg, #fff, #fff7ed);
+  color: #3a2416;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(68, 42, 24, .06);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
+}
+
+.pill-row .pill:hover,
+.request-form .pill:hover {
+  transform: translateY(-2px);
+  border-color: rgba(111, 70, 40, .35);
+  box-shadow: 0 14px 30px rgba(68, 42, 24, .11);
+}
+
+.pill-row .pill:focus-visible,
+.request-form .pill:focus-visible {
+  outline: 3px solid rgba(215, 168, 110, .45);
+  outline-offset: 2px;
+}
+
+.request-form {
+  position: relative;
+  overflow: hidden;
+}
+
+.request-form::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 7px;
+  background: linear-gradient(90deg, var(--wood), var(--gold));
+}
+
+.request-form > * {
+  position: relative;
+}
+
+.request-form h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.request-form h3::before {
+  content: "1";
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff0dc;
+  color: var(--wood);
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.request-form label {
+  border-radius: 18px;
+  background: rgba(255, 247, 237, .56);
+  padding: 12px;
+}
+
+.request-form label:focus-within {
+  background: #fff7ed;
+}
+
+.request-note {
+  box-shadow: 0 10px 26px rgba(68, 42, 24, .06);
+}
+
+.form-status:not(:empty) {
+  border-radius: 14px;
+  background: #e6f2ea;
+  padding: 10px 12px;
+}
+
+.photo-slot,
+.person-card--photo-plan::before,
+.side-card--photo-plan::before,
+.portfolio-grid figure[data-photo-slot]::before {
+  background:
+    linear-gradient(135deg, rgba(255, 248, 239, .96), rgba(241, 223, 202, .92)),
+    repeating-linear-gradient(135deg, rgba(111, 70, 40, .08) 0 1px, transparent 1px 12px);
+}
+
+.photo-slot__mark {
+  box-shadow: 0 8px 18px rgba(68, 42, 24, .06);
+}
+
+.mobile-cta {
+  backdrop-filter: blur(10px);
+}
+
+.mobile-cta a {
+  border: 1px solid rgba(255, 255, 255, .36);
+}
+
+@media (min-width: 641px) {
+  .mobile-cta {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    border-bottom-color: rgba(111, 70, 40, .2);
+  }
+
+  .menu-toggle {
+    min-width: 46px;
+    min-height: 44px;
+  }
+
+  .hero,
+  .subhero {
+    padding-top: 42px;
+  }
+
+  .trust span {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .request-form {
+    padding: 18px;
+  }
+
+  .request-form label {
+    padding: 10px;
+  }
+
+  .pill-row .pill,
+  .request-form .pill {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .request-note {
+    font-size: 15px;
+  }
+
+  .photo-slot,
+  .person-card--photo-plan::before,
+  .side-card--photo-plan::before,
+  .portfolio-grid figure[data-photo-slot]::before {
+    min-height: 160px;
+  }
+}
