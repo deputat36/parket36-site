@@ -157,6 +157,33 @@
     });
   }
 
+  const backToTop = document.createElement('button');
+  backToTop.type = 'button';
+  backToTop.className = 'back-to-top';
+  backToTop.textContent = '↑';
+  backToTop.setAttribute('aria-label', 'Вернуться к началу страницы');
+  document.body.appendChild(backToTop);
+
+  const setBackToTopVisibility = () => {
+    backToTop.classList.toggle('is-visible', window.scrollY > 650);
+  };
+
+  let backToTopTicking = false;
+  window.addEventListener('scroll', () => {
+    if (backToTopTicking) return;
+    backToTopTicking = true;
+    requestAnimationFrame(() => {
+      setBackToTopVisibility();
+      backToTopTicking = false;
+    });
+  }, { passive: true });
+
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  setBackToTopVisibility();
+
   const emitLead = detail => {
     const payload = {
       ...detail,
