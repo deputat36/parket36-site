@@ -2,9 +2,9 @@
 """Static checks for parket36.ru.
 
 Runs without third-party dependencies and fails CI on broken local links,
-missing SEO essentials, obsolete navigation and accidental legacy content.
-Additional quality signals are reported as warnings so they can be improved
-incrementally without blocking urgent content updates.
+missing SEO essentials, obsolete navigation, obsolete messenger links and
+accidental legacy content. Additional quality signals are reported as warnings
+so they can be improved incrementally without blocking urgent content updates.
 """
 
 from __future__ import annotations
@@ -209,15 +209,17 @@ def main() -> int:
         hard_forbidden = {
             "WhatsApp": "legacy messenger reference",
             "wa.me": "legacy WhatsApp URL",
+            "https://max.ru": "generic MAX link",
             "Ключевые запросы по услуге": "visible SEO keyword block",
             "/#process": "obsolete process anchor",
+            "/#services": "obsolete services anchor",
+            "/img/ivan-hero.svg": "legacy artificial hero image",
         }
         for needle, label in hard_forbidden.items():
             if needle in text:
                 errors.append(f"{rel}: contains {label}: {needle}")
 
         soft_forbidden = {
-            "og-master36.svg": "legacy Open Graph image",
             'content="#164e63"': "legacy theme color",
         }
         for needle, label in soft_forbidden.items():
@@ -227,10 +229,10 @@ def main() -> int:
         if rel != "uslugi/master-na-chas/index.html" and "/uslugi/master-na-chas/" in text:
             errors.append(f"{rel}: links to consolidated master-na-chas page")
 
-        if "https://max.ru/" in text:
-            warnings.append(f"{rel}: generic MAX link is still used")
-
         for attr, value in parser.links:
+            if attr == "og:image" and any(part in value for part in ("/img/work-", "/img/hero-master.svg")):
+                warnings.append(f"{rel}: uses service placeholder as og:image: {value}")
+
             target = resolve_local(value)
             if target is not None and not target.exists():
                 errors.append(f"{rel}: broken local {attr}={value} -> {target.relative_to(ROOT)}")
