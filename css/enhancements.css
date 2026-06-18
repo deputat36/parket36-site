@@ -180,6 +180,95 @@
   background: #fffdf8;
 }
 
+.section--quick {
+  margin-top: -42px;
+  padding-top: 0;
+  padding-bottom: 34px;
+  background: transparent;
+  position: relative;
+  z-index: 2;
+}
+
+.quick-choice {
+  display: grid;
+  grid-template-columns: .82fr 1.18fr;
+  gap: 20px;
+  align-items: stretch;
+  border: 1px solid rgba(111, 70, 40, .14);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 22px 55px rgba(68, 42, 24, .12);
+  padding: 24px;
+  backdrop-filter: blur(12px);
+}
+
+.quick-choice__head {
+  border-radius: 24px;
+  background: linear-gradient(135deg, #fff7ed, #f1dfca);
+  padding: 24px;
+}
+
+.quick-choice__head h2 {
+  font-size: clamp(25px, 3vw, 36px);
+}
+
+.quick-choice__head p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.quick-choice__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.quick-choice__grid a {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 132px;
+  border: 1px solid rgba(111, 70, 40, .14);
+  border-radius: 22px;
+  background: #fff;
+  padding: 20px;
+  color: var(--ink);
+  box-shadow: 0 10px 26px rgba(68, 42, 24, .06);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.quick-choice__grid a:hover {
+  transform: translateY(-4px);
+  border-color: rgba(111, 70, 40, .32);
+  box-shadow: 0 20px 46px rgba(68, 42, 24, .12);
+}
+
+.quick-choice__grid strong {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #3a2416;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.quick-choice__grid strong::after {
+  content: "→";
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 50%;
+  background: #fff0dc;
+  color: var(--wood);
+}
+
+.quick-choice__grid span {
+  color: var(--muted);
+}
+
 .proof-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -256,8 +345,13 @@
 
 @media (max-width: 900px) {
   .proof-grid,
-  .audience-banner {
+  .audience-banner,
+  .quick-choice {
     grid-template-columns: 1fr;
+  }
+
+  .quick-choice__grid {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -279,6 +373,28 @@
   .section__head::after {
     width: 56px;
     height: 4px;
+  }
+
+  .section--quick {
+    margin-top: -24px;
+    padding-bottom: 22px;
+  }
+
+  .quick-choice {
+    padding: 14px;
+    border-radius: 24px;
+  }
+
+  .quick-choice__head {
+    padding: 20px;
+  }
+
+  .quick-choice__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-choice__grid a {
+    min-height: auto;
   }
 }
 
