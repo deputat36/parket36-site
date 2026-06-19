@@ -284,6 +284,7 @@ def main() -> int:
 
         soft_forbidden = {
             'content="#164e63"': "legacy theme color",
+            "/#services": "obsolete services anchor",
         }
         for needle, label in soft_forbidden.items():
             if needle in text:
