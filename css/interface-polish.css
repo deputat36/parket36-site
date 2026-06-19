@@ -186,6 +186,68 @@
   text-underline-offset: 4px;
 }
 
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid rgba(111, 70, 40, .12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .68);
+  padding: 8px 12px;
+  box-shadow: 0 8px 22px rgba(68, 42, 24, .06);
+}
+
+.breadcrumbs a {
+  color: #5c361e;
+  font-weight: 800;
+}
+
+.breadcrumbs span {
+  color: rgba(92, 54, 30, .58);
+}
+
+.breadcrumbs a:hover {
+  color: var(--wood);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.check-list,
+.number-list {
+  display: grid;
+  gap: 10px;
+}
+
+.check-list li,
+.number-list li {
+  line-height: 1.55;
+}
+
+.service-page-grid > div h2,
+.prose h2 {
+  margin-top: 34px;
+}
+
+.service-page-grid > div h2:first-child,
+.prose h2:first-child {
+  margin-top: 0;
+}
+
+.side-card h3,
+.lead-card h3,
+.request-form h3 {
+  color: #3a2416;
+}
+
+.notice,
+.request-note,
+.photo-rule {
+  border-color: rgba(111, 70, 40, .16);
+}
+
 @media (min-width: 641px) {
   .mobile-cta {
     display: none !important;
@@ -248,5 +310,10 @@
     width: 100%;
     justify-content: center;
     text-align: center;
+  }
+
+  .breadcrumbs {
+    width: 100%;
+    border-radius: 18px;
   }
 }
