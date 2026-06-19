@@ -77,6 +77,7 @@
   ensureStylesheet('/css/typography-polish.css');
   ensureStylesheet('/css/scroll-progress.css');
   ensureStylesheet('/css/accessibility-polish.css');
+  ensureStylesheet('/css/cta-polish.css');
 
   if (!document.querySelector('link[rel="manifest"]')) {
     const manifest = document.createElement('link');
