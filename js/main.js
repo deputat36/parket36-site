@@ -65,6 +65,7 @@
   ensureStylesheet('/css/enhancements.css');
   ensureStylesheet('/css/photo-brief.css');
   ensureStylesheet('/css/interface-polish.css');
+  ensureStylesheet('/css/mobile-menu.css');
 
   if (!document.querySelector('link[rel="manifest"]')) {
     const manifest = document.createElement('link');
