@@ -17,6 +17,14 @@
     }
   };
 
+  const prefersReducedMotion = () => {
+    try {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      return false;
+    }
+  };
+
   const referrerHost = (() => {
     if (!document.referrer) return '';
     try {
@@ -68,6 +76,7 @@
   ensureStylesheet('/css/mobile-menu.css');
   ensureStylesheet('/css/typography-polish.css');
   ensureStylesheet('/css/scroll-progress.css');
+  ensureStylesheet('/css/accessibility-polish.css');
 
   if (!document.querySelector('link[rel="manifest"]')) {
     const manifest = document.createElement('link');
@@ -206,7 +215,7 @@
   }, { passive: true });
 
   backToTop.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   });
 
   updateScrollUi();
@@ -250,7 +259,11 @@
   if (form) {
     const status = document.getElementById('request-status');
     const serviceField = document.getElementById('request-service');
+    const locationField = document.getElementById('request-location');
+    const areaField = document.getElementById('request-area');
     const taskField = document.getElementById('request-task');
+    const callbackField = document.getElementById('request-callback');
+    const contactField = document.getElementById('request-contact');
 
     if (status) {
       status.setAttribute('role', 'status');
@@ -283,9 +296,11 @@
       event.preventDefault();
 
       const service = serviceField?.value.trim() || 'не указана';
-      const locationValue = document.getElementById('request-location')?.value.trim() || 'не указан';
+      const locationValue = locationField?.value.trim() || 'не указан';
+      const area = areaField?.value.trim() || 'не указана';
       const task = taskField?.value.trim() || '';
-      const contact = document.getElementById('request-contact')?.value.trim() || 'не указан';
+      const callback = callbackField?.value.trim() || 'не указано';
+      const contact = contactField?.value.trim() || 'не указан';
 
       if (!task) {
         if (status) status.textContent = 'Опишите, что нужно сделать.';
@@ -304,7 +319,9 @@
         'Здравствуйте, Иван!',
         `Услуга: ${service}`,
         `Район/населённый пункт: ${locationValue}`,
+        `Площадь/объём: ${area}`,
         `Задача: ${task}`,
+        `Когда удобно связаться: ${callback}`,
         `Контакт: ${contact}`,
         'Фотографии отправлю отдельными сообщениями: общий вид, проблемное место крупно, доступ к объекту и примерный объём.',
         '',
@@ -332,7 +349,7 @@
         if (status) status.textContent = 'Скопируйте готовый текст из поля ниже.';
       }
 
-      emitLead({ type: 'request-copy', service });
+      emitLead({ type: 'request-copy', service, area, callback: callback !== 'не указано' });
     });
   }
 
