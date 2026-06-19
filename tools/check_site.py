@@ -13,6 +13,7 @@ from collections import defaultdict
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -20,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOMAIN = "https://parket36.ru"
 IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
 CURRENT_THEME = "#6f4628"
+PUBLIC_TEXT_SUFFIXES = {".html", ".css", ".js", ".json", ".xml", ".txt"}
 
 
 class PageParser(HTMLParser):
@@ -93,12 +95,26 @@ class PageParser(HTMLParser):
             self.title_text.append(data)
 
 
+def is_ignored_path(path: Path) -> bool:
+    return any(part in IGNORED_DIRS for part in path.relative_to(ROOT).parts)
+
+
 def iter_html_files() -> list[Path]:
     result: list[Path] = []
     for path in ROOT.rglob("*.html"):
-        if any(part in IGNORED_DIRS for part in path.relative_to(ROOT).parts):
+        if is_ignored_path(path):
             continue
         result.append(path)
+    return sorted(result)
+
+
+def iter_public_text_files() -> list[Path]:
+    result: list[Path] = []
+    for path in ROOT.rglob("*"):
+        if not path.is_file() or is_ignored_path(path):
+            continue
+        if path.suffix.lower() in PUBLIC_TEXT_SUFFIXES:
+            result.append(path)
     return sorted(result)
 
 
@@ -142,6 +158,53 @@ def normalized_title(parser: PageParser) -> str:
     return " ".join("".join(parser.title_text).split())
 
 
+def check_dynamic_css(errors: list[str]) -> None:
+    main_js = ROOT / "js" / "main.js"
+    if not main_js.exists():
+        errors.append("js/main.js is missing")
+        return
+
+    text = main_js.read_text(encoding="utf-8")
+    hrefs = sorted(set(re.findall(r"ensureStylesheet\(['\"]([^'\"]+)['\"]\)", text)))
+    if not hrefs:
+        errors.append("js/main.js does not register dynamic stylesheets")
+        return
+
+    for href in hrefs:
+        if not href.startswith("/css/") or not href.endswith(".css"):
+            errors.append(f"js/main.js: unexpected dynamic stylesheet path: {href}")
+            continue
+        target = resolve_local(href)
+        if target is None or not target.exists():
+            errors.append(f"js/main.js: dynamic stylesheet does not exist: {href}")
+
+
+def check_repository_safety(errors: list[str]) -> None:
+    forbidden_paths = [
+        ROOT / "app-v4.html",
+        ROOT / "crm-v4.html",
+        ROOT / "assets" / "v4",
+        ROOT / "assets" / "leader",
+    ]
+    for path in forbidden_paths:
+        if path.exists():
+            errors.append(f"Unexpected legacy/CRM path is present: {path.relative_to(ROOT)}")
+
+    forbidden_public_terms = {
+        "installationJobCardV1": "CRM installation card component",
+        "leader_installation_jobs": "CRM leader database table",
+        "assets/v4": "CRM v4 asset path",
+        "app-v4.html": "CRM v4 HTML page",
+        "ivan-work-suit": "artificial workwear image asset",
+    }
+    for path in iter_public_text_files():
+        rel = path.relative_to(ROOT).as_posix()
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for needle, label in forbidden_public_terms.items():
+            if needle in text:
+                errors.append(f"{rel}: contains forbidden {label}: {needle}")
+
+
 def main() -> int:
     errors: list[str] = []
     warnings: list[str] = []
@@ -149,6 +212,9 @@ def main() -> int:
     html_files = iter_html_files()
     titles: dict[str, list[str]] = defaultdict(list)
     canonicals_seen: dict[str, list[str]] = defaultdict(list)
+
+    check_repository_safety(errors)
+    check_dynamic_css(errors)
 
     if not html_files:
         errors.append("No HTML files found")
