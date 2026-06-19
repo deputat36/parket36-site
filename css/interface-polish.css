@@ -296,6 +296,51 @@
   color: #3a2416;
 }
 
+.steps,
+.price-grid {
+  gap: 18px;
+}
+
+.steps li,
+.price-grid article {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #fff, #fffaf4);
+}
+
+.steps li::after,
+.price-grid article::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--wood), var(--gold));
+  opacity: .72;
+}
+
+.steps li:hover,
+.price-grid article:hover {
+  transform: translateY(-4px);
+  border-color: rgba(111, 70, 40, .26);
+  box-shadow: 0 20px 46px rgba(68, 42, 24, .12);
+}
+
+.steps strong,
+.price-grid h3,
+.price-grid strong {
+  color: #3a2416;
+}
+
+.steps span,
+.price-grid p {
+  line-height: 1.55;
+}
+
+.price-grid article > * {
+  position: relative;
+  z-index: 1;
+}
+
 @media (min-width: 641px) {
   .mobile-cta {
     display: none !important;
