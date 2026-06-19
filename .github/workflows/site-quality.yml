@@ -26,5 +26,7 @@ jobs:
         run: python tools/site_settings.py --check
       - name: Run static audit
         run: python tools/check_site.py
+      - name: Run extra guardrails
+        run: python tools/check_guardrails.py
       - name: Build public directory
         run: python tools/build_pages.py
