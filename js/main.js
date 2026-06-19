@@ -67,6 +67,7 @@
   ensureStylesheet('/css/interface-polish.css');
   ensureStylesheet('/css/mobile-menu.css');
   ensureStylesheet('/css/typography-polish.css');
+  ensureStylesheet('/css/scroll-progress.css');
 
   if (!document.querySelector('link[rel="manifest"]')) {
     const manifest = document.createElement('link');
@@ -159,6 +160,21 @@
     });
   }
 
+  const scrollProgress = document.createElement('div');
+  scrollProgress.className = 'scroll-progress';
+  scrollProgress.setAttribute('aria-hidden', 'true');
+
+  const scrollProgressBar = document.createElement('span');
+  scrollProgressBar.className = 'scroll-progress__bar';
+  scrollProgress.appendChild(scrollProgressBar);
+  document.body.appendChild(scrollProgress);
+
+  const updateScrollProgress = () => {
+    const scrollable = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const progress = Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100));
+    scrollProgressBar.style.width = `${progress}%`;
+  };
+
   const backToTop = document.createElement('button');
   backToTop.type = 'button';
   backToTop.className = 'back-to-top';
@@ -170,21 +186,30 @@
     backToTop.classList.toggle('is-visible', window.scrollY > 650);
   };
 
-  let backToTopTicking = false;
+  let scrollTicking = false;
+  const updateScrollUi = () => {
+    updateScrollProgress();
+    setBackToTopVisibility();
+  };
+
   window.addEventListener('scroll', () => {
-    if (backToTopTicking) return;
-    backToTopTicking = true;
+    if (scrollTicking) return;
+    scrollTicking = true;
     requestAnimationFrame(() => {
-      setBackToTopVisibility();
-      backToTopTicking = false;
+      updateScrollUi();
+      scrollTicking = false;
     });
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    updateScrollUi();
   }, { passive: true });
 
   backToTop.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  setBackToTopVisibility();
+  updateScrollUi();
 
   const emitLead = detail => {
     const payload = {
