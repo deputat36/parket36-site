@@ -1,0 +1,84 @@
+/* Дополнительная доступность и аккуратная адаптация без изменения основного дизайна. */
+:focus-visible {
+  outline: 3px solid rgba(215, 168, 110, .62);
+  outline-offset: 3px;
+}
+
+.request-form input::placeholder,
+.request-form textarea::placeholder {
+  color: rgba(113, 100, 89, .78);
+}
+
+.request-form input:required,
+.request-form textarea:required {
+  border-left-width: 4px;
+}
+
+.request-form input:required:valid,
+.request-form textarea:required:valid {
+  border-left-color: rgba(47, 106, 78, .42);
+}
+
+.request-form input:required:user-invalid,
+.request-form textarea:required:user-invalid {
+  border-left-color: rgba(160, 64, 42, .55);
+}
+
+.request-form .form-help {
+  margin-top: 0;
+  line-height: 1.45;
+}
+
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: 12px;
+  z-index: 200;
+  transform: translateY(-150%);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--wood);
+  font-weight: 900;
+  box-shadow: var(--shadow);
+  transition: transform .18s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+
+  .btn:hover,
+  .service-card a:hover,
+  .text-link:hover,
+  .steps li:hover,
+  .price-grid article:hover,
+  .scenario-grid article:hover {
+    transform: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .request-form input,
+  .request-form select,
+  .request-form textarea {
+    font-size: 16px;
+  }
+}

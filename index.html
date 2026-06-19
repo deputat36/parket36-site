@@ -152,14 +152,16 @@
         <h2>Подготовьте сообщение для Ивана за минуту</h2>
         <p>Форма ничего не отправляет и не хранит. Она составит текст, который можно скопировать и передать удобным способом.</p>
         <div class="request-note">Для оценки приложите 2–4 фотографии: общий вид пола, проблемное место крупно, примыкания и примерную площадь.</div>
-        <div class="request-note"><strong>Минимум для полезного ответа:</strong><ol class="number-list"><li>что с полом: скрип, щели, старый лак, повреждение;</li><li>район или населённый пункт;</li><li>примерная площадь комнаты или участка;</li><li>имя и телефон для обратной связи.</li></ol></div>
+        <div class="request-note"><strong>Минимум для полезного ответа:</strong><ol class="number-list"><li>что с полом: скрип, щели, старый лак, повреждение;</li><li>район или населённый пункт;</li><li>примерная площадь комнаты или участка;</li><li>имя, телефон и удобное время для обратной связи.</li></ol></div>
       </div>
       <form class="request-form" id="request-form">
         <div><h3>Быстрый старт</h3><p class="form-help">Нажмите подходящую ситуацию — текст задачи подставится автоматически, его можно отредактировать.</p><div class="pill-row" aria-label="Шаблоны заявки"><button class="pill" type="button" data-request-template="Скрипит или гуляет деревянный пол. Нужно понять, можно ли закрепить/отремонтировать без полной замены. Приложу общий вид и проблемные места." data-request-service="Паркет или деревянный пол">Скрипит пол</button><button class="pill" type="button" data-request-template="Нужно обновить старый паркет: оценить состояние, возможность циклёвки, локального ремонта и покрытия лаком или маслом." data-request-service="Паркет или деревянный пол">Обновить паркет</button><button class="pill" type="button" data-request-template="Есть щели, повреждённые планки или локальные дефекты паркета. Нужно понять, можно ли восстановить участок без полной замены пола." data-request-service="Паркет или деревянный пол">Щели и дефекты</button><button class="pill" type="button" data-request-template="Нужно подготовить квартиру к продаже/сдаче: привести пол в порядок, оценить плинтусы, мелкие дефекты и дополнительные задачи." data-request-service="Подготовка квартиры к продаже">Подготовить объект</button></div></div>
         <label>Какая услуга?<select id="request-service"><option>Паркет или деревянный пол</option><option>Муж на час / мелкий ремонт</option><option>Подготовка квартиры к продаже</option><option>Ремонт после арендаторов</option><option>Сборка мебели</option><option>Электрика</option><option>Сантехника</option><option>Отделка</option><option>Демонтаж / вывоз</option><option>Другая задача</option></select></label>
         <label>Район или населённый пункт<input id="request-location" autocomplete="address-level2" placeholder="Например: Северный район, Воронеж"></label>
-        <label>Что нужно сделать?<textarea id="request-task" rows="5" required placeholder="Опишите задачу, объём и желаемые сроки"></textarea></label>
-        <label>Как с вами связаться?<input id="request-contact" autocomplete="name" required placeholder="Имя и телефон"></label>
+        <label>Примерная площадь или объём<input id="request-area" inputmode="decimal" placeholder="Например: 18 м², одна комната, коридор"></label>
+        <label>Что нужно сделать?<textarea id="request-task" rows="5" required placeholder="Опишите задачу, состояние пола и желаемые сроки"></textarea></label>
+        <label>Когда удобно связаться?<input id="request-callback" autocomplete="off" placeholder="Например: сегодня после 18:00"></label>
+        <label>Как с вами связаться?<input id="request-contact" autocomplete="tel" inputmode="tel" required placeholder="Имя и телефон"></label>
         <button class="btn btn--primary" type="submit">Скопировать заявку</button>
         <p class="form-status" id="request-status"></p>
         <p class="form-help">Отправка данных на сервер не выполняется.</p>

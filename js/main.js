@@ -17,6 +17,14 @@
     }
   };
 
+  const prefersReducedMotion = () => {
+    try {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      return false;
+    }
+  };
+
   const referrerHost = (() => {
     if (!document.referrer) return '';
     try {
@@ -68,6 +76,8 @@
   ensureStylesheet('/css/mobile-menu.css');
   ensureStylesheet('/css/typography-polish.css');
   ensureStylesheet('/css/scroll-progress.css');
+  ensureStylesheet('/css/accessibility-polish.css');
+  ensureStylesheet('/css/cta-polish.css');
 
   if (!document.querySelector('link[rel="manifest"]')) {
     const manifest = document.createElement('link');
@@ -206,7 +216,7 @@
   }, { passive: true });
 
   backToTop.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   });
 
   updateScrollUi();
@@ -246,11 +256,62 @@
     }));
   });
 
+  const addInlineLead = () => {
+    if (!main || document.getElementById('request-form') || document.querySelector('.inline-lead')) return;
+    const currentPath = normalizePath(location.pathname);
+    if (!['/uslugi/', '/sovety/', '/resheniya/', '/portfolio/'].some(prefix => currentPath.startsWith(prefix))) return;
+
+    const section = document.createElement('section');
+    section.className = 'inline-lead';
+
+    const container = document.createElement('div');
+    container.className = 'container';
+    const card = document.createElement('div');
+    card.className = 'inline-lead__card';
+    const content = document.createElement('div');
+    const label = document.createElement('p');
+    label.className = 'eyebrow';
+    label.textContent = 'Не уверены, с чего начать?';
+    const title = document.createElement('h2');
+    title.textContent = 'Начните с фотографий пола и короткого разговора';
+    const text = document.createElement('p');
+    text.textContent = 'Опишите состояние паркета, примерную площадь и приложите несколько фото. Иван подскажет, поможет ли ремонт, шлифовка или лучше рассмотреть другой вариант.';
+    const actions = document.createElement('div');
+    actions.className = 'inline-lead__actions';
+    const phone = document.createElement('a');
+    phone.className = 'btn btn--primary';
+    phone.href = 'tel:+79009267929';
+    phone.textContent = 'Позвонить Ивану';
+    const request = document.createElement('a');
+    request.className = 'btn btn--ghost';
+    request.href = '/#request';
+    request.textContent = 'Оценить по фото';
+
+    content.append(label, title, text);
+    actions.append(phone, request);
+    card.append(content, actions);
+    container.appendChild(card);
+    section.appendChild(container);
+
+    const after = document.querySelector('.subhero') || main.firstElementChild;
+    if (after) after.insertAdjacentElement('afterend', section);
+    else main.prepend(section);
+
+    phone.addEventListener('click', () => emitLead({ type: 'phone-inline', href: phone.href }));
+    request.addEventListener('click', () => emitLead({ type: 'request-inline', href: request.href }));
+  };
+
+  addInlineLead();
+
   const form = document.getElementById('request-form');
   if (form) {
     const status = document.getElementById('request-status');
     const serviceField = document.getElementById('request-service');
+    const locationField = document.getElementById('request-location');
+    const areaField = document.getElementById('request-area');
     const taskField = document.getElementById('request-task');
+    const callbackField = document.getElementById('request-callback');
+    const contactField = document.getElementById('request-contact');
 
     if (status) {
       status.setAttribute('role', 'status');
@@ -283,9 +344,11 @@
       event.preventDefault();
 
       const service = serviceField?.value.trim() || 'не указана';
-      const locationValue = document.getElementById('request-location')?.value.trim() || 'не указан';
+      const locationValue = locationField?.value.trim() || 'не указан';
+      const area = areaField?.value.trim() || 'не указана';
       const task = taskField?.value.trim() || '';
-      const contact = document.getElementById('request-contact')?.value.trim() || 'не указан';
+      const callback = callbackField?.value.trim() || 'не указано';
+      const contact = contactField?.value.trim() || 'не указан';
 
       if (!task) {
         if (status) status.textContent = 'Опишите, что нужно сделать.';
@@ -304,7 +367,9 @@
         'Здравствуйте, Иван!',
         `Услуга: ${service}`,
         `Район/населённый пункт: ${locationValue}`,
+        `Площадь/объём: ${area}`,
         `Задача: ${task}`,
+        `Когда удобно связаться: ${callback}`,
         `Контакт: ${contact}`,
         'Фотографии отправлю отдельными сообщениями: общий вид, проблемное место крупно, доступ к объекту и примерный объём.',
         '',
@@ -332,7 +397,7 @@
         if (status) status.textContent = 'Скопируйте готовый текст из поля ниже.';
       }
 
-      emitLead({ type: 'request-copy', service });
+      emitLead({ type: 'request-copy', service, area, callback: callback !== 'не указано' });
     });
   }
 
