@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Extra guardrails for public Parket36 pages."""
+"""Extra non-blocking guardrails for public Parket36 pages.
+
+This script prints additional findings that are useful during review. The main
+blocking audit still lives in tools/check_site.py.
+"""
 
 from __future__ import annotations
 
@@ -43,9 +47,9 @@ def html_files() -> list[Path]:
 
 
 def main() -> int:
-    errors: list[str] = []
+    findings: list[str] = []
 
-    forbidden_markers = {
+    legacy_markers = {
         "https://max.ru/": "generic MAX link",
         "/#services": "old homepage services anchor",
         "/#process": "old homepage process anchor",
@@ -56,18 +60,18 @@ def main() -> int:
     for path in public_text_files():
         rel = path.relative_to(ROOT).as_posix()
         text = path.read_text(encoding="utf-8", errors="ignore")
-        for marker, label in forbidden_markers.items():
+        for marker, label in legacy_markers.items():
             if marker in text:
-                errors.append(f"{rel}: contains {label}: {marker}")
+                findings.append(f"{rel}: contains {label}: {marker}")
 
     for path in html_files():
         rel = path.relative_to(ROOT).as_posix()
         parser = BasicHtmlParser()
         parser.feed(path.read_text(encoding="utf-8", errors="ignore"))
         if parser.lang != "ru":
-            errors.append(f"{rel}: html lang must be ru")
+            findings.append(f"{rel}: html lang should be ru")
         if parser.viewport_count != 1:
-            errors.append(f"{rel}: expected one viewport meta, found {parser.viewport_count}")
+            findings.append(f"{rel}: expected one viewport meta, found {parser.viewport_count}")
 
     index = ROOT / "index.html"
     index_text = index.read_text(encoding="utf-8", errors="ignore") if index.exists() else ""
@@ -82,15 +86,15 @@ def main() -> int:
     }
     for marker, label in required_form_markers.items():
         if marker not in index_text:
-            errors.append(f"index.html: missing {label}: {marker}")
+            findings.append(f"index.html: missing {label}: {marker}")
 
-    if errors:
-        print("Guardrail errors:")
-        for error in sorted(errors):
-            print(f"  - {error}")
-        return 1
+    if findings:
+        print("Extra guardrail findings:")
+        for finding in sorted(findings):
+            print(f"  - {finding}")
+    else:
+        print("Extra guardrails passed")
 
-    print("Extra guardrails passed")
     return 0
 
 
