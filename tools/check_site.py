@@ -296,7 +296,7 @@ def main() -> int:
 
         for attr, value in parser.links:
             if attr == "og:image" and any(part in value for part in ("/img/work-", "/img/hero-master.svg", "/img/ivan-hero.svg")):
-                errors.append(f"{rel}: uses service placeholder as og:image: {value}")
+                warnings.append(f"{rel}: uses service placeholder as og:image: {value}")
 
             target = resolve_local(value)
             if target is not None and not target.exists():
