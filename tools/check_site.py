@@ -277,6 +277,8 @@ def main() -> int:
             "wa.me": "legacy WhatsApp URL",
             "Ключевые запросы по услуге": "visible SEO keyword block",
             "/#process": "obsolete process anchor",
+            "/#services": "obsolete services anchor",
+            "https://max.ru/": "generic MAX link",
         }
         for needle, label in hard_forbidden.items():
             if needle in text:
@@ -292,12 +294,9 @@ def main() -> int:
         if rel != "uslugi/master-na-chas/index.html" and "/uslugi/master-na-chas/" in text:
             errors.append(f"{rel}: links to consolidated master-na-chas page")
 
-        if "https://max.ru/" in text:
-            warnings.append(f"{rel}: generic MAX link is still used")
-
         for attr, value in parser.links:
             if attr == "og:image" and any(part in value for part in ("/img/work-", "/img/hero-master.svg", "/img/ivan-hero.svg")):
-                warnings.append(f"{rel}: uses service placeholder as og:image: {value}")
+                errors.append(f"{rel}: uses service placeholder as og:image: {value}")
 
             target = resolve_local(value)
             if target is not None and not target.exists():
