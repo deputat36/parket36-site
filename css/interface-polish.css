@@ -341,6 +341,61 @@
   z-index: 1;
 }
 
+.service-card a,
+.proof-card,
+.scenario-grid article {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #fff, #fffaf4);
+}
+
+.service-card a::after {
+  content: "→";
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff0dc;
+  color: var(--wood);
+  font-weight: 900;
+  opacity: .78;
+  transition: transform .18s ease, opacity .18s ease;
+}
+
+.service-card a:hover::after {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+.service-card__icon {
+  border: 1px solid rgba(111, 70, 40, .12);
+  background: linear-gradient(135deg, #fff0dc, #f1dfca);
+  color: #5c361e;
+  font-weight: 900;
+  box-shadow: 0 10px 20px rgba(111, 70, 40, .08);
+}
+
+.service-card h3,
+.scenario-grid h3,
+.proof-card strong {
+  color: #3a2416;
+}
+
+.proof-card strong,
+.scenario-grid h3 {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.proof-card,
+.scenario-grid article {
+  min-height: 100%;
+}
+
 @media (min-width: 641px) {
   .mobile-cta {
     display: none !important;
@@ -418,5 +473,10 @@
 
   .final-cta .hero__actions .btn {
     width: 100%;
+  }
+
+  .service-card a::after {
+    right: 16px;
+    top: 16px;
   }
 }
