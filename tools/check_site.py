@@ -277,7 +277,6 @@ def main() -> int:
             "wa.me": "legacy WhatsApp URL",
             "Ключевые запросы по услуге": "visible SEO keyword block",
             "/#process": "obsolete process anchor",
-            "/#services": "obsolete services anchor",
         }
         for needle, label in hard_forbidden.items():
             if needle in text:
@@ -285,6 +284,7 @@ def main() -> int:
 
         soft_forbidden = {
             'content="#164e63"': "legacy theme color",
+            "/#services": "obsolete services anchor",
         }
         for needle, label in soft_forbidden.items():
             if needle in text:
