@@ -28,6 +28,7 @@ PUBLIC_DIRS = {
     "politika",
     "kak-rabotaem",
     "voprosy-i-otvety",
+    "zayavka",
 }
 PUBLIC_FILES = {
     "index.html",
