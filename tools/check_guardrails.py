@@ -29,6 +29,28 @@ SUPPLEMENTAL_SERVICE_PAGES = {
     "uslugi/otdelka/",
 }
 
+FOCUS_PAGE_PROMOTED_MARKERS = {
+    "index.html": {
+        ">Муж на час<": "homepage should not promote husband-for-an-hour as a card or option",
+        ">Мелкий ремонт<": "homepage should not promote small repairs as a card or option",
+        ">Сборка мебели<": "homepage should not promote furniture assembly as a separate option",
+        ">Электрика<": "homepage should not promote electrical work as a separate option",
+        ">Сантехника<": "homepage should not promote plumbing as a separate option",
+        ">Отделка<": "homepage should not promote finishing as a separate option",
+        ">Демонтаж / вывоз<": "homepage should not promote demolition/removal as a separate option",
+    },
+    "uslugi/index.html": {
+        ">Муж на час<": "services index should not promote husband-for-an-hour as a category",
+        ">Мелкий ремонт<": "services index should not promote small repairs as a category",
+        ">Сборка мебели<": "services index should not promote furniture assembly as a category",
+        ">Электрика<": "services index should not promote electrical work as a category",
+        ">Сантехника<": "services index should not promote plumbing as a category",
+        ">Отделка<": "services index should not promote finishing as a category",
+        ">Переезды<": "services index should not promote moving as a category",
+        ">Вывоз мусора<": "services index should not promote trash removal as a category",
+    },
+}
+
 
 class BasicHtmlParser(HTMLParser):
     def __init__(self) -> None:
@@ -113,6 +135,16 @@ def main() -> int:
     for marker, label in required_form_markers.items():
         if marker not in index_text:
             findings.append(f"index.html: missing {label}: {marker}")
+
+    for rel, markers in FOCUS_PAGE_PROMOTED_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            findings.append(f"{rel}: focus page is missing")
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for marker, label in markers.items():
+            if marker in text:
+                findings.append(f"{rel}: {label}: {marker}")
 
     sitemap_urls = extract_sitemap_urls()
     for page_path in sorted(SUPPLEMENTAL_SERVICE_PAGES):
