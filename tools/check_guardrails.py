@@ -9,11 +9,25 @@ from __future__ import annotations
 
 from html.parser import HTMLParser
 from pathlib import Path
+import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
 PUBLIC_SUFFIXES = {".html", ".css", ".js", ".json", ".xml", ".txt"}
+SITE_URL = "https://parket36.ru"
+
+SUPPLEMENTAL_SERVICE_PAGES = {
+    "uslugi/muzh-na-chas/",
+    "uslugi/melkiy-remont/",
+    "uslugi/elektrika/",
+    "uslugi/santehnika/",
+    "uslugi/vyvoz-musora/",
+    "uslugi/demontazh/",
+    "uslugi/pereezdy/",
+    "uslugi/sborka-mebeli/",
+    "uslugi/otdelka/",
+}
 
 
 class BasicHtmlParser(HTMLParser):
@@ -44,6 +58,18 @@ def public_text_files() -> list[Path]:
 
 def html_files() -> list[Path]:
     return [path for path in public_text_files() if path.suffix.lower() == ".html"]
+
+
+def html_path_for_url_path(url_path: str) -> Path:
+    return ROOT / url_path / "index.html"
+
+
+def extract_sitemap_urls() -> set[str]:
+    sitemap = ROOT / "sitemap.xml"
+    if not sitemap.exists():
+        return set()
+    text = sitemap.read_text(encoding="utf-8", errors="ignore")
+    return set(re.findall(r"<loc>(.*?)</loc>", text))
 
 
 def main() -> int:
@@ -87,6 +113,22 @@ def main() -> int:
     for marker, label in required_form_markers.items():
         if marker not in index_text:
             findings.append(f"index.html: missing {label}: {marker}")
+
+    sitemap_urls = extract_sitemap_urls()
+    for page_path in sorted(SUPPLEMENTAL_SERVICE_PAGES):
+        html_path = html_path_for_url_path(page_path)
+        rel = html_path.relative_to(ROOT).as_posix()
+        if not html_path.exists():
+            findings.append(f"{rel}: supplemental service page is missing")
+            continue
+
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
+        if '<meta name="robots" content="noindex, follow">' not in text:
+            findings.append(f"{rel}: supplemental service page should be noindex, follow")
+
+        url = f"{SITE_URL}/{page_path}"
+        if url in sitemap_urls:
+            findings.append(f"sitemap.xml: supplemental service page should not be listed: {url}")
 
     if findings:
         print("Extra guardrail findings:")
