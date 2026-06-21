@@ -1,9 +1,10 @@
-.brand{position:relative;gap:0;min-width:232px;align-items:center}
-.brand::before{content:"";display:block;width:232px;height:60px;flex:0 0 auto;background:url('/img/logo-parket36-header.svg') center/contain no-repeat}
+.brand{position:relative;gap:0;min-width:248px;align-items:center;flex:0 0 auto}
+.brand::before{content:"";display:block;width:248px;height:50px;flex:0 0 auto;background:url('/img/logo-parket36-header.svg') center/contain no-repeat}
 .brand .brand__mark,.brand>span:not(.brand__mark){position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}
-.topbar .brand::before{width:232px;height:60px}
-.footer .brand{display:inline-flex;min-width:230px;margin-bottom:16px;padding:10px 12px;border-radius:18px;background:#fff;box-shadow:0 10px 28px rgba(0,0,0,.18)}
-.footer .brand::before{width:206px;height:54px}
+.topbar .brand::before{width:248px;height:50px}
+.footer .brand{display:inline-flex;min-width:250px;margin-bottom:16px;padding:10px 12px;border-radius:18px;background:#fff;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.footer .brand::before{width:226px;height:46px}
 .footer .brand .brand__mark,.footer .brand>span:not(.brand__mark){color:#1b120c}
-@media(max-width:1000px){.brand{min-width:198px}.topbar .brand::before{width:198px;height:52px}.footer .brand::before{width:190px;height:50px}}
-@media(max-width:640px){.brand{min-width:174px}.topbar .brand::before{width:174px;height:46px}.footer .brand{min-width:202px}.footer .brand::before{width:178px;height:46px}}
+@media(max-width:1100px){.brand{min-width:220px}.topbar .brand::before{width:220px;height:45px}.nav{gap:13px}.nav a{font-size:13px}}
+@media(max-width:1000px){.brand{min-width:214px}.topbar .brand::before{width:214px;height:43px}.footer .brand::before{width:204px;height:42px}}
+@media(max-width:640px){.brand{min-width:178px}.topbar .brand::before{width:178px;height:38px}.footer .brand{min-width:206px}.footer .brand::before{width:182px;height:40px}}
