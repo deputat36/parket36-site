@@ -78,6 +78,7 @@
   ensureStylesheet('/css/scroll-progress.css');
   ensureStylesheet('/css/accessibility-polish.css');
   ensureStylesheet('/css/cta-polish.css');
+  ensureStylesheet('/css/logo-brand.css');
 
   if (!document.querySelector('link[rel="manifest"]')) {
     const manifest = document.createElement('link');
@@ -319,8 +320,8 @@
 
     document.querySelectorAll('[data-request-template]').forEach(button => {
       button.addEventListener('click', () => {
-        const template = button.dataset.requestTemplate || '';
-        const service = button.dataset.requestService || '';
+        const template = button.datasetRequestTemplate || button.dataset.requestTemplate || '';
+        const service = button.datasetRequestService || button.dataset.requestService || '';
 
         if (serviceField && service) {
           const option = Array.from(serviceField.options).find(item => item.value === service || item.textContent === service);
