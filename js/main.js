@@ -322,6 +322,8 @@
     const serviceField = document.getElementById('request-service');
     const locationField = document.getElementById('request-location');
     const areaField = document.getElementById('request-area');
+    const photosField = document.getElementById('request-photos');
+    const videoField = document.getElementById('request-video');
     const taskField = document.getElementById('request-task');
     const callbackField = document.getElementById('request-callback');
     const contactField = document.getElementById('request-contact');
@@ -348,7 +350,7 @@
           taskField.setSelectionRange(taskField.value.length, taskField.value.length);
         }
 
-        if (status) status.textContent = 'Шаблон добавлен. Уточните детали и скопируйте заявку.';
+        if (status) status.textContent = 'Шаблон добавлен. Уточните детали и скопируйте текст для оценки.';
         emitLead({ type: 'request-template', service: service || 'не указана' });
       });
     });
@@ -359,6 +361,8 @@
       const service = serviceField?.value.trim() || 'не указана';
       const locationValue = locationField?.value.trim() || 'не указан';
       const area = areaField?.value.trim() || 'не указана';
+      const photos = photosField?.value.trim() || 'не указано';
+      const video = videoField?.value.trim() || 'не указано';
       const task = taskField?.value.trim() || '';
       const callback = callbackField?.value.trim() || 'не указано';
       const contact = contactField?.value.trim() || 'не указан';
@@ -381,10 +385,12 @@
         `Услуга: ${service}`,
         `Район/населённый пункт: ${locationValue}`,
         `Площадь/объём: ${area}`,
+        `Фото: ${photos}`,
+        `Видео скрипа/подвижности: ${video}`,
         `Задача: ${task}`,
         `Когда удобно связаться: ${callback}`,
         `Контакт: ${contact}`,
-        'Фотографии отправлю отдельными сообщениями: общий вид, проблемное место крупно, доступ к объекту и примерный объём.',
+        'Фотографии отправлю отдельными сообщениями: общий вид, проблемное место крупно, зоны у стен и порогов, доступ к объекту и примерный объём.',
         '',
         ...attributionLines
       ].join('\n');
@@ -392,7 +398,7 @@
       try {
         await navigator.clipboard.writeText(text);
         if (status) {
-          status.textContent = 'Заявка скопирована. Её можно вставить в сообщение или продиктовать по телефону.';
+          status.textContent = 'Текст для оценки скопирован. Его можно вставить в сообщение или продиктовать по телефону.';
         }
       } catch {
         let fallback = form.querySelector('[data-request-fallback]');
@@ -401,7 +407,7 @@
           fallback.dataset.requestFallback = 'true';
           fallback.rows = 10;
           fallback.readOnly = true;
-          fallback.setAttribute('aria-label', 'Готовый текст заявки');
+          fallback.setAttribute('aria-label', 'Готовый текст для оценки');
           form.appendChild(fallback);
         }
         fallback.value = text;
@@ -410,7 +416,7 @@
         if (status) status.textContent = 'Скопируйте готовый текст из поля ниже.';
       }
 
-      emitLead({ type: 'request-copy', service, area, callback: callback !== 'не указано' });
+      emitLead({ type: 'request-copy', service, area, photos, video, callback: callback !== 'не указано' });
     });
   }
 
