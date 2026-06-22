@@ -13,6 +13,7 @@ from collections import defaultdict
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
+import json
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -22,6 +23,7 @@ DOMAIN = "https://parket36.ru"
 IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
 CURRENT_THEME = "#6f4628"
 PUBLIC_TEXT_SUFFIXES = {".html", ".css", ".js", ".json", ".xml", ".txt"}
+INTERNAL_WORKING_PATHS = {"/foto-dlya-sajta/", "/portfolio/shablon-kejsa/"}
 
 
 class PageParser(HTMLParser):
@@ -190,6 +192,15 @@ def check_repository_safety(errors: list[str]) -> None:
         if path.exists():
             errors.append(f"Unexpected legacy/CRM path is present: {path.relative_to(ROOT)}")
 
+    settings_path = ROOT / "data" / "site.json"
+    try:
+        settings = json.loads(settings_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"data/site.json is not readable JSON: {exc}")
+    else:
+        if settings.get("default_request_path") != "/zayavka/":
+            errors.append("data/site.json: default_request_path must be /zayavka/")
+
     forbidden_public_terms = {
         "installationJobCardV1": "CRM installation card component",
         "leader_installation_jobs": "CRM leader database table",
@@ -209,6 +220,7 @@ def main() -> int:
     errors: list[str] = []
     warnings: list[str] = []
     indexable_urls: set[str] = set()
+    noindex_urls: set[str] = set()
     html_files = iter_html_files()
     titles: dict[str, list[str]] = defaultdict(list)
     canonicals_seen: dict[str, list[str]] = defaultdict(list)
@@ -226,6 +238,9 @@ def main() -> int:
         parser.feed(text)
         noindex = "noindex" in parser.robots
         title = normalized_title(parser)
+
+        if noindex and rel != "404.html":
+            noindex_urls.add(page_url(path))
 
         if parser.title_count != 1:
             errors.append(f"{rel}: expected one <title>, found {parser.title_count}")
@@ -300,6 +315,10 @@ def main() -> int:
             if attr == "og:image" and any(part in value for part in ("/img/work-", "/img/hero-master.svg", "/img/ivan-hero.svg")):
                 warnings.append(f"{rel}: uses service placeholder as og:image: {value}")
 
+            parsed_link = urlsplit(value.strip())
+            if attr == "href" and not noindex and parsed_link.path in INTERNAL_WORKING_PATHS:
+                errors.append(f"{rel}: public page links to internal working page: {parsed_link.path}")
+
             target = resolve_local(value)
             if target is not None and not target.exists():
                 errors.append(f"{rel}: broken local {attr}={value} -> {target.relative_to(ROOT)}")
@@ -335,7 +354,9 @@ def main() -> int:
 
     for url in sorted(indexable_urls - sitemap_urls):
         errors.append(f"Indexable page is absent from sitemap: {url}")
-    for url in sorted(sitemap_urls - indexable_urls):
+    for url in sorted(noindex_urls & sitemap_urls):
+        errors.append(f"Noindex page must not be present in sitemap: {url}")
+    for url in sorted(sitemap_urls - indexable_urls - noindex_urls):
         target = resolve_local(url)
         if target is None or not target.exists():
             errors.append(f"Sitemap URL does not resolve to a page: {url}")
