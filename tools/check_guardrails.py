@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Extra non-blocking guardrails for public Parket36 pages.
+"""Extra blocking guardrails for public Parket36 pages.
 
-This script prints additional findings that are useful during review. The main
-blocking audit still lives in tools/check_site.py.
+This script catches focused project regressions that are useful to keep separate
+from the broader static audit in tools/check_site.py.
 """
 
 from __future__ import annotations
@@ -185,9 +185,9 @@ def main() -> int:
         print("Extra guardrail findings:")
         for finding in sorted(findings):
             print(f"  - {finding}")
-    else:
-        print("Extra guardrails passed")
+        return 1
 
+    print("Extra guardrails passed")
     return 0
 
 
