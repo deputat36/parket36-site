@@ -1,264 +1,320 @@
 (() => {
-  const root = document.documentElement;
-  const storageKey = 'parket36-theme';
-  const menuButton = document.querySelector('[data-menu-toggle]');
-  const nav = document.querySelector('[data-nav]');
-  const themeButtons = document.querySelectorAll('[data-theme-option]');
-  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  const ATTRIBUTION_KEY = 'parket36_attribution';
 
-  const setThemeMeta = theme => {
-    if (!themeMeta) return;
-    themeMeta.setAttribute('content', theme === 'dark' ? '#1f1712' : '#6f4628');
-  };
-
-  const applyTheme = theme => {
-    root.dataset.theme = theme;
-    root.style.colorScheme = theme;
-    setThemeMeta(theme);
-    themeButtons.forEach(button => {
-      const active = button.dataset.themeOption === theme;
-      button.classList.toggle('active', active);
-      button.setAttribute('aria-pressed', active ? 'true' : 'false');
-    });
-  };
-
-  const storedTheme = localStorage.getItem(storageKey);
-  const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  applyTheme(storedTheme || preferredTheme);
-
-  themeButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const theme = button.dataset.themeOption || 'light';
-      localStorage.setItem(storageKey, theme);
-      applyTheme(theme);
-    });
-  });
-
-  if (menuButton && nav) {
-    menuButton.addEventListener('click', () => {
-      const isOpen = nav.classList.toggle('open');
-      menuButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-
-    nav.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        nav.classList.remove('open');
-        menuButton.setAttribute('aria-expanded', 'false');
-      });
-    });
-  }
-
-  const phoneLinks = document.querySelectorAll('a[href^="tel:"]');
-  const attribution = {
-    source: new URLSearchParams(window.location.search).get('utm_source') || document.referrer || 'прямой заход',
-    medium: new URLSearchParams(window.location.search).get('utm_medium') || '',
-    campaign: new URLSearchParams(window.location.search).get('utm_campaign') || '',
-    landing: window.location.pathname
-  };
-
-  const emitLead = detail => {
-    window.dispatchEvent(new CustomEvent('parket36:lead', { detail: { ...detail, attribution } }));
-  };
-
-  phoneLinks.forEach(link => {
-    link.addEventListener('click', () => emitLead({ type: 'phone-click', label: link.textContent.trim() }));
-  });
-
-  document.querySelectorAll('[data-copy-phone]').forEach(button => {
-    button.addEventListener('click', async () => {
-      const phone = button.dataset.copyPhone || '+79009267929';
-      try {
-        await navigator.clipboard.writeText(phone);
-        button.textContent = 'Телефон скопирован';
-        setTimeout(() => { button.textContent = 'Скопировать номер'; }, 1800);
-        emitLead({ type: 'phone-copy' });
-      } catch {
-        button.textContent = phone;
-      }
-    });
-  });
-
-  document.querySelectorAll('[data-faq-question]').forEach(button => {
-    const item = button.closest('.faq__item');
-    const answer = item?.querySelector('.faq__answer');
-    if (!item || !answer) return;
-    button.setAttribute('aria-expanded', 'false');
-    button.addEventListener('click', () => {
-      const isOpen = item.classList.toggle('open');
-      button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-  });
-
-  document.querySelectorAll('[data-filter]').forEach(group => {
-    const buttons = group.querySelectorAll('button[data-filter-value]');
-    const cards = document.querySelectorAll('[data-filter-card]');
-    buttons.forEach(button => {
-      button.addEventListener('click', () => {
-        const value = button.dataset.filterValue || 'all';
-        buttons.forEach(item => item.classList.toggle('active', item === button));
-        cards.forEach(card => {
-          const tags = (card.dataset.filterCard || '').split(',').map(item => item.trim());
-          card.hidden = value !== 'all' && !tags.includes(value);
-        });
-      });
-    });
-  });
-
-  document.querySelectorAll('[data-tabs]').forEach(tabs => {
-    const buttons = tabs.querySelectorAll('[data-tab-target]');
-    const panels = document.querySelectorAll('[data-tab-panel]');
-    buttons.forEach(button => {
-      button.addEventListener('click', () => {
-        const target = button.dataset.tabTarget;
-        buttons.forEach(item => item.classList.toggle('active', item === button));
-        panels.forEach(panel => {
-          panel.hidden = panel.dataset.tabPanel !== target;
-        });
-      });
-    });
-  });
-
-  const costInputs = document.querySelectorAll('[data-cost-input]');
-  const costOutput = document.querySelector('[data-cost-output]');
-  const costNote = document.querySelector('[data-cost-note]');
-  const formatRub = value => new Intl.NumberFormat('ru-RU').format(Math.round(value));
-
-  const calcCost = () => {
-    if (!costOutput || !costInputs.length) return;
-    const area = Number(document.querySelector('[data-cost-input="area"]')?.value || 0);
-    const service = document.querySelector('[data-cost-input="service"]')?.value || 'cycle';
-    const finish = document.querySelector('[data-cost-input="finish"]')?.value || 'lacquer';
-    const repair = document.querySelector('[data-cost-input="repair"]')?.checked;
-    const furniture = document.querySelector('[data-cost-input="furniture"]')?.checked;
-
-    const serviceBase = {
-      cycle: 520,
-      restore: 760,
-      board: 480,
-      install: 950,
-      laminate: 420
-    }[service] || 520;
-
-    const finishBase = {
-      lacquer: 260,
-      oil: 310,
-      wax: 280,
-      none: 0
-    }[finish] || 0;
-
-    let total = area * (serviceBase + finishBase);
-    if (repair) total += Math.max(area * 180, 2500);
-    if (furniture) total += Math.max(area * 90, 1500);
-
-    const minimum = service === 'laminate' ? 6000 : 9000;
-    total = Math.max(total, area > 0 ? minimum : 0);
-
-    costOutput.textContent = area > 0 ? `от ${formatRub(total)} ₽` : 'укажите площадь';
-    if (costNote) {
-      costNote.textContent = area > 0
-        ? 'Это ориентир для первичного разговора. Итог зависит от состояния пола, материалов и доступа.'
-        : 'Калькулятор не заменяет осмотр, но помогает понять порядок бюджета.';
+  const safeSessionGet = key => {
+    try {
+      return sessionStorage.getItem(key);
+    } catch {
+      return null;
     }
   };
 
-  costInputs.forEach(input => input.addEventListener('input', calcCost));
-  calcCost();
+  const safeSessionSet = (key, value) => {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch {
+      // The site remains fully functional when browser storage is unavailable.
+    }
+  };
 
-  document.querySelectorAll('[data-gallery]').forEach(gallery => {
-    const main = gallery.querySelector('[data-gallery-main]');
-    const buttons = gallery.querySelectorAll('[data-gallery-thumb]');
-    buttons.forEach(button => {
-      button.addEventListener('click', () => {
-        if (!main) return;
-        const src = button.dataset.galleryThumb;
-        const alt = button.querySelector('img')?.alt || 'Пример работы';
-        main.setAttribute('src', src);
-        main.setAttribute('alt', alt);
-        buttons.forEach(item => item.classList.toggle('active', item === button));
-      });
+  const prefersReducedMotion = () => {
+    try {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      return false;
+    }
+  };
+
+  const referrerHost = (() => {
+    if (!document.referrer) return '';
+    try {
+      return new URL(document.referrer).hostname;
+    } catch {
+      return '';
+    }
+  })();
+
+  const createAttribution = () => {
+    const params = new URLSearchParams(location.search);
+    const stored = safeSessionGet(ATTRIBUTION_KEY);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        // Ignore damaged session data and create a new attribution record.
+      }
+    }
+
+    const attribution = {
+      source: params.get('utm_source') || referrerHost || 'direct',
+      medium: params.get('utm_medium') || '',
+      campaign: params.get('utm_campaign') || '',
+      content: params.get('utm_content') || '',
+      term: params.get('utm_term') || '',
+      landing: location.pathname,
+      firstSeen: new Date().toISOString()
+    };
+
+    safeSessionSet(ATTRIBUTION_KEY, JSON.stringify(attribution));
+    return attribution;
+  };
+
+  const attribution = createAttribution();
+  window.parket36Attribution = Object.freeze({ ...attribution });
+
+  const ensureStylesheet = href => {
+    if (document.querySelector(`link[href="${href}"]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  };
+
+  ensureStylesheet('/css/enhancements.css');
+  ensureStylesheet('/css/photo-brief.css');
+  ensureStylesheet('/css/interface-polish.css');
+  ensureStylesheet('/css/mobile-menu.css');
+  ensureStylesheet('/css/typography-polish.css');
+  ensureStylesheet('/css/scroll-progress.css');
+  ensureStylesheet('/css/accessibility-polish.css');
+  ensureStylesheet('/css/cta-polish.css');
+  ensureStylesheet('/css/logo-brand.css');
+
+  if (!document.querySelector('link[rel="manifest"]')) {
+    const manifest = document.createElement('link');
+    manifest.rel = 'manifest';
+    manifest.href = '/manifest.webmanifest';
+    document.head.appendChild(manifest);
+  }
+
+  document.querySelectorAll('.side-card > img[src*="/img/"]').forEach(img => {
+    const card = img.closest('.side-card');
+    if (!card) return;
+    card.classList.add('side-card--photo-plan');
+    card.dataset.photoSlot = img.getAttribute('alt') || 'Место для реального фото объекта';
+    img.dataset.placeholderImage = 'true';
+    img.setAttribute('aria-hidden', 'true');
+  });
+
+  document.querySelectorAll('.services-grid').forEach(grid => {
+    const icons = Array.from(grid.querySelectorAll('.service-card__icon'));
+    icons.forEach((icon, index) => {
+      const value = (icon.textContent || '').trim();
+      if (/^[0-9A-Za-zА-Яа-я]{1,3}$/.test(value)) return;
+      icon.textContent = String(index + 1).padStart(2, '0');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.title = 'Номер карточки';
     });
   });
 
-  const compareSliders = document.querySelectorAll('[data-compare]');
-  compareSliders.forEach(compare => {
-    const range = compare.querySelector('input[type="range"]');
-    const after = compare.querySelector('.compare__after');
-    if (!range || !after) return;
-    const update = () => {
-      after.style.clipPath = `inset(0 ${100 - Number(range.value)}% 0 0)`;
-    };
-    range.addEventListener('input', update);
-    update();
+  const main = document.querySelector('main');
+  if (main) {
+    main.id = main.id || 'main-content';
+    if (!document.querySelector('.skip-link')) {
+      const skipLink = document.createElement('a');
+      skipLink.className = 'skip-link';
+      skipLink.href = `#${main.id}`;
+      skipLink.textContent = 'Перейти к содержанию';
+      document.body.prepend(skipLink);
+    }
+  }
+
+  const normalizePath = value => {
+    if (!value) return '/';
+    const path = value.split('#')[0].split('?')[0] || '/';
+    if (path === '/') return '/';
+    return path.endsWith('/') ? path : `${path}/`;
+  };
+
+  const toggle = document.querySelector('[data-menu-toggle]');
+  const nav = document.querySelector('[data-nav]');
+
+  if (nav) {
+    const currentPath = normalizePath(location.pathname);
+    nav.querySelectorAll('a').forEach(link => {
+      let linkPath;
+      try {
+        linkPath = normalizePath(new URL(link.getAttribute('href') || '/', location.origin).pathname);
+      } catch {
+        return;
+      }
+
+      if (linkPath === currentPath || (linkPath !== '/' && currentPath.startsWith(linkPath))) {
+        link.classList.add('active');
+        link.setAttribute('aria-current', 'page');
+      }
+    });
+  }
+
+  const closeMenu = () => {
+    if (!toggle || !nav) return;
+    nav.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
+  };
+
+  if (toggle && nav) {
+    nav.id = nav.id || 'site-navigation';
+    toggle.setAttribute('aria-controls', nav.id);
+    toggle.setAttribute('aria-expanded', 'false');
+
+    toggle.addEventListener('click', () => {
+      const opened = nav.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(opened));
+    });
+
+    nav.addEventListener('click', event => {
+      if (event.target.closest('a')) closeMenu();
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeMenu();
+    });
+  }
+
+  const scrollProgress = document.createElement('div');
+  scrollProgress.className = 'scroll-progress';
+  scrollProgress.setAttribute('aria-hidden', 'true');
+
+  const scrollProgressBar = document.createElement('span');
+  scrollProgressBar.className = 'scroll-progress__bar';
+  scrollProgress.appendChild(scrollProgressBar);
+  document.body.appendChild(scrollProgress);
+
+  const updateScrollProgress = () => {
+    const scrollable = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const progress = Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100));
+    scrollProgressBar.style.width = `${progress}%`;
+  };
+
+  const backToTop = document.createElement('button');
+  backToTop.type = 'button';
+  backToTop.className = 'back-to-top';
+  backToTop.textContent = '↑';
+  backToTop.setAttribute('aria-label', 'Вернуться к началу страницы');
+  document.body.appendChild(backToTop);
+
+  const setBackToTopVisibility = () => {
+    backToTop.classList.toggle('is-visible', window.scrollY > 650);
+  };
+
+  let scrollTicking = false;
+  const updateScrollUi = () => {
+    updateScrollProgress();
+    setBackToTopVisibility();
+  };
+
+  window.addEventListener('scroll', () => {
+    if (scrollTicking) return;
+    scrollTicking = true;
+    requestAnimationFrame(() => {
+      updateScrollUi();
+      scrollTicking = false;
+    });
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    updateScrollUi();
+  }, { passive: true });
+
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   });
 
-  const checklist = document.querySelector('[data-checklist]');
-  if (checklist) {
-    const output = document.querySelector('[data-checklist-output]');
-    const update = () => {
-      const checked = checklist.querySelectorAll('input:checked').length;
-      const total = checklist.querySelectorAll('input').length;
-      if (output) output.textContent = `${checked} из ${total}`;
-    };
-    checklist.addEventListener('change', update);
-    update();
-  }
+  updateScrollUi();
 
-  const guideBuilder = document.querySelector('[data-guide-builder]');
-  if (guideBuilder) {
-    const output = document.querySelector('[data-guide-output]');
-    const render = () => {
-      const room = guideBuilder.querySelector('[name="room"]')?.value || 'комната';
-      const condition = guideBuilder.querySelector('[name="condition"]')?.value || 'состояние пола';
-      const goal = guideBuilder.querySelector('[name="goal"]')?.value || 'нужен совет';
-      if (output) {
-        output.textContent = `Здравствуйте, Иван. Нужно посмотреть ${room}. Сейчас: ${condition}. Хотим понять: ${goal}. Фото общего вида и проблемных мест приложу.`;
+  const emitLead = detail => {
+    const payload = {
+      ...detail,
+      page: location.pathname,
+      attribution: { ...attribution }
+    };
+
+    window.dispatchEvent(new CustomEvent('parket36:lead', { detail: payload }));
+
+    if (typeof window.ym === 'function') {
+      const counterId = window.parket36MetrikaId;
+      if (counterId) {
+        try {
+          window.ym(counterId, 'reachGoal', detail.type, payload);
+        } catch {
+          // Analytics must never break the public site.
+        }
       }
-    };
-    guideBuilder.addEventListener('input', render);
-    render();
-  }
+    }
+  };
 
-  const routeQuiz = document.querySelector('[data-route-quiz]');
-  if (routeQuiz) {
-    const result = document.querySelector('[data-route-result]');
-    const answers = routeQuiz.querySelectorAll('input[type="radio"]');
-    const routes = {
-      dull: ['Циклёвка и новое покрытие', '/uslugi/ciklevka-parketa/'],
-      gaps: ['Реставрация паркета', '/uslugi/restavraciya-parketa/'],
-      board: ['Шлифовка дощатого пола', '/uslugi/shlifovka-doshchatogo-pola/'],
-      new: ['Укладка паркета', '/uslugi/ukladka-parketa/'],
-      finish: ['Подбор лака, масла или воска', '/uslugi/pokrytie-lakom-i-maslom/']
-    };
-    const update = () => {
-      const checked = routeQuiz.querySelector('input[type="radio"]:checked');
-      if (!checked || !result) return;
-      const [label, href] = routes[checked.value] || routes.dull;
-      result.innerHTML = `<strong>${label}</strong><span>Это предварительный маршрут. Иван уточнит состояние пола по фото или при осмотре.</span><a class="btn btn--primary" href="${href}">Открыть услугу</a>`;
-    };
-    answers.forEach(input => input.addEventListener('change', update));
-    update();
-  }
+  document.querySelectorAll('a[href^="tel:"]').forEach(link => {
+    link.addEventListener('click', () => emitLead({
+      type: 'phone',
+      href: link.getAttribute('href')
+    }));
+  });
 
-  const requestFlow = document.querySelector('[data-request-flow]');
-  if (requestFlow) {
-    const steps = Array.from(requestFlow.querySelectorAll('[data-request-step]'));
-    const nextButtons = requestFlow.querySelectorAll('[data-request-next]');
-    const prevButtons = requestFlow.querySelectorAll('[data-request-prev]');
-    const counter = requestFlow.querySelector('[data-request-counter]');
-    let current = 0;
+  document.querySelectorAll('a[href]').forEach(link => {
+    let url;
+    try {
+      url = new URL(link.getAttribute('href') || '', location.origin);
+    } catch {
+      return;
+    }
 
-    const showStep = index => {
-      current = Math.max(0, Math.min(index, steps.length - 1));
-      steps.forEach((step, stepIndex) => {
-        step.hidden = stepIndex !== current;
-      });
-      if (counter) counter.textContent = `${current + 1} из ${steps.length}`;
-    };
+    const isRequestAnchor = url.hash === '#request';
+    const isPhotoAssessmentPage = normalizePath(url.pathname) === '/zayavka/';
 
-    nextButtons.forEach(button => button.addEventListener('click', () => showStep(current + 1)));
-    prevButtons.forEach(button => button.addEventListener('click', () => showStep(current - 1)));
-    showStep(0);
-  }
+    if (!isRequestAnchor && !isPhotoAssessmentPage) return;
+
+    link.addEventListener('click', () => emitLead({
+      type: 'request-open',
+      href: link.getAttribute('href')
+    }));
+  });
+
+  const addInlineLead = () => {
+    if (!main || document.getElementById('request-form') || document.querySelector('.inline-lead')) return;
+    const currentPath = normalizePath(location.pathname);
+    if (!['/uslugi/', '/sovety/', '/resheniya/', '/portfolio/'].some(prefix => currentPath.startsWith(prefix))) return;
+
+    const section = document.createElement('section');
+    section.className = 'inline-lead';
+
+    const container = document.createElement('div');
+    container.className = 'container';
+    const card = document.createElement('div');
+    card.className = 'inline-lead__card';
+    const content = document.createElement('div');
+    const label = document.createElement('p');
+    label.className = 'eyebrow';
+    label.textContent = 'Не уверены, с чего начать?';
+    const title = document.createElement('h2');
+    title.textContent = 'Начните с фотографий пола и короткого разговора';
+    const text = document.createElement('p');
+    text.textContent = 'Опишите состояние паркета, примерную площадь и приложите несколько фото. Иван подскажет, поможет ли ремонт, шлифовка или лучше рассмотреть другой вариант.';
+    const actions = document.createElement('div');
+    actions.className = 'inline-lead__actions';
+    const phone = document.createElement('a');
+    phone.className = 'btn btn--primary';
+    phone.href = 'tel:+79009267929';
+    phone.textContent = 'Позвонить Ивану';
+    const request = document.createElement('a');
+    request.className = 'btn btn--ghost';
+    request.href = '/zayavka/';
+    request.textContent = 'Оценить по фото';
+
+    content.append(label, title, text);
+    actions.append(phone, request);
+    card.append(content, actions);
+    container.appendChild(card);
+    section.appendChild(container);
+
+    const after = document.querySelector('.subhero') || main.firstElementChild;
+    if (after) after.insertAdjacentElement('afterend', section);
+    else main.prepend(section);
+
+    phone.addEventListener('click', () => emitLead({ type: 'phone-inline', href: phone.href }));
+    request.addEventListener('click', () => emitLead({ type: 'request-inline', href: request.href }));
+  };
+
+  addInlineLead();
 
   const form = document.getElementById('request-form');
   if (form) {
