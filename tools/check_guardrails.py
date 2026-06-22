@@ -33,6 +33,14 @@ PUBLIC_ENTRY_PAGES = {
     "zayavka/": "photo assessment request page should stay public and indexable",
 }
 
+CTA_LABEL_GUARDRAIL_PAGES = {
+    "ceny/index.html",
+    "kontakty/index.html",
+    "sovety/kak-sfotografirovat-pol-dlya-ocenki/index.html",
+    "uslugi/index.html",
+    "uslugi/parket-i-poly/index.html",
+}
+
 FOCUS_PAGE_PROMOTED_MARKERS = {
     "index.html": {
         ">Муж на час<": "homepage should not promote husband-for-an-hour as a card or option",
@@ -53,6 +61,10 @@ FOCUS_PAGE_PROMOTED_MARKERS = {
         ">Переезды<": "services index should not promote moving as a category",
         ">Вывоз мусора<": "services index should not promote trash removal as a category",
     },
+}
+
+STALE_CTA_MARKERS = {
+    "Составить заявку": "key public page should use photo assessment CTA language",
 }
 
 
@@ -147,6 +159,16 @@ def main() -> int:
             continue
         text = path.read_text(encoding="utf-8", errors="ignore")
         for marker, label in markers.items():
+            if marker in text:
+                findings.append(f"{rel}: {label}: {marker}")
+
+    for rel in sorted(CTA_LABEL_GUARDRAIL_PAGES):
+        path = ROOT / rel
+        if not path.exists():
+            findings.append(f"{rel}: CTA guardrail page is missing")
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for marker, label in STALE_CTA_MARKERS.items():
             if marker in text:
                 findings.append(f"{rel}: {label}: {marker}")
 
