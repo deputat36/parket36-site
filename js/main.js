@@ -250,7 +250,19 @@
     }));
   });
 
-  document.querySelectorAll('a[href$="#request"], a[href="/#request"], a[href="#request"]').forEach(link => {
+  document.querySelectorAll('a[href]').forEach(link => {
+    let url;
+    try {
+      url = new URL(link.getAttribute('href') || '', location.origin);
+    } catch {
+      return;
+    }
+
+    const isRequestAnchor = url.hash === '#request';
+    const isPhotoAssessmentPage = normalizePath(url.pathname) === '/zayavka/';
+
+    if (!isRequestAnchor && !isPhotoAssessmentPage) return;
+
     link.addEventListener('click', () => emitLead({
       type: 'request-open',
       href: link.getAttribute('href')
@@ -285,7 +297,7 @@
     phone.textContent = 'Позвонить Ивану';
     const request = document.createElement('a');
     request.className = 'btn btn--ghost';
-    request.href = '/#request';
+    request.href = '/zayavka/';
     request.textContent = 'Оценить по фото';
 
     content.append(label, title, text);
