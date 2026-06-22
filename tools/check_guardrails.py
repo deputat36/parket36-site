@@ -150,6 +150,8 @@ def main() -> int:
     required_form_markers = {
         'id="request-location"': "request location field",
         'id="request-area"': "request area field",
+        'id="request-photos"': "request photo readiness field",
+        'id="request-video"': "request video readiness field",
         'id="request-task"': "request task field",
         'id="request-callback"': "request callback field",
         'id="request-contact"': "request contact field",
