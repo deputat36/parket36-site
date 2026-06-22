@@ -41,6 +41,13 @@ CTA_LABEL_GUARDRAIL_PAGES = {
     "uslugi/parket-i-poly/index.html",
 }
 
+PHOTO_ASSESSMENT_FORM_MARKERS = {
+    'id="request-photos"': "photo readiness field",
+    'id="request-video"': "video readiness field",
+    "Фото:": "copied text should include photo readiness",
+    "Видео скрипа/подвижности:": "copied text should include video readiness",
+}
+
 FOCUS_PAGE_PROMOTED_MARKERS = {
     "index.html": {
         ">Муж на час<": "homepage should not promote husband-for-an-hour as a card or option",
@@ -151,6 +158,17 @@ def main() -> int:
     for marker, label in required_form_markers.items():
         if marker not in index_text:
             findings.append(f"index.html: missing {label}: {marker}")
+
+    zayavka = ROOT / "zayavka" / "index.html"
+    zayavka_text = zayavka.read_text(encoding="utf-8", errors="ignore") if zayavka.exists() else ""
+    js = ROOT / "js" / "main.js"
+    js_text = js.read_text(encoding="utf-8", errors="ignore") if js.exists() else ""
+    for marker, label in PHOTO_ASSESSMENT_FORM_MARKERS.items():
+        if marker.startswith('id='):
+            if marker not in zayavka_text:
+                findings.append(f"zayavka/index.html: missing {label}: {marker}")
+        elif marker not in js_text:
+            findings.append(f"js/main.js: missing {label}: {marker}")
 
     for rel, markers in FOCUS_PAGE_PROMOTED_MARKERS.items():
         path = ROOT / rel
