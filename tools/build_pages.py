@@ -109,10 +109,12 @@ def url_to_built_file(url: str, base_file: Path | None = None) -> Path | None:
 
     if not path:
         return None
+    if path == "/":
+        return DEST / "index.html"
 
     if path.startswith("/"):
         relative = path.lstrip("/")
-        candidate = DEST / relative if relative else DEST / "index.html"
+        candidate = DEST / relative
     else:
         if base_file is None:
             return None
