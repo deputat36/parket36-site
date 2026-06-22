@@ -29,6 +29,10 @@ SUPPLEMENTAL_SERVICE_PAGES = {
     "uslugi/otdelka/",
 }
 
+INTERNAL_NOINDEX_PAGES = {
+    "portfolio/shablon-kejsa/": "internal portfolio case template should stay noindex",
+}
+
 PUBLIC_ENTRY_PAGES = {
     "zayavka/": "photo assessment request page should stay public and indexable",
 }
@@ -208,6 +212,21 @@ def main() -> int:
         url = f"{SITE_URL}/{page_path}"
         if url in sitemap_urls:
             findings.append(f"sitemap.xml: supplemental service page should not be listed: {url}")
+
+    for page_path, label in sorted(INTERNAL_NOINDEX_PAGES.items()):
+        html_path = html_path_for_url_path(page_path)
+        rel = html_path.relative_to(ROOT).as_posix()
+        if not html_path.exists():
+            findings.append(f"{rel}: internal page is missing")
+            continue
+
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
+        if '<meta name="robots" content="noindex, follow">' not in text:
+            findings.append(f"{rel}: {label}: should be noindex, follow")
+
+        url = f"{SITE_URL}/{page_path}"
+        if url in sitemap_urls:
+            findings.append(f"sitemap.xml: internal page should not be listed: {url}")
 
     for page_path, label in sorted(PUBLIC_ENTRY_PAGES.items()):
         html_path = html_path_for_url_path(page_path)
