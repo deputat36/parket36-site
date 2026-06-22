@@ -29,8 +29,8 @@ SUPPLEMENTAL_SERVICE_PAGES = {
     "uslugi/otdelka/",
 }
 
-PRIVATE_ENTRY_PAGES = {
-    "zayavka/": "universal request page should stay out of search index",
+PUBLIC_ENTRY_PAGES = {
+    "zayavka/": "photo assessment request page should stay public and indexable",
 }
 
 FOCUS_PAGE_PROMOTED_MARKERS = {
@@ -166,20 +166,20 @@ def main() -> int:
         if url in sitemap_urls:
             findings.append(f"sitemap.xml: supplemental service page should not be listed: {url}")
 
-    for page_path, label in sorted(PRIVATE_ENTRY_PAGES.items()):
+    for page_path, label in sorted(PUBLIC_ENTRY_PAGES.items()):
         html_path = html_path_for_url_path(page_path)
         rel = html_path.relative_to(ROOT).as_posix()
         if not html_path.exists():
-            findings.append(f"{rel}: private entry page is missing")
+            findings.append(f"{rel}: public entry page is missing")
             continue
 
         text = html_path.read_text(encoding="utf-8", errors="ignore")
-        if '<meta name="robots" content="noindex, follow">' not in text:
-            findings.append(f"{rel}: {label}: expected noindex, follow")
+        if '<meta name="robots" content="noindex, follow">' in text:
+            findings.append(f"{rel}: {label}: must not be noindex")
 
         url = f"{SITE_URL}/{page_path}"
-        if url in sitemap_urls:
-            findings.append(f"sitemap.xml: private entry page should not be listed: {url}")
+        if url not in sitemap_urls:
+            findings.append(f"sitemap.xml: public entry page should be listed: {url}")
 
     if findings:
         print("Extra guardrail findings:")
