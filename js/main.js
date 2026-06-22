@@ -322,11 +322,51 @@
     const serviceField = document.getElementById('request-service');
     const locationField = document.getElementById('request-location');
     const areaField = document.getElementById('request-area');
+
+    const insertAssessmentSelect = (afterField, id, labelText, options) => {
+      if (document.getElementById(id)) return;
+      const anchorLabel = afterField?.closest('label');
+      if (!anchorLabel) return;
+
+      const label = document.createElement('label');
+      label.textContent = labelText;
+
+      const select = document.createElement('select');
+      select.id = id;
+      options.forEach(optionText => {
+        const option = document.createElement('option');
+        option.textContent = optionText;
+        select.appendChild(option);
+      });
+
+      label.appendChild(select);
+      anchorLabel.insertAdjacentElement('afterend', label);
+    };
+
+    insertAssessmentSelect(areaField, 'request-photos', 'Какие фото уже готовы?', [
+      'Фото ещё не сделал(а)',
+      'Есть общий вид комнаты',
+      'Есть общий вид и дефекты крупно',
+      'Есть общий вид, дефекты и зоны у стен',
+      'Фото готовы полностью по инструкции'
+    ]);
+    insertAssessmentSelect(document.getElementById('request-photos'), 'request-video', 'Есть видео скрипа или подвижности?', [
+      'Видео нет',
+      'Видео скрипа есть',
+      'Видео подвижных планок есть',
+      'Видео сделаю при необходимости'
+    ]);
+
     const photosField = document.getElementById('request-photos');
     const videoField = document.getElementById('request-video');
     const taskField = document.getElementById('request-task');
     const callbackField = document.getElementById('request-callback');
     const contactField = document.getElementById('request-contact');
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    if (submitButton && submitButton.textContent.trim() === 'Скопировать заявку') {
+      submitButton.textContent = 'Скопировать текст для оценки';
+    }
 
     if (status) {
       status.setAttribute('role', 'status');

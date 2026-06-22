@@ -44,6 +44,7 @@ CTA_LABEL_GUARDRAIL_PAGES = {
 PHOTO_ASSESSMENT_FORM_MARKERS = {
     'id="request-photos"': "photo readiness field",
     'id="request-video"': "video readiness field",
+    "insertAssessmentSelect": "request forms should backfill photo/video fields when HTML lacks them",
     "Фото:": "copied text should include photo readiness",
     "Видео скрипа/подвижности:": "copied text should include video readiness",
 }
