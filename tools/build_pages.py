@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
 import shutil
@@ -45,6 +46,23 @@ INTERNAL_WORKING_PATHS = {
 }
 
 
+class LinkParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.links: list[tuple[str, str]] = []
+
+    def handle_starttag(self, tag: str, attrs_list: list[tuple[str, str | None]]) -> None:
+        attrs = {k.lower(): (v or "") for k, v in attrs_list}
+        for attr in ("href", "src"):
+            value = attrs.get(attr)
+            if value:
+                self.links.append((attr, value))
+        if tag.lower() == "meta" and attrs.get("property", "").lower() == "og:image":
+            content = attrs.get("content")
+            if content:
+                self.links.append(("og:image", content))
+
+
 def is_internal_working_path(relative: Path) -> bool:
     return any(relative == path or path in relative.parents for path in INTERNAL_WORKING_PATHS)
 
@@ -76,19 +94,32 @@ def iter_source_html() -> list[Path]:
     return sorted(result)
 
 
-def url_to_built_file(url: str) -> Path | None:
-    parsed = urlsplit(url)
+def url_to_built_file(url: str, base_file: Path | None = None) -> Path | None:
+    value = url.strip()
+    if not value or value.startswith(("#", "tel:", "mailto:", "javascript:", "data:")):
+        return None
+
+    parsed = urlsplit(value)
     if parsed.scheme or parsed.netloc:
-        if not url.startswith(DOMAIN + "/"):
+        if not value.startswith(DOMAIN + "/"):
             return None
         path = parsed.path
     else:
         path = parsed.path
 
-    relative = path.lstrip("/")
-    if not relative:
+    if not path:
+        return None
+    if path == "/":
         return DEST / "index.html"
-    candidate = DEST / relative
+
+    if path.startswith("/"):
+        relative = path.lstrip("/")
+        candidate = DEST / relative
+    else:
+        if base_file is None:
+            return None
+        candidate = base_file.parent / path
+
     if path.endswith("/"):
         return candidate / "index.html"
     if candidate.suffix:
@@ -134,6 +165,20 @@ def validate_sitemap(errors: list[str]) -> None:
             )
 
 
+def validate_public_links(errors: list[str]) -> None:
+    for html_file in sorted(DEST.rglob("*.html")):
+        parser = LinkParser()
+        parser.feed(html_file.read_text(encoding="utf-8"))
+        rel = html_file.relative_to(DEST).as_posix()
+        for attr, value in parser.links:
+            target = url_to_built_file(value, html_file)
+            if target is None:
+                continue
+            if not target.exists():
+                target_display = target.relative_to(DEST).as_posix()
+                errors.append(f"{rel}: public build has broken {attr}={value} -> {target_display}")
+
+
 def validate_private_files(errors: list[str]) -> None:
     forbidden = [
         DEST / "data",
@@ -176,6 +221,7 @@ def main() -> int:
 
     validate_public_html(errors)
     validate_sitemap(errors)
+    validate_public_links(errors)
     validate_private_files(errors)
 
     if errors:
