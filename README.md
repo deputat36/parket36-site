@@ -48,6 +48,7 @@ python tools/check_site.py
 - корректный `noindex` для 404, политики, страницы-переходника и дополнительных смежных услуг;
 - отсутствие ссылок на объединённую страницу `master-na-chas`;
 - соответствие контактов файлу `data/site.json`;
+- дополнительные guardrails для фокуса на паркете, публичной страницы `/zayavka/` и внутренних рабочих страниц;
 - успешная сборка чистого публичного каталога;
 - отсутствие внутренних рабочих страниц в публичной сборке.
 
@@ -56,6 +57,7 @@ python tools/check_site.py
 ```bash
 python tools/site_settings.py --check
 python tools/check_site.py
+python tools/check_guardrails.py
 python tools/build_pages.py
 ```
 
