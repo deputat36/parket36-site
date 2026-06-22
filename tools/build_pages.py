@@ -21,7 +21,6 @@ PUBLIC_DIRS = {
     "o-mastere",
     "kontakty",
     "portfolio",
-    "foto-dlya-sajta",
     "ceny",
     "resheniya",
     "sovety",
@@ -40,6 +39,14 @@ PUBLIC_FILES = {
     "manifest.webmanifest",
 }
 IGNORED_DIRS = {".git", ".github", "tools", "data", "node_modules", "_site"}
+INTERNAL_WORKING_PATHS = {
+    Path("foto-dlya-sajta"),
+    Path("portfolio") / "shablon-kejsa",
+}
+
+
+def is_internal_working_path(relative: Path) -> bool:
+    return any(relative == path or path in relative.parents for path in INTERNAL_WORKING_PATHS)
 
 
 def copy_path(source: Path, destination: Path) -> None:
@@ -48,6 +55,15 @@ def copy_path(source: Path, destination: Path) -> None:
     elif source.is_file():
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
+
+
+def remove_internal_working_paths() -> None:
+    for relative in INTERNAL_WORKING_PATHS:
+        target = DEST / relative
+        if target.is_dir():
+            shutil.rmtree(target)
+        elif target.exists():
+            target.unlink()
 
 
 def iter_source_html() -> list[Path]:
@@ -83,6 +99,8 @@ def url_to_built_file(url: str) -> Path | None:
 def validate_public_html(errors: list[str]) -> None:
     for source in iter_source_html():
         relative = source.relative_to(ROOT)
+        if is_internal_working_path(relative):
+            continue
         built = DEST / relative
         if not built.exists():
             errors.append(
@@ -127,6 +145,11 @@ def validate_private_files(errors: list[str]) -> None:
         if path.exists():
             errors.append(f"Private project file leaked into public build: {path.name}")
 
+    for relative in INTERNAL_WORKING_PATHS:
+        target = DEST / relative
+        if target.exists():
+            errors.append(f"Internal working page leaked into public build: {relative.as_posix()}")
+
 
 def main() -> int:
     if DEST.exists():
@@ -142,6 +165,8 @@ def main() -> int:
         source = ROOT / name
         if source.exists():
             copy_path(source, DEST / name)
+
+    remove_internal_working_paths()
 
     errors: list[str] = []
     required = ["index.html", "404.html", "CNAME", "robots.txt", "sitemap.xml"]
