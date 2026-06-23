@@ -42,6 +42,7 @@ PUBLIC_ENTRY_PAGES = {
 
 CTA_LABEL_GUARDRAIL_PAGES = {
     "ceny/index.html",
+    "kak-rabotaem/index.html",
     "kontakty/index.html",
     "o-mastere/index.html",
     "resheniya/dlya-rieltorov-i-sobstvennikov/index.html",
@@ -60,6 +61,7 @@ CTA_LABEL_GUARDRAIL_PAGES = {
     "uslugi/terrasy-i-derevyannye-poly/index.html",
     "uslugi/ukladka-laminata/index.html",
     "uslugi/ukladka-parketa/index.html",
+    "voprosy-i-otvety/index.html",
 }
 
 PHOTO_ASSESSMENT_FORM_MARKERS = {
@@ -105,9 +107,17 @@ FOCUS_PAGE_PROMOTED_MARKERS = {
 }
 
 REQUIRED_PAGE_MARKERS = {
+    "kak-rabotaem/index.html": {
+        '<section class="final-cta">': "process page should end with a conversion CTA",
+        'href="/zayavka/">Оценить по фото</a>': "process page should keep a direct photo assessment CTA",
+    },
     "resheniya/index.html": {
         '<section class="final-cta">': "solutions index should end with a conversion CTA",
         'href="/zayavka/">Оценить по фото</a>': "solutions index should keep a direct photo assessment CTA",
+    },
+    "voprosy-i-otvety/index.html": {
+        '<section class="final-cta">': "FAQ page should end with a conversion CTA",
+        'href="/zayavka/">Оценить по фото</a>': "FAQ page should keep a direct photo assessment CTA",
     },
 }
 
