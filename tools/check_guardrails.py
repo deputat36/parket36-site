@@ -44,6 +44,12 @@ CTA_LABEL_GUARDRAIL_PAGES = {
     "ceny/index.html",
     "kontakty/index.html",
     "o-mastere/index.html",
+    "resheniya/dlya-rieltorov-i-sobstvennikov/index.html",
+    "resheniya/index.html",
+    "resheniya/obnovit-pol-posle-arendatorov/index.html",
+    "resheniya/podgotovit-parket-k-prodazhe-kvartiry/index.html",
+    "resheniya/podgotovka-kvartiry-k-prodazhe/index.html",
+    "resheniya/remont-posle-arendatorov/index.html",
     "sovety/kak-sfotografirovat-pol-dlya-ocenki/index.html",
     "uslugi/ciklevka-parketa/index.html",
     "uslugi/index.html",
@@ -76,6 +82,16 @@ FOCUS_PAGE_PROMOTED_MARKERS = {
         "Сопутствующие вопросы": "homepage should stay focused on parquet and floor-specific adjacent details",
         "Дополнительные задачи согласуются отдельно": "homepage should not end the process with broad task wording",
     },
+    "resheniya/index.html": {
+        ">Муж на час<": "solutions index should not promote husband-for-an-hour as a category",
+        ">Мелкий ремонт<": "solutions index should not promote small repairs as a category",
+        ">Сборка мебели<": "solutions index should not promote furniture assembly as a category",
+        ">Электрика<": "solutions index should not promote electrical work as a category",
+        ">Сантехника<": "solutions index should not promote plumbing as a category",
+        ">Отделка<": "solutions index should not promote finishing as a category",
+        ">Переезды<": "solutions index should not promote moving as a category",
+        ">Вывоз мусора<": "solutions index should not promote trash removal as a category",
+    },
     "uslugi/index.html": {
         ">Муж на час<": "services index should not promote husband-for-an-hour as a category",
         ">Мелкий ремонт<": "services index should not promote small repairs as a category",
@@ -85,6 +101,13 @@ FOCUS_PAGE_PROMOTED_MARKERS = {
         ">Отделка<": "services index should not promote finishing as a category",
         ">Переезды<": "services index should not promote moving as a category",
         ">Вывоз мусора<": "services index should not promote trash removal as a category",
+    },
+}
+
+REQUIRED_PAGE_MARKERS = {
+    "resheniya/index.html": {
+        '<section class="final-cta">': "solutions index should end with a conversion CTA",
+        'href="/zayavka/">Оценить по фото</a>': "solutions index should keep a direct photo assessment CTA",
     },
 }
 
@@ -306,6 +329,16 @@ def main() -> int:
         for marker, label in markers.items():
             if marker in text:
                 findings.append(f"{rel}: {label}: {marker}")
+
+    for rel, markers in REQUIRED_PAGE_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            findings.append(f"{rel}: required marker page is missing")
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for marker, label in markers.items():
+            if marker not in text:
+                findings.append(f"{rel}: missing {label}: {marker}")
 
     for rel in sorted(CTA_LABEL_GUARDRAIL_PAGES):
         path = ROOT / rel
