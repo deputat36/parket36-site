@@ -47,8 +47,12 @@ CTA_LABEL_GUARDRAIL_PAGES = {
     "uslugi/ciklevka-parketa/index.html",
     "uslugi/index.html",
     "uslugi/parket-i-poly/index.html",
+    "uslugi/pokrytie-lakom-i-maslom/index.html",
     "uslugi/restavraciya-parketa/index.html",
     "uslugi/shlifovka-doshchatogo-pola/index.html",
+    "uslugi/terrasy-i-derevyannye-poly/index.html",
+    "uslugi/ukladka-laminata/index.html",
+    "uslugi/ukladka-parketa/index.html",
 }
 
 PHOTO_ASSESSMENT_FORM_MARKERS = {
