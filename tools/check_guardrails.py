@@ -72,6 +72,8 @@ FOCUS_PAGE_PROMOTED_MARKERS = {
         ">Сантехника<": "homepage should not promote plumbing as a separate option",
         ">Отделка<": "homepage should not promote finishing as a separate option",
         ">Демонтаж / вывоз<": "homepage should not promote demolition/removal as a separate option",
+        "Сопутствующие вопросы": "homepage should stay focused on parquet and floor-specific adjacent details",
+        "Дополнительные задачи согласуются отдельно": "homepage should not end the process with broad task wording",
     },
     "uslugi/index.html": {
         ">Муж на час<": "services index should not promote husband-for-an-hour as a category",
