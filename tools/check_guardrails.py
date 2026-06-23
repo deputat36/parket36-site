@@ -231,10 +231,11 @@ def main() -> int:
 
         url = canonical_url_for_html(path)
         declared_canonical = extract_declared_canonical(text)
-        if url and declared_canonical and declared_canonical != url:
+        is_indexable = NOINDEX_META not in text
+        if is_indexable and url and declared_canonical and declared_canonical != url:
             findings.append(f"{rel}: canonical should be {url}, found {declared_canonical}")
 
-        if url and declared_canonical and declared_canonical.startswith(SITE_URL) and NOINDEX_META not in text and url not in sitemap_urls:
+        if is_indexable and url and declared_canonical and declared_canonical.startswith(SITE_URL) and url not in sitemap_urls:
             findings.append(f"sitemap.xml: indexable canonical page should be listed: {url}")
 
         date_modified_values = extract_date_modified_values(text)
