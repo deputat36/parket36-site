@@ -44,8 +44,11 @@ CTA_LABEL_GUARDRAIL_PAGES = {
     "ceny/index.html",
     "kontakty/index.html",
     "sovety/kak-sfotografirovat-pol-dlya-ocenki/index.html",
+    "uslugi/ciklevka-parketa/index.html",
     "uslugi/index.html",
     "uslugi/parket-i-poly/index.html",
+    "uslugi/restavraciya-parketa/index.html",
+    "uslugi/shlifovka-doshchatogo-pola/index.html",
 }
 
 PHOTO_ASSESSMENT_FORM_MARKERS = {
