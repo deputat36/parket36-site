@@ -43,6 +43,7 @@ PUBLIC_ENTRY_PAGES = {
 CTA_LABEL_GUARDRAIL_PAGES = {
     "ceny/index.html",
     "kontakty/index.html",
+    "o-mastere/index.html",
     "sovety/kak-sfotografirovat-pol-dlya-ocenki/index.html",
     "uslugi/ciklevka-parketa/index.html",
     "uslugi/index.html",
@@ -88,7 +89,9 @@ FOCUS_PAGE_PROMOTED_MARKERS = {
 }
 
 STALE_CTA_MARKERS = {
-    "Составить заявку": "key public page should use photo assessment CTA language",
+    "Составить заявку": "key public page should use direct photo assessment CTA language",
+    "Подготовить заявку": "key public page should use direct photo assessment CTA language",
+    "подготовьте заявку": "key public page should use direct photo assessment CTA language",
 }
 
 
