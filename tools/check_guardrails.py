@@ -94,6 +94,16 @@ STALE_CTA_MARKERS = {
     "подготовьте заявку": "key public page should use direct photo assessment CTA language",
 }
 
+MOBILE_CTA_REQUIRED_MARKERS = {
+    '<div class="mobile-cta">': "mobile CTA wrapper",
+    'href="tel:+79009267929"': "mobile CTA phone link",
+}
+
+MOBILE_CTA_PHOTO_LINK_MARKERS = {
+    'href="/zayavka/">Оценка по фото</a>',
+    'href="#request">Оценка по фото</a>',
+}
+
 DATE_RE = r"\d{4}-\d{2}-\d{2}"
 NOINDEX_META = '<meta name="robots" content="noindex, follow">'
 
@@ -247,6 +257,17 @@ def main() -> int:
                     f"sitemap.xml: lastmod for {url} should match dateModified "
                     f"{expected_lastmod}, found {actual_lastmod or 'missing'}"
                 )
+
+        if '<div class="mobile-cta">' in text:
+            for marker, label in MOBILE_CTA_REQUIRED_MARKERS.items():
+                if marker not in text:
+                    findings.append(f"{rel}: missing {label}: {marker}")
+            if not any(marker in text for marker in MOBILE_CTA_PHOTO_LINK_MARKERS):
+                findings.append(f"{rel}: missing mobile CTA photo assessment link")
+            if 'href="#request">Оценка по фото</a>' in text and 'id="request"' not in text:
+                findings.append(f"{rel}: mobile CTA local request link points to a missing #request section")
+            if 'href="/zayavka/">Заявка</a>' in text:
+                findings.append(f"{rel}: mobile CTA should say Оценка по фото, not Заявка")
 
     index = ROOT / "index.html"
     index_text = index.read_text(encoding="utf-8", errors="ignore") if index.exists() else ""
