@@ -18,6 +18,7 @@ PUBLIC_SUFFIXES = {".html", ".css", ".js", ".json", ".xml", ".txt"}
 SITE_URL = "https://parket36.ru"
 
 SUPPLEMENTAL_SERVICE_PAGES = {
+    "uslugi/master-na-chas/",
     "uslugi/muzh-na-chas/",
     "uslugi/melkiy-remont/",
     "uslugi/elektrika/",
@@ -30,6 +31,8 @@ SUPPLEMENTAL_SERVICE_PAGES = {
 }
 
 INTERNAL_NOINDEX_PAGES = {
+    "foto-dlya-sajta/": "internal photo brief should stay noindex",
+    "politika/": "privacy policy should stay noindex",
     "portfolio/shablon-kejsa/": "internal portfolio case template should stay noindex",
 }
 
