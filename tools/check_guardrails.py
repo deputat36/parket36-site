@@ -45,12 +45,14 @@ CTA_LABEL_GUARDRAIL_PAGES = {
     "kak-rabotaem/index.html",
     "kontakty/index.html",
     "o-mastere/index.html",
+    "portfolio/index.html",
     "resheniya/dlya-rieltorov-i-sobstvennikov/index.html",
     "resheniya/index.html",
     "resheniya/obnovit-pol-posle-arendatorov/index.html",
     "resheniya/podgotovit-parket-k-prodazhe-kvartiry/index.html",
     "resheniya/podgotovka-kvartiry-k-prodazhe/index.html",
     "resheniya/remont-posle-arendatorov/index.html",
+    "sovety/index.html",
     "sovety/kak-sfotografirovat-pol-dlya-ocenki/index.html",
     "uslugi/ciklevka-parketa/index.html",
     "uslugi/index.html",
@@ -111,9 +113,17 @@ REQUIRED_PAGE_MARKERS = {
         '<section class="final-cta">': "process page should end with a conversion CTA",
         'href="/zayavka/">Оценить по фото</a>': "process page should keep a direct photo assessment CTA",
     },
+    "portfolio/index.html": {
+        '<section class="final-cta">': "portfolio page should end with a conversion CTA",
+        'href="/zayavka/">Оценить по фото</a>': "portfolio page should keep a direct photo assessment CTA",
+    },
     "resheniya/index.html": {
         '<section class="final-cta">': "solutions index should end with a conversion CTA",
         'href="/zayavka/">Оценить по фото</a>': "solutions index should keep a direct photo assessment CTA",
+    },
+    "sovety/index.html": {
+        '<section class="final-cta">': "advice index should end with a conversion CTA",
+        'href="/zayavka/">Оценить по фото</a>': "advice index should keep a direct photo assessment CTA",
     },
     "voprosy-i-otvety/index.html": {
         '<section class="final-cta">': "FAQ page should end with a conversion CTA",
