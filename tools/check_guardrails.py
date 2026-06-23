@@ -95,6 +95,7 @@ STALE_CTA_MARKERS = {
 }
 
 DATE_RE = r"\d{4}-\d{2}-\d{2}"
+NOINDEX_META = '<meta name="robots" content="noindex, follow">'
 
 
 class BasicHtmlParser(HTMLParser):
@@ -161,6 +162,25 @@ def canonical_url_for_html(path: Path) -> str | None:
     return f"{SITE_URL}/{rel.removesuffix('index.html')}"
 
 
+def html_path_for_site_url(url: str) -> Path | None:
+    if url == f"{SITE_URL}/":
+        return ROOT / "index.html"
+    prefix = f"{SITE_URL}/"
+    if not url.startswith(prefix):
+        return None
+    url_path = url.removeprefix(prefix)
+    if not url_path.endswith("/"):
+        return None
+    return html_path_for_url_path(url_path)
+
+
+def extract_declared_canonical(text: str) -> str | None:
+    match = re.search(r'<link\s+rel="canonical"\s+href="([^"]+)"', text)
+    if match:
+        return match.group(1)
+    return None
+
+
 def extract_date_modified_values(text: str) -> list[str]:
     return re.findall(rf'"dateModified"\s*:\s*"({DATE_RE})"', text)
 
@@ -186,6 +206,19 @@ def main() -> int:
     sitemap_urls = extract_sitemap_urls()
     sitemap_lastmods = extract_sitemap_lastmods()
 
+    for url in sorted(sitemap_urls):
+        html_path = html_path_for_site_url(url)
+        if html_path is None:
+            findings.append(f"sitemap.xml: unsupported URL format: {url}")
+            continue
+        rel = html_path.relative_to(ROOT).as_posix()
+        if not html_path.exists():
+            findings.append(f"sitemap.xml: listed URL has no matching HTML file: {url} -> {rel}")
+            continue
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
+        if NOINDEX_META in text:
+            findings.append(f"sitemap.xml: listed URL should not be noindex: {url}")
+
     for path in html_files():
         rel = path.relative_to(ROOT).as_posix()
         text = path.read_text(encoding="utf-8", errors="ignore")
@@ -197,6 +230,13 @@ def main() -> int:
             findings.append(f"{rel}: expected one viewport meta, found {parser.viewport_count}")
 
         url = canonical_url_for_html(path)
+        declared_canonical = extract_declared_canonical(text)
+        if url and declared_canonical and declared_canonical != url:
+            findings.append(f"{rel}: canonical should be {url}, found {declared_canonical}")
+
+        if url and declared_canonical and declared_canonical.startswith(SITE_URL) and NOINDEX_META not in text and url not in sitemap_urls:
+            findings.append(f"sitemap.xml: indexable canonical page should be listed: {url}")
+
         date_modified_values = extract_date_modified_values(text)
         if url in sitemap_urls and date_modified_values:
             expected_lastmod = max(date_modified_values)
@@ -263,7 +303,7 @@ def main() -> int:
             continue
 
         text = html_path.read_text(encoding="utf-8", errors="ignore")
-        if '<meta name="robots" content="noindex, follow">' not in text:
+        if NOINDEX_META not in text:
             findings.append(f"{rel}: supplemental service page should be noindex, follow")
 
         url = f"{SITE_URL}/{page_path}"
@@ -278,7 +318,7 @@ def main() -> int:
             continue
 
         text = html_path.read_text(encoding="utf-8", errors="ignore")
-        if '<meta name="robots" content="noindex, follow">' not in text:
+        if NOINDEX_META not in text:
             findings.append(f"{rel}: {label}: should be noindex, follow")
 
         url = f"{SITE_URL}/{page_path}"
@@ -293,7 +333,7 @@ def main() -> int:
             continue
 
         text = html_path.read_text(encoding="utf-8", errors="ignore")
-        if '<meta name="robots" content="noindex, follow">' in text:
+        if NOINDEX_META in text:
             findings.append(f"{rel}: {label}: must not be noindex")
 
         url = f"{SITE_URL}/{page_path}"
