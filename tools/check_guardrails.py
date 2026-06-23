@@ -94,6 +94,8 @@ STALE_CTA_MARKERS = {
     "подготовьте заявку": "key public page should use direct photo assessment CTA language",
 }
 
+DATE_RE = r"\d{4}-\d{2}-\d{2}"
+
 
 class BasicHtmlParser(HTMLParser):
     def __init__(self) -> None:
@@ -129,12 +131,38 @@ def html_path_for_url_path(url_path: str) -> Path:
     return ROOT / url_path / "index.html"
 
 
-def extract_sitemap_urls() -> set[str]:
+def sitemap_text() -> str:
     sitemap = ROOT / "sitemap.xml"
     if not sitemap.exists():
-        return set()
-    text = sitemap.read_text(encoding="utf-8", errors="ignore")
-    return set(re.findall(r"<loc>(.*?)</loc>", text))
+        return ""
+    return sitemap.read_text(encoding="utf-8", errors="ignore")
+
+
+def extract_sitemap_urls() -> set[str]:
+    return set(re.findall(r"<loc>(.*?)</loc>", sitemap_text()))
+
+
+def extract_sitemap_lastmods() -> dict[str, str]:
+    lastmods: dict[str, str] = {}
+    for url_block in re.findall(r"<url>(.*?)</url>", sitemap_text(), flags=re.DOTALL):
+        loc_match = re.search(r"<loc>(.*?)</loc>", url_block)
+        lastmod_match = re.search(rf"<lastmod>({DATE_RE})</lastmod>", url_block)
+        if loc_match and lastmod_match:
+            lastmods[loc_match.group(1)] = lastmod_match.group(1)
+    return lastmods
+
+
+def canonical_url_for_html(path: Path) -> str | None:
+    rel = path.relative_to(ROOT).as_posix()
+    if rel == "index.html":
+        return f"{SITE_URL}/"
+    if not rel.endswith("/index.html"):
+        return None
+    return f"{SITE_URL}/{rel.removesuffix('index.html')}"
+
+
+def extract_date_modified_values(text: str) -> list[str]:
+    return re.findall(rf'"dateModified"\s*:\s*"({DATE_RE})"', text)
 
 
 def main() -> int:
@@ -155,14 +183,29 @@ def main() -> int:
             if marker in text:
                 findings.append(f"{rel}: contains {label}: {marker}")
 
+    sitemap_urls = extract_sitemap_urls()
+    sitemap_lastmods = extract_sitemap_lastmods()
+
     for path in html_files():
         rel = path.relative_to(ROOT).as_posix()
+        text = path.read_text(encoding="utf-8", errors="ignore")
         parser = BasicHtmlParser()
-        parser.feed(path.read_text(encoding="utf-8", errors="ignore"))
+        parser.feed(text)
         if parser.lang != "ru":
             findings.append(f"{rel}: html lang should be ru")
         if parser.viewport_count != 1:
             findings.append(f"{rel}: expected one viewport meta, found {parser.viewport_count}")
+
+        url = canonical_url_for_html(path)
+        date_modified_values = extract_date_modified_values(text)
+        if url in sitemap_urls and date_modified_values:
+            expected_lastmod = max(date_modified_values)
+            actual_lastmod = sitemap_lastmods.get(url)
+            if actual_lastmod != expected_lastmod:
+                findings.append(
+                    f"sitemap.xml: lastmod for {url} should match dateModified "
+                    f"{expected_lastmod}, found {actual_lastmod or 'missing'}"
+                )
 
     index = ROOT / "index.html"
     index_text = index.read_text(encoding="utf-8", errors="ignore") if index.exists() else ""
@@ -212,7 +255,6 @@ def main() -> int:
             if marker in text:
                 findings.append(f"{rel}: {label}: {marker}")
 
-    sitemap_urls = extract_sitemap_urls()
     for page_path in sorted(SUPPLEMENTAL_SERVICE_PAGES):
         html_path = html_path_for_url_path(page_path)
         rel = html_path.relative_to(ROOT).as_posix()
