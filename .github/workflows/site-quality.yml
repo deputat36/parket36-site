@@ -28,5 +28,7 @@ jobs:
         run: python tools/check_site.py
       - name: Run extra guardrails
         run: python tools/check_guardrails.py
+      - name: Validate lead paths
+        run: python tools/check_lead_paths.py
       - name: Build public directory
         run: python tools/build_pages.py
