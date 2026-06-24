@@ -8,6 +8,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 PHONE_LINK = 'href="tel:+79009267929"'
+DIRECT_ASSESSMENT_HREF = 'href="/zayavka/"'
 DIRECT_ASSESSMENT_LINK = 'href="/zayavka/">Оценить по фото</a>'
 LOCAL_ASSESSMENT_LINKS = {
     'href="#request">Получить оценку по фото</a>',
@@ -21,17 +22,46 @@ DIRECT_LEAD_PAGES = {
     "kontakty/index.html",
     "o-mastere/index.html",
     "portfolio/index.html",
+    "resheniya/dlya-rieltorov-i-sobstvennikov/index.html",
     "resheniya/index.html",
+    "resheniya/obnovit-pol-posle-arendatorov/index.html",
+    "resheniya/podgotovit-parket-k-prodazhe-kvartiry/index.html",
+    "resheniya/podgotovka-kvartiry-k-prodazhe/index.html",
+    "resheniya/remont-posle-arendatorov/index.html",
     "sovety/index.html",
+    "sovety/kak-sfotografirovat-pol-dlya-ocenki/index.html",
+    "uslugi/ciklevka-parketa/index.html",
     "uslugi/index.html",
+    "uslugi/parket-i-poly/index.html",
+    "uslugi/pokrytie-lakom-i-maslom/index.html",
+    "uslugi/restavraciya-parketa/index.html",
+    "uslugi/shlifovka-doshchatogo-pola/index.html",
+    "uslugi/terrasy-i-derevyannye-poly/index.html",
+    "uslugi/ukladka-laminata/index.html",
+    "uslugi/ukladka-parketa/index.html",
     "voprosy-i-otvety/index.html",
 }
 
-EARLY_DIRECT_LEAD_PAGES = {
+ABOVE_FOLD_LEAD_PAGES = {
     "ceny/index.html",
     "kontakty/index.html",
     "o-mastere/index.html",
+    "portfolio/index.html",
+    "resheniya/dlya-rieltorov-i-sobstvennikov/index.html",
+    "resheniya/obnovit-pol-posle-arendatorov/index.html",
+    "resheniya/podgotovit-parket-k-prodazhe-kvartiry/index.html",
+    "resheniya/podgotovka-kvartiry-k-prodazhe/index.html",
+    "resheniya/remont-posle-arendatorov/index.html",
+    "sovety/kak-sfotografirovat-pol-dlya-ocenki/index.html",
+    "uslugi/ciklevka-parketa/index.html",
     "uslugi/index.html",
+    "uslugi/parket-i-poly/index.html",
+    "uslugi/pokrytie-lakom-i-maslom/index.html",
+    "uslugi/restavraciya-parketa/index.html",
+    "uslugi/shlifovka-doshchatogo-pola/index.html",
+    "uslugi/terrasy-i-derevyannye-poly/index.html",
+    "uslugi/ukladka-laminata/index.html",
+    "uslugi/ukladka-parketa/index.html",
 }
 
 LOCAL_LEAD_PAGES = {
@@ -68,6 +98,20 @@ def read_page(rel: str, findings: list[str]) -> str:
     return path.read_text(encoding="utf-8", errors="ignore")
 
 
+def section_block(text: str, marker: str, rel: str, label: str, findings: list[str]) -> tuple[str, int]:
+    start = text.find(marker)
+    if start < 0:
+        findings.append(f"{rel}: missing {label}")
+        return "", -1
+
+    end = text.find("</section>", start)
+    if end < 0:
+        findings.append(f"{rel}: {label} is not closed")
+        return "", start
+
+    return text[start:end + len("</section>")], start
+
+
 def final_cta(text: str, rel: str, findings: list[str]) -> tuple[str, int]:
     marker = '<section class="final-cta">'
     start = text.rfind(marker)
@@ -89,9 +133,11 @@ def final_cta(text: str, rel: str, findings: list[str]) -> tuple[str, int]:
     return text[start:end + len("</section>")], start
 
 
-def check_phone(rel: str, block: str, findings: list[str]) -> None:
+def check_direct_actions(rel: str, block: str, location: str, findings: list[str]) -> None:
     if PHONE_LINK not in block:
-        findings.append(f"{rel}: final CTA is missing the phone link")
+        findings.append(f"{rel}: {location} is missing the phone link")
+    if DIRECT_ASSESSMENT_HREF not in block:
+        findings.append(f"{rel}: {location} is missing the photo assessment link")
 
 
 def main() -> int:
@@ -101,14 +147,20 @@ def main() -> int:
         text = read_page(rel, findings)
         if not text:
             continue
-        block, start = final_cta(text, rel, findings)
+        block, _ = final_cta(text, rel, findings)
         if not block:
             continue
-        check_phone(rel, block, findings)
+        check_direct_actions(rel, block, "final CTA", findings)
         if DIRECT_ASSESSMENT_LINK not in block:
-            findings.append(f"{rel}: final CTA should link directly to photo assessment")
-        if rel in EARLY_DIRECT_LEAD_PAGES and DIRECT_ASSESSMENT_LINK not in text[:start]:
-            findings.append(f"{rel}: missing photo assessment CTA before the final section")
+            findings.append(f"{rel}: final CTA should use the direct Оценить по фото label")
+
+    for rel in sorted(ABOVE_FOLD_LEAD_PAGES):
+        text = read_page(rel, findings)
+        if not text:
+            continue
+        block, _ = section_block(text, '<section class="subhero">', rel, "subhero", findings)
+        if block:
+            check_direct_actions(rel, block, "subhero", findings)
 
     for rel in sorted(LOCAL_LEAD_PAGES):
         text = read_page(rel, findings)
@@ -117,7 +169,8 @@ def main() -> int:
         block, start = final_cta(text, rel, findings)
         if not block:
             continue
-        check_phone(rel, block, findings)
+        if PHONE_LINK not in block:
+            findings.append(f"{rel}: final CTA is missing the phone link")
         if not any(marker in block for marker in LOCAL_ASSESSMENT_LINKS):
             findings.append(f"{rel}: final CTA should link to the local request form")
         if 'id="request"' not in text:
