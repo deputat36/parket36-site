@@ -6,6 +6,8 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 
+from site_settings import load_config
+
 ROOT = Path(__file__).resolve().parents[1]
 
 CORE_CONVERSION_PAGES = {
@@ -23,16 +25,13 @@ CORE_CONVERSION_PAGES = {
     "uslugi/terrasy-i-derevyannye-poly/index.html",
 }
 
-CORE_REQUIRED_MARKERS = {
+CORE_STATIC_REQUIRED_MARKERS = {
     '<meta name="robots" content="index, follow">': "indexable robots directive",
     '<section class="final-cta">': "final conversion section",
-    'href="tel:+79009267929"': "direct phone link",
-    'href="/zayavka/">Оценить по фото</a>': "direct photo-assessment CTA",
     '<div class="mobile-cta">': "mobile CTA wrapper",
-    'href="/zayavka/">Оценка по фото</a>': "mobile photo-assessment CTA",
 }
 
-REQUEST_PAGE_MARKERS = {
+REQUEST_STATIC_PAGE_MARKERS = {
     '<meta name="robots" content="index, follow">': "indexable robots directive",
     'id="request"': "request section anchor",
     'id="request-form"': "request form",
@@ -49,7 +48,6 @@ REQUEST_PAGE_MARKERS = {
     '<section class="final-cta">': "final conversion section",
     'href="#request">Собрать текст для оценки</a>': "final local request CTA",
     'href="#request">Оценка по фото</a>': "mobile local request CTA",
-    'href="tel:+79009267929"': "direct phone link",
 }
 
 STALE_LABELS = {
@@ -75,14 +73,31 @@ def check_markers(rel: str, text: str, markers: dict[str, str], findings: list[s
 
 def main() -> int:
     findings: list[str] = []
+    config = load_config()
+    phone_link = f'href="tel:{config["phone_e164"]}"'
+    request_path = str(config["default_request_path"])
+    direct_assessment_link = f'href="{request_path}">Оценить по фото</a>'
+    mobile_assessment_link = f'href="{request_path}">Оценка по фото</a>'
+
+    core_required_markers = {
+        **CORE_STATIC_REQUIRED_MARKERS,
+        phone_link: "direct phone link",
+        direct_assessment_link: "direct photo-assessment CTA",
+        mobile_assessment_link: "mobile photo-assessment CTA",
+    }
+
+    request_page_markers = {
+        **REQUEST_STATIC_PAGE_MARKERS,
+        phone_link: "direct phone link",
+    }
 
     for rel in sorted(CORE_CONVERSION_PAGES):
         text = read_page(rel, findings)
         if not text:
             continue
-        check_markers(rel, text, CORE_REQUIRED_MARKERS, findings)
-        if text.count('href="/zayavka/"') < 2:
-            findings.append(f"{rel}: expected at least two links to /zayavka/")
+        check_markers(rel, text, core_required_markers, findings)
+        if text.count(f'href="{request_path}"') < 2:
+            findings.append(f"{rel}: expected at least two links to {request_path}")
         for label in sorted(STALE_LABELS):
             if label in text:
                 findings.append(f"{rel}: contains stale CTA label: {label}")
@@ -90,7 +105,7 @@ def main() -> int:
     request_rel = "zayavka/index.html"
     request_text = read_page(request_rel, findings)
     if request_text:
-        check_markers(request_rel, request_text, REQUEST_PAGE_MARKERS, findings)
+        check_markers(request_rel, request_text, request_page_markers, findings)
         if request_text.count('href="#request"') < 3:
             findings.append(f"{request_rel}: expected hero, final and mobile links to #request")
 

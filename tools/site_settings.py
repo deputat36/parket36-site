@@ -42,9 +42,26 @@ def load_config() -> dict[str, object]:
     missing = sorted(required - data.keys())
     if missing:
         raise ValueError(f"Missing settings: {', '.join(missing)}")
+
+    phone_display = str(data["phone_display"]).strip()
+    if not phone_display:
+        raise ValueError("phone_display must not be empty")
+    data["phone_display"] = phone_display
+
     phone_e164 = str(data["phone_e164"])
     if not re.fullmatch(r"\+7\d{10}", phone_e164):
         raise ValueError("phone_e164 must have the format +7XXXXXXXXXX")
+
+    domain = str(data["domain"]).rstrip("/")
+    if not re.fullmatch(r"https://[a-z0-9.-]+", domain):
+        raise ValueError("domain must use https and must not contain a trailing slash")
+    data["domain"] = domain
+
+    default_request_path = str(data["default_request_path"]).strip()
+    if not re.fullmatch(r"/[a-z0-9\-/]+/", default_request_path):
+        raise ValueError("default_request_path must look like /zayavka/")
+    data["default_request_path"] = default_request_path
+
     return data
 
 

@@ -12,10 +12,16 @@ from pathlib import Path
 import re
 import sys
 
+from site_settings import load_config
+
 ROOT = Path(__file__).resolve().parents[1]
 IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
 PUBLIC_SUFFIXES = {".html", ".css", ".js", ".json", ".xml", ".txt"}
-SITE_URL = "https://parket36.ru"
+SITE_CONFIG = load_config()
+SITE_URL = str(SITE_CONFIG["domain"])
+DEFAULT_REQUEST_PATH = str(SITE_CONFIG["default_request_path"])
+DEFAULT_REQUEST_PAGE = DEFAULT_REQUEST_PATH.strip("/") + "/"
+PHONE_LINK = f'href="tel:{SITE_CONFIG["phone_e164"]}"'
 
 SUPPLEMENTAL_SERVICE_PAGES = {
     "uslugi/master-na-chas/",
@@ -37,7 +43,7 @@ INTERNAL_NOINDEX_PAGES = {
 }
 
 PUBLIC_ENTRY_PAGES = {
-    "zayavka/": "photo assessment request page should stay public and indexable",
+    DEFAULT_REQUEST_PAGE: "photo assessment request page should stay public and indexable",
 }
 
 CTA_LABEL_GUARDRAIL_PAGES = {
@@ -139,11 +145,11 @@ STALE_CTA_MARKERS = {
 
 MOBILE_CTA_REQUIRED_MARKERS = {
     '<div class="mobile-cta">': "mobile CTA wrapper",
-    'href="tel:+79009267929"': "mobile CTA phone link",
+    PHONE_LINK: "mobile CTA phone link",
 }
 
 MOBILE_CTA_PHOTO_LINK_MARKERS = {
-    'href="/zayavka/">Оценка по фото</a>',
+    f'href="{DEFAULT_REQUEST_PATH}">Оценка по фото</a>',
     'href="#request">Оценка по фото</a>',
 }
 
@@ -309,7 +315,7 @@ def main() -> int:
                 findings.append(f"{rel}: missing mobile CTA photo assessment link")
             if 'href="#request">Оценка по фото</a>' in text and 'id="request"' not in text:
                 findings.append(f"{rel}: mobile CTA local request link points to a missing #request section")
-            if 'href="/zayavka/">Заявка</a>' in text:
+            if f'href="{DEFAULT_REQUEST_PATH}">Заявка</a>' in text:
                 findings.append(f"{rel}: mobile CTA should say Оценка по фото, not Заявка")
 
     index = ROOT / "index.html"
