@@ -10,9 +10,13 @@ import shutil
 import sys
 import xml.etree.ElementTree as ET
 
+from site_settings import load_config
+
 ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / "_site"
-DOMAIN = "https://parket36.ru"
+SITE_CONFIG = load_config()
+DOMAIN = str(SITE_CONFIG["domain"])
+DEFAULT_REQUEST_DIR = str(SITE_CONFIG["default_request_path"]).strip("/").split("/", 1)[0]
 
 PUBLIC_DIRS = {
     "css",
@@ -28,7 +32,7 @@ PUBLIC_DIRS = {
     "politika",
     "kak-rabotaem",
     "voprosy-i-otvety",
-    "zayavka",
+    DEFAULT_REQUEST_DIR,
 }
 PUBLIC_FILES = {
     "index.html",
