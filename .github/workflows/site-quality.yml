@@ -24,6 +24,8 @@ jobs:
           python-version: "3.12"
       - name: Validate shared settings
         run: python tools/site_settings.py --check
+      - name: Validate domain settings
+        run: python tools/check_domain_settings.py
       - name: Run static audit
         run: python tools/check_site.py
       - name: Run extra guardrails
