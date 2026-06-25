@@ -6,10 +6,9 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 
+from site_settings import load_config
+
 ROOT = Path(__file__).resolve().parents[1]
-PHONE_LINK = 'href="tel:+79009267929"'
-DIRECT_ASSESSMENT_HREF = 'href="/zayavka/"'
-DIRECT_ASSESSMENT_LINK = 'href="/zayavka/">Оценить по фото</a>'
 LOCAL_ASSESSMENT_LINKS = {
     'href="#request">Получить оценку по фото</a>',
     'href="#request">Оценка по фото</a>',
@@ -133,15 +132,28 @@ def final_cta(text: str, rel: str, findings: list[str]) -> tuple[str, int]:
     return text[start:end + len("</section>")], start
 
 
-def check_direct_actions(rel: str, block: str, location: str, findings: list[str]) -> None:
-    if PHONE_LINK not in block:
+def check_direct_actions(
+    rel: str,
+    block: str,
+    location: str,
+    findings: list[str],
+    *,
+    phone_link: str,
+    direct_assessment_href: str,
+) -> None:
+    if phone_link not in block:
         findings.append(f"{rel}: {location} is missing the phone link")
-    if DIRECT_ASSESSMENT_HREF not in block:
+    if direct_assessment_href not in block:
         findings.append(f"{rel}: {location} is missing the photo assessment link")
 
 
 def main() -> int:
     findings: list[str] = []
+    config = load_config()
+    phone_link = f'href="tel:{config["phone_e164"]}"'
+    request_path = str(config["default_request_path"])
+    direct_assessment_href = f'href="{request_path}"'
+    direct_assessment_link = f'href="{request_path}">Оценить по фото</a>'
 
     for rel in sorted(DIRECT_LEAD_PAGES):
         text = read_page(rel, findings)
@@ -150,8 +162,15 @@ def main() -> int:
         block, _ = final_cta(text, rel, findings)
         if not block:
             continue
-        check_direct_actions(rel, block, "final CTA", findings)
-        if DIRECT_ASSESSMENT_LINK not in block:
+        check_direct_actions(
+            rel,
+            block,
+            "final CTA",
+            findings,
+            phone_link=phone_link,
+            direct_assessment_href=direct_assessment_href,
+        )
+        if direct_assessment_link not in block:
             findings.append(f"{rel}: final CTA should use the direct Оценить по фото label")
 
     for rel in sorted(ABOVE_FOLD_LEAD_PAGES):
@@ -160,7 +179,14 @@ def main() -> int:
             continue
         block, _ = section_block(text, '<section class="subhero">', rel, "subhero", findings)
         if block:
-            check_direct_actions(rel, block, "subhero", findings)
+            check_direct_actions(
+                rel,
+                block,
+                "subhero",
+                findings,
+                phone_link=phone_link,
+                direct_assessment_href=direct_assessment_href,
+            )
 
     for rel in sorted(LOCAL_LEAD_PAGES):
         text = read_page(rel, findings)
@@ -169,7 +195,7 @@ def main() -> int:
         block, start = final_cta(text, rel, findings)
         if not block:
             continue
-        if PHONE_LINK not in block:
+        if phone_link not in block:
             findings.append(f"{rel}: final CTA is missing the phone link")
         if not any(marker in block for marker in LOCAL_ASSESSMENT_LINKS):
             findings.append(f"{rel}: final CTA should link to the local request form")
