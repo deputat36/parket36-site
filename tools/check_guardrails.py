@@ -22,6 +22,7 @@ SITE_URL = str(SITE_CONFIG["domain"])
 DEFAULT_REQUEST_PATH = str(SITE_CONFIG["default_request_path"])
 DEFAULT_REQUEST_PAGE = DEFAULT_REQUEST_PATH.strip("/") + "/"
 PHONE_LINK = f'href="tel:{SITE_CONFIG["phone_e164"]}"'
+DIRECT_PHOTO_ASSESSMENT_LINK = f'href="{DEFAULT_REQUEST_PATH}">Оценить по фото</a>'
 
 SUPPLEMENTAL_SERVICE_PAGES = {
     "uslugi/master-na-chas/",
@@ -117,23 +118,23 @@ FOCUS_PAGE_PROMOTED_MARKERS = {
 REQUIRED_PAGE_MARKERS = {
     "kak-rabotaem/index.html": {
         '<section class="final-cta">': "process page should end with a conversion CTA",
-        'href="/zayavka/">Оценить по фото</a>': "process page should keep a direct photo assessment CTA",
+        DIRECT_PHOTO_ASSESSMENT_LINK: "process page should keep a direct photo assessment CTA",
     },
     "portfolio/index.html": {
         '<section class="final-cta">': "portfolio page should end with a conversion CTA",
-        'href="/zayavka/">Оценить по фото</a>': "portfolio page should keep a direct photo assessment CTA",
+        DIRECT_PHOTO_ASSESSMENT_LINK: "portfolio page should keep a direct photo assessment CTA",
     },
     "resheniya/index.html": {
         '<section class="final-cta">': "solutions index should end with a conversion CTA",
-        'href="/zayavka/">Оценить по фото</a>': "solutions index should keep a direct photo assessment CTA",
+        DIRECT_PHOTO_ASSESSMENT_LINK: "solutions index should keep a direct photo assessment CTA",
     },
     "sovety/index.html": {
         '<section class="final-cta">': "advice index should end with a conversion CTA",
-        'href="/zayavka/">Оценить по фото</a>': "advice index should keep a direct photo assessment CTA",
+        DIRECT_PHOTO_ASSESSMENT_LINK: "advice index should keep a direct photo assessment CTA",
     },
     "voprosy-i-otvety/index.html": {
         '<section class="final-cta">': "FAQ page should end with a conversion CTA",
-        'href="/zayavka/">Оценить по фото</a>': "FAQ page should keep a direct photo assessment CTA",
+        DIRECT_PHOTO_ASSESSMENT_LINK: "FAQ page should keep a direct photo assessment CTA",
     },
 }
 
@@ -335,14 +336,15 @@ def main() -> int:
         if marker not in index_text:
             findings.append(f"index.html: missing {label}: {marker}")
 
-    zayavka = ROOT / "zayavka" / "index.html"
-    zayavka_text = zayavka.read_text(encoding="utf-8", errors="ignore") if zayavka.exists() else ""
+    request_html_path = html_path_for_url_path(DEFAULT_REQUEST_PAGE)
+    request_rel = request_html_path.relative_to(ROOT).as_posix()
+    request_text = request_html_path.read_text(encoding="utf-8", errors="ignore") if request_html_path.exists() else ""
     js = ROOT / "js" / "main.js"
     js_text = js.read_text(encoding="utf-8", errors="ignore") if js.exists() else ""
     for marker, label in PHOTO_ASSESSMENT_FORM_MARKERS.items():
         if marker.startswith('id='):
-            if marker not in zayavka_text:
-                findings.append(f"zayavka/index.html: missing {label}: {marker}")
+            if marker not in request_text:
+                findings.append(f"{request_rel}: missing {label}: {marker}")
         elif marker not in js_text:
             findings.append(f"js/main.js: missing {label}: {marker}")
 
