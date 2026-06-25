@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static checks for parket36.ru.
+"""Static checks for Parket36 pages.
 
 Runs without third-party dependencies and fails CI on broken local links,
 missing SEO essentials, obsolete navigation and accidental legacy content.
@@ -13,13 +13,15 @@ from collections import defaultdict
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
-import json
 import re
 import sys
 import xml.etree.ElementTree as ET
 
+from site_settings import load_config
+
 ROOT = Path(__file__).resolve().parents[1]
-DOMAIN = "https://parket36.ru"
+SITE_CONFIG = load_config()
+DOMAIN = str(SITE_CONFIG["domain"])
 IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
 CURRENT_THEME = "#6f4628"
 PUBLIC_TEXT_SUFFIXES = {".html", ".css", ".js", ".json", ".xml", ".txt"}
@@ -192,15 +194,6 @@ def check_repository_safety(errors: list[str]) -> None:
         if path.exists():
             errors.append(f"Unexpected legacy/CRM path is present: {path.relative_to(ROOT)}")
 
-    settings_path = ROOT / "data" / "site.json"
-    try:
-        settings = json.loads(settings_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        errors.append(f"data/site.json is not readable JSON: {exc}")
-    else:
-        if settings.get("default_request_path") != "/zayavka/":
-            errors.append("data/site.json: default_request_path must be /zayavka/")
-
     forbidden_public_terms = {
         "installationJobCardV1": "CRM installation card component",
         "leader_installation_jobs": "CRM leader database table",
@@ -333,7 +326,7 @@ def main() -> int:
     robots = ROOT / "robots.txt"
     if not robots.exists():
         errors.append("robots.txt is missing")
-    elif "Sitemap: https://parket36.ru/sitemap.xml" not in robots.read_text(encoding="utf-8"):
+    elif f"Sitemap: {DOMAIN}/sitemap.xml" not in robots.read_text(encoding="utf-8"):
         errors.append("robots.txt does not reference the canonical sitemap")
 
     sitemap = ROOT / "sitemap.xml"
