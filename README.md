@@ -63,6 +63,7 @@ python tools/run_quality_checks.py
 - `site_settings.py --check` — синхронизация общих настроек;
 - `check_domain_settings.py` — соответствие `CNAME` и sitemap в `robots.txt` домену из `data/site.json`;
 - `check_workflows.py` — версии GitHub Actions и обязательные шаги CI/деплоя;
+- `check_quality_runner.py` — точный состав и порядок общего quality gate;
 - `check_docs.py` — актуальность README и workflow относительно общего quality runner;
 - `check_site.py` — общий статический аудит страниц;
 - `check_guardrails.py` — дополнительные правила фокуса, индексации и внутренних страниц;
@@ -80,6 +81,7 @@ python tools/run_quality_checks.py
 - alt у изображений;
 - безопасное подключение основного JavaScript через `defer`;
 - версии GitHub Actions и обязательный запуск quality gate перед деплоем;
+- фиксированный состав общего quality gate;
 - отсутствие WhatsApp, старой цветовой схемы и устаревших ссылок;
 - отсутствие видимых SEO-списков;
 - корректный `noindex` для 404, политики, страницы-переходника, внутренних рабочих страниц и дополнительных смежных услуг;
