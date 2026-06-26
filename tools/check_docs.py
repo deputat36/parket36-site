@@ -30,6 +30,7 @@ def main() -> int:
         "tools/run_quality_checks.py",
         "check_domain_settings.py",
         "check_workflows.py",
+        "check_quality_runner.py",
         "check_conversion_paths.py",
         "check_lead_paths.py",
     ]

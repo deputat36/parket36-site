@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+"""Validate the shared quality gate composition."""
+
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+RUNNER_PATH = ROOT / "tools" / "run_quality_checks.py"
+
+EXPECTED_CHECKS = [
+    ["tools/site_settings.py", "--check"],
+    ["tools/check_domain_settings.py"],
+    ["tools/check_workflows.py"],
+    ["tools/check_quality_runner.py"],
+    ["tools/check_docs.py"],
+    ["tools/check_site.py"],
+    ["tools/check_guardrails.py"],
+    ["tools/check_conversion_paths.py"],
+    ["tools/check_lead_paths.py"],
+    ["tools/build_pages.py"],
+]
+
+
+def extract_checks() -> list[list[str]]:
+    tree = ast.parse(RUNNER_PATH.read_text(encoding="utf-8"))
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            names = [target.id for target in node.targets if isinstance(target, ast.Name)]
+            if "CHECKS" not in names:
+                continue
+
+            checks: list[list[str]] = []
+            for item in ast.literal_eval(node.value):
+                if not isinstance(item, tuple) or len(item) != 2:
+                    raise ValueError("CHECKS entries must be (title, args) tuples")
+                title, args = item
+                if not isinstance(title, str) or not isinstance(args, list):
+                    raise ValueError("CHECKS entries must use a string title and list args")
+                if not all(isinstance(arg, str) for arg in args):
+                    raise ValueError("CHECKS args must contain only strings")
+                checks.append(args)
+            return checks
+
+    raise ValueError("CHECKS assignment is missing")
+
+
+def main() -> int:
+    findings: list[str] = []
+
+    try:
+        checks = extract_checks()
+    except (SyntaxError, ValueError) as exc:
+        print(f"Quality runner parse error: {exc}")
+        return 1
+
+    if checks != EXPECTED_CHECKS:
+        findings.append("tools/run_quality_checks.py must keep the approved quality gate order")
+        findings.append(f"expected: {EXPECTED_CHECKS}")
+        findings.append(f"actual:   {checks}")
+
+    seen: set[str] = set()
+    for args in checks:
+        script = args[0]
+        if script in seen:
+            findings.append(f"duplicate quality check: {script}")
+        seen.add(script)
+
+        script_path = ROOT / script
+        if not script_path.exists():
+            findings.append(f"quality check script is missing: {script}")
+
+    if findings:
+        print("Quality runner findings:")
+        for finding in findings:
+            print(f"  - {finding}")
+        return 1
+
+    print("Quality runner check passed")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
