@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CHECKS = [
     ("Validate shared settings", ["tools/site_settings.py", "--check"]),
     ("Validate domain settings", ["tools/check_domain_settings.py"]),
+    ("Validate workflow configuration", ["tools/check_workflows.py"]),
     ("Validate operational docs", ["tools/check_docs.py"]),
     ("Run static audit", ["tools/check_site.py"]),
     ("Run extra guardrails", ["tools/check_guardrails.py"]),
