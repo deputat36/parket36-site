@@ -9,6 +9,7 @@ import sys
 from site_settings import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
+FORM_POLICY_NOTICE = 'Нажимая кнопку, вы соглашаетесь с <a href="/politika/">обработкой контактных данных</a>.'
 
 CORE_CONVERSION_PAGES = {
     "ceny/index.html",
@@ -45,6 +46,7 @@ REQUEST_STATIC_PAGE_MARKERS = {
     'id="request-contact"': "contact field",
     'type="submit">Отправить заявку и скопировать текст</button>': "submit and copy action",
     'Заявка отправляется Ивану через защищённую форму.': "lead submission disclosure",
+    FORM_POLICY_NOTICE: "privacy policy consent notice",
     '<section class="final-cta">': "final conversion section",
     'href="#request">Собрать текст для оценки</a>': "final local request CTA",
     'href="#request">Оценка по фото</a>': "mobile local request CTA",

@@ -9,6 +9,7 @@ import sys
 from site_settings import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
+FORM_POLICY_NOTICE = 'Нажимая кнопку, вы соглашаетесь с <a href="/politika/">обработкой контактных данных</a>.'
 LOCAL_ASSESSMENT_LINKS = {
     'href="#request">Получить оценку по фото</a>',
     'href="#request">Оценка по фото</a>',
@@ -78,6 +79,7 @@ REQUEST_PAGE_MARKERS = {
     'id="request-contact" autocomplete="tel" inputmode="tel" required': "required contact field",
     '>Отправить заявку и скопировать текст</button>': "submit and copy action",
     "Заявка отправляется Ивану через защищённую форму.": "lead submission disclosure",
+    FORM_POLICY_NOTICE: "privacy policy consent notice",
 }
 
 SCRIPT_MARKERS = {
@@ -219,6 +221,8 @@ def main() -> int:
             findings.append(f"{rel}: final CTA should link to the local request form")
         if 'id="request"' not in text:
             findings.append(f"{rel}: local lead link points to a missing request section")
+        if FORM_POLICY_NOTICE not in text:
+            findings.append(f"{rel}: missing privacy policy consent notice: {FORM_POLICY_NOTICE}")
         if not any(marker in text[:start] for marker in LOCAL_ASSESSMENT_LINKS):
             findings.append(f"{rel}: missing local photo assessment CTA before the final section")
         for marker in STALE_DISCLOSURES:
