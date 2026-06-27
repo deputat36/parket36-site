@@ -44,7 +44,7 @@ REQUEST_STATIC_PAGE_MARKERS = {
     'id="request-callback"': "callback field",
     'id="request-contact"': "contact field",
     'type="submit">Скопировать текст для оценки</button>': "copy action",
-    'Отправка данных на сервер не выполняется.': "local-processing disclosure",
+    'Заявка отправляется Ивану через защищённую форму.': "lead submission disclosure",
     '<section class="final-cta">': "final conversion section",
     'href="#request">Собрать текст для оценки</a>': "final local request CTA",
     'href="#request">Оценка по фото</a>': "mobile local request CTA",
@@ -54,6 +54,10 @@ STALE_LABELS = {
     "Составить заявку",
     "Подготовить заявку",
     "подготовьте заявку",
+    "Отправка данных на сервер не выполняется",
+    "Сайт не отправляет данные на сервер",
+    "Без отправки данных на сайт",
+    "Данные не сохраняются на сайте",
 }
 
 
@@ -108,6 +112,9 @@ def main() -> int:
         check_markers(request_rel, request_text, request_page_markers, findings)
         if request_text.count('href="#request"') < 3:
             findings.append(f"{request_rel}: expected hero, final and mobile links to #request")
+        for label in sorted(STALE_LABELS):
+            if label in request_text:
+                findings.append(f"{request_rel}: contains stale lead disclosure: {label}")
 
     if findings:
         print("Conversion path findings:")
