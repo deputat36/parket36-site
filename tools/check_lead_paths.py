@@ -91,6 +91,13 @@ SCRIPT_MARKERS = {
     "parket36:lead": "lead analytics event",
 }
 
+POLICY_MARKERS = {
+    "Заявка отправляется Ивану через защищённую форму": "current lead submission disclosure",
+    "Supabase": "Supabase storage disclosure",
+    "сервисный ключ Supabase не передаётся в браузер": "no browser service role disclosure",
+    "IP хранится только в виде хэша": "hashed IP audit disclosure",
+}
+
 STALE_DISCLOSURES = {
     "Форма ничего не отправляет",
     "Сайт не отправляет данные на сервер",
@@ -227,6 +234,14 @@ def main() -> int:
     for marker, label in SCRIPT_MARKERS.items():
         if marker not in script_text:
             findings.append(f"js/main.js: missing {label}: {marker}")
+
+    policy_text = read_page("politika/index.html", findings)
+    for marker, label in POLICY_MARKERS.items():
+        if marker not in policy_text:
+            findings.append(f"politika/index.html: missing {label}: {marker}")
+    for marker in STALE_DISCLOSURES:
+        if marker in policy_text:
+            findings.append(f"politika/index.html: contains stale lead disclosure: {marker}")
 
     if findings:
         print("Lead path findings:")
