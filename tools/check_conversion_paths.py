@@ -43,7 +43,7 @@ REQUEST_STATIC_PAGE_MARKERS = {
     'id="request-task"': "task field",
     'id="request-callback"': "callback field",
     'id="request-contact"': "contact field",
-    'type="submit">Скопировать текст для оценки</button>': "copy action",
+    'type="submit">Отправить заявку и скопировать текст</button>': "submit and copy action",
     'Заявка отправляется Ивану через защищённую форму.': "lead submission disclosure",
     '<section class="final-cta">': "final conversion section",
     'href="#request">Собрать текст для оценки</a>': "final local request CTA",
