@@ -1,5 +1,6 @@
 (() => {
   const ATTRIBUTION_KEY = 'parket36_attribution';
+  const PARKET_LEAD_ENDPOINT = 'https://ofewxuqfjhamgerwzull.supabase.co/functions/v1/parket-public-lead';
 
   const safeSessionGet = key => {
     try {
@@ -15,6 +16,35 @@
     } catch {
       // The site remains fully functional when browser storage is unavailable.
     }
+  };
+
+  const createRequestId = () => {
+    if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+    return `parket36-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  };
+
+  const submitParketLead = async payload => {
+    if (typeof fetch !== 'function') throw new Error('fetch_unavailable');
+
+    const response = await fetch(PARKET_LEAD_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true
+    });
+
+    let result = {};
+    try {
+      result = await response.json();
+    } catch {
+      // A non-JSON response is treated as a temporary delivery failure.
+    }
+
+    if (!response.ok || (result && result.ok === false)) {
+      throw new Error(result?.error || `lead_submit_${response.status}`);
+    }
+
+    return result;
   };
 
   const prefersReducedMotion = () => {
@@ -363,9 +393,14 @@
     const callbackField = document.getElementById('request-callback');
     const contactField = document.getElementById('request-contact');
     const submitButton = form.querySelector('button[type="submit"]');
+    const disclosure = Array.from(form.querySelectorAll('.form-help')).at(-1);
 
     if (submitButton && submitButton.textContent.trim() === 'Скопировать заявку') {
       submitButton.textContent = 'Скопировать текст для оценки';
+    }
+
+    if (disclosure && /сервер|сайт/.test(disclosure.textContent || '')) {
+      disclosure.textContent = 'Заявка отправляется Ивану через защищённую форму. Готовый текст также копируется, чтобы вы могли отправить фото отдельными сообщениями.';
     }
 
     if (status) {
@@ -390,7 +425,7 @@
           taskField.setSelectionRange(taskField.value.length, taskField.value.length);
         }
 
-        if (status) status.textContent = 'Шаблон добавлен. Уточните детали и скопируйте текст для оценки.';
+        if (status) status.textContent = 'Шаблон добавлен. Уточните детали и отправьте заявку Ивану.';
         emitLead({ type: 'request-template', service: service || 'не указана' });
       });
     });
@@ -405,11 +440,17 @@
       const video = videoField?.value.trim() || 'не указано';
       const task = taskField?.value.trim() || '';
       const callback = callbackField?.value.trim() || 'не указано';
-      const contact = contactField?.value.trim() || 'не указан';
+      const contact = contactField?.value.trim() || '';
 
       if (!task) {
         if (status) status.textContent = 'Опишите, что нужно сделать.';
         taskField?.focus();
+        return;
+      }
+
+      if (!contact) {
+        if (status) status.textContent = 'Укажите имя и телефон, чтобы Иван мог связаться с вами.';
+        contactField?.focus();
         return;
       }
 
@@ -435,10 +476,52 @@
         ...attributionLines
       ].join('\n');
 
+      const leadPayload = {
+        request_id: createRequestId(),
+        service,
+        location: locationValue,
+        area,
+        photos,
+        video,
+        task,
+        callback_time: callback,
+        contact,
+        page: location.pathname,
+        utm_source: attribution.source,
+        utm_medium: attribution.medium,
+        utm_campaign: attribution.campaign,
+        utm_content: attribution.content,
+        utm_term: attribution.term
+      };
+
+      let leadSaved = false;
+      let leadDuplicate = false;
+      const defaultButtonText = submitButton?.textContent || '';
+
+      if (status) status.textContent = 'Отправляем заявку Ивану и готовим текст для копирования...';
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Отправляем...';
+      }
+
+      try {
+        const result = await submitParketLead(leadPayload);
+        leadSaved = true;
+        leadDuplicate = Boolean(result?.duplicate);
+      } catch {
+        leadSaved = false;
+      }
+
       try {
         await navigator.clipboard.writeText(text);
         if (status) {
-          status.textContent = 'Текст для оценки скопирован. Его можно вставить в сообщение или продиктовать по телефону.';
+          if (leadSaved && leadDuplicate) {
+            status.textContent = 'Эта заявка уже была сохранена. Текст снова скопирован для отправки фото.';
+          } else if (leadSaved) {
+            status.textContent = 'Заявка отправлена Ивану. Текст также скопирован — приложите к нему фотографии пола.';
+          } else {
+            status.textContent = 'Автоматически отправить заявку не удалось. Текст скопирован: отправьте его Ивану вместе с фото или позвоните.';
+          }
         }
       } catch {
         let fallback = form.querySelector('[data-request-fallback]');
@@ -453,10 +536,27 @@
         fallback.value = text;
         fallback.focus();
         fallback.select();
-        if (status) status.textContent = 'Скопируйте готовый текст из поля ниже.';
+        if (status) {
+          status.textContent = leadSaved
+            ? 'Заявка отправлена Ивану. Скопируйте готовый текст ниже и приложите к нему фотографии пола.'
+            : 'Скопируйте готовый текст ниже и отправьте его Ивану вместе с фотографиями пола.';
+        }
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = defaultButtonText;
+        }
       }
 
-      emitLead({ type: 'request-copy', service, area, photos, video, callback: callback !== 'не указано' });
+      emitLead({
+        type: leadSaved ? 'request-submit' : 'request-copy',
+        service,
+        area,
+        photos,
+        video,
+        callback: callback !== 'не указано',
+        backend: leadSaved ? 'supabase' : 'clipboard-fallback'
+      });
     });
   }
 
