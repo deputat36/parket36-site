@@ -76,7 +76,7 @@ REQUEST_PAGE_MARKERS = {
     'id="request-contact"': "contact field",
     'id="request-task" rows="6" required': "required task field",
     'id="request-contact" autocomplete="tel" inputmode="tel" required': "required contact field",
-    '>Скопировать текст для оценки</button>': "copy action",
+    '>Отправить заявку и скопировать текст</button>': "submit and copy action",
     "Заявка отправляется Ивану через защищённую форму.": "lead submission disclosure",
 }
 
