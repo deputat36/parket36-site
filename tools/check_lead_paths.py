@@ -76,16 +76,27 @@ REQUEST_PAGE_MARKERS = {
     'id="request-contact"': "contact field",
     'id="request-task" rows="6" required': "required task field",
     'id="request-contact" autocomplete="tel" inputmode="tel" required': "required contact field",
-    '>Скопировать текст для оценки</button>': "copy action",
-    "Данные не сохраняются на сайте.": "privacy explanation",
+    '>Отправить заявку и скопировать текст</button>': "submit and copy action",
+    "Заявка отправляется Ивану через защищённую форму.": "lead submission disclosure",
 }
 
 SCRIPT_MARKERS = {
+    "PARKET_LEAD_ENDPOINT": "Supabase lead endpoint",
+    "parket-public-lead": "Parket Supabase Edge Function",
+    "submitParketLead(leadPayload)": "lead submit request",
     "navigator.clipboard.writeText(text)": "clipboard copy",
     "data-request-fallback": "clipboard fallback",
     "Фото:": "photo readiness in copied text",
     "Видео скрипа/подвижности:": "video readiness in copied text",
     "parket36:lead": "lead analytics event",
+}
+
+STALE_DISCLOSURES = {
+    "Форма ничего не отправляет",
+    "Сайт не отправляет данные на сервер",
+    "Без отправки данных на сайт",
+    "Отправка данных на сервер не выполняется",
+    "Данные не сохраняются на сайте",
 }
 
 
@@ -203,6 +214,9 @@ def main() -> int:
             findings.append(f"{rel}: local lead link points to a missing request section")
         if not any(marker in text[:start] for marker in LOCAL_ASSESSMENT_LINKS):
             findings.append(f"{rel}: missing local photo assessment CTA before the final section")
+        for marker in STALE_DISCLOSURES:
+            if marker in text:
+                findings.append(f"{rel}: contains stale lead disclosure: {marker}")
 
     request_text = read_page("zayavka/index.html", findings)
     for marker, label in REQUEST_PAGE_MARKERS.items():
