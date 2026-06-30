@@ -15,6 +15,7 @@ CHECKS = [
     ("Validate workflow configuration", ["tools/check_workflows.py"]),
     ("Validate quality runner", ["tools/check_quality_runner.py"]),
     ("Validate operational docs", ["tools/check_docs.py"]),
+    ("Validate sitemap helper", ["tools/check_sitemap_helper.py"]),
     ("Run static audit", ["tools/check_site.py"]),
     ("Run extra guardrails", ["tools/check_guardrails.py"]),
     ("Validate conversion paths", ["tools/check_conversion_paths.py"]),
