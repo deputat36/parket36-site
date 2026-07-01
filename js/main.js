@@ -252,6 +252,32 @@
 
   updateScrollUi();
 
+  const isPhoneLead = detail => ['phone', 'phone-inline'].includes(detail.type);
+
+  const emitPhoneClick = payload => {
+    window.dispatchEvent(new CustomEvent('parket36:phone-click', { detail: payload }));
+
+    if (Array.isArray(window.dataLayer)) {
+      window.dataLayer.push({
+        event: 'parket36_phone_click',
+        phone_href: payload.href || '',
+        page: payload.page,
+        attribution: payload.attribution
+      });
+    }
+
+    if (typeof window.ym === 'function') {
+      const counterId = window.parket36MetrikaId;
+      if (counterId) {
+        try {
+          window.ym(counterId, 'reachGoal', 'phone-click', payload);
+        } catch {
+          // Analytics must never break the public site.
+        }
+      }
+    }
+  };
+
   const emitLead = detail => {
     const payload = {
       ...detail,
@@ -260,6 +286,10 @@
     };
 
     window.dispatchEvent(new CustomEvent('parket36:lead', { detail: payload }));
+
+    if (isPhoneLead(detail)) {
+      emitPhoneClick(payload);
+    }
 
     if (typeof window.ym === 'function') {
       const counterId = window.parket36MetrikaId;
