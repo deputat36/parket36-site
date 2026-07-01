@@ -32,6 +32,7 @@ PUBLIC_DIRS = {
     "politika",
     "kak-rabotaem",
     "voprosy-i-otvety",
+    "pozvonit-ivanu",
     DEFAULT_REQUEST_DIR,
 }
 PUBLIC_FILES = {
