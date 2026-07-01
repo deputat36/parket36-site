@@ -106,6 +106,7 @@ STALE_DISCLOSURES = {
     "Без отправки данных на сайт",
     "Отправка данных на сервер не выполняется",
     "Данные не сохраняются на сайте",
+    "Данные никуда не отправляются",
 }
 
 
@@ -225,6 +226,14 @@ def main() -> int:
             findings.append(f"{rel}: missing privacy policy consent notice: {FORM_POLICY_NOTICE}")
         if not any(marker in text[:start] for marker in LOCAL_ASSESSMENT_LINKS):
             findings.append(f"{rel}: missing local photo assessment CTA before the final section")
+        for marker in STALE_DISCLOSURES:
+            if marker in text:
+                findings.append(f"{rel}: contains stale lead disclosure: {marker}")
+
+    for rel in sorted(DIRECT_LEAD_PAGES):
+        text = read_page(rel, findings)
+        if not text:
+            continue
         for marker in STALE_DISCLOSURES:
             if marker in text:
                 findings.append(f"{rel}: contains stale lead disclosure: {marker}")
