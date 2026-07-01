@@ -69,6 +69,20 @@ python tools/run_quality_checks.py
 
 Исходник функции хранится в `supabase/functions/parket-public-lead/index.ts`, SQL-схема — в `supabase/sql/parket_leads.sql`.
 
+## Аналитика звонков
+
+Главное бизнес-действие сайта — звонок Ивану. В `js/main.js` уже есть события для кликов по телефону, открытия формы, выбора шаблона задачи, успешной отправки заявки и fallback-копирования текста.
+
+Инструкция по подключению целей Метрики, GTM/dataLayer, ручной проверке событий и UTM-разметке хранится в `docs/analytics-events.md`.
+
+Ключевые события:
+
+- `parket36:phone-click` — отдельное браузерное событие клика по телефону;
+- `parket36_phone_click` — событие для `window.dataLayer`;
+- `phone-click` — рекомендуемая цель Яндекс.Метрики;
+- `request-submit` — успешная заявка через Supabase;
+- `request-copy` — fallback, когда текст подготовлен, но автоотправка не прошла.
+
 ## Автоматическая проверка
 
 Каждый Pull Request, изменение ветки `main` и еженедельный запуск проверяются workflow `Site quality`.
