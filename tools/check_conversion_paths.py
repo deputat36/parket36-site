@@ -26,10 +26,30 @@ CORE_CONVERSION_PAGES = {
     "uslugi/terrasy-i-derevyannye-poly/index.html",
 }
 
+PHONE_TRIAGE_PAGES = {
+    "uslugi/parket-i-poly/index.html",
+    "uslugi/ciklevka-parketa/index.html",
+    "uslugi/restavraciya-parketa/index.html",
+    "uslugi/shlifovka-doshchatogo-pola/index.html",
+    "uslugi/pokrytie-lakom-i-maslom/index.html",
+}
+
 CORE_STATIC_REQUIRED_MARKERS = {
     '<meta name="robots" content="index, follow">': "indexable robots directive",
     '<section class="final-cta">': "final conversion section",
     '<div class="mobile-cta">': "mobile CTA wrapper",
+}
+
+PHONE_TRIAGE_REQUIRED_MARKERS = {
+    "Когда лучше сразу звонить": "phone triage section heading",
+    'href="/pozvonit-ivanu/"': "phone script helper link",
+    "Что сказать по телефону": "phone script CTA label",
+}
+
+PRICE_PAGE_PHONE_MARKERS = {
+    "Ориентир по телефону": "price page phone estimate section",
+    'href="/pozvonit-ivanu/"': "phone script helper link",
+    "Что сказать по телефону": "phone script CTA label",
 }
 
 REQUEST_STATIC_PAGE_MARKERS = {
@@ -103,6 +123,10 @@ def main() -> int:
         if not text:
             continue
         check_markers(rel, text, core_required_markers, findings)
+        if rel in PHONE_TRIAGE_PAGES:
+            check_markers(rel, text, PHONE_TRIAGE_REQUIRED_MARKERS, findings)
+        if rel == "ceny/index.html":
+            check_markers(rel, text, PRICE_PAGE_PHONE_MARKERS, findings)
         if text.count(f'href="{request_path}"') < 2:
             findings.append(f"{rel}: expected at least two links to {request_path}")
         for label in sorted(STALE_LABELS):
