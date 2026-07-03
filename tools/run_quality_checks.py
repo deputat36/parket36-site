@@ -16,6 +16,7 @@ CHECKS = [
     ("Validate quality runner", ["tools/check_quality_runner.py"]),
     ("Validate operational docs", ["tools/check_docs.py"]),
     ("Validate sitemap helper", ["tools/check_sitemap_helper.py"]),
+    ("Report advice index gaps", ["tools/report_advice_index_gaps.py"]),
     ("Run static audit", ["tools/check_site.py"]),
     ("Run extra guardrails", ["tools/check_guardrails.py"]),
     ("Validate conversion paths", ["tools/check_conversion_paths.py"]),
