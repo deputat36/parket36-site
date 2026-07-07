@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Report advice pages from sitemap that are not linked from /sovety/."""
+"""Report mismatches between advice sitemap URLs and /sovety/ cards."""
 
 from __future__ import annotations
 
@@ -30,19 +30,35 @@ def linked_advice_urls() -> set[str]:
     return set(re.findall(r'href="(/sovety/[^"]+/)"', html))
 
 
+def print_list(title: str, urls: list[str]) -> None:
+    print(title)
+    for url in urls:
+        print(f"  - {url}")
+    print(f"Total: {len(urls)}")
+
+
 def main() -> int:
     sitemap_urls = sitemap_advice_urls()
-    linked_urls = linked_advice_urls()
-    missing = [url for url in sitemap_urls if url not in linked_urls]
+    linked_urls = sorted(linked_advice_urls())
+    sitemap_url_set = set(sitemap_urls)
+    linked_url_set = set(linked_urls)
 
-    if not missing:
-        print("All sitemap advice pages are linked from /sovety/.")
+    missing_cards = [url for url in sitemap_urls if url not in linked_url_set]
+    missing_sitemap_entries = [url for url in linked_urls if url not in sitemap_url_set]
+
+    print(f"Sitemap advice pages: {len(sitemap_urls)}")
+    print(f"/sovety/ advice cards: {len(linked_urls)}")
+
+    if not missing_cards and not missing_sitemap_entries:
+        print("Advice sitemap and /sovety/ cards are in sync.")
         return 0
 
-    print("Advice pages from sitemap without a /sovety/ card:")
-    for url in missing:
-        print(f"  - {url}")
-    print(f"Total: {len(missing)}")
+    if missing_cards:
+        print_list("Advice pages from sitemap without a /sovety/ card:", missing_cards)
+
+    if missing_sitemap_entries:
+        print_list("Advice cards that are missing from sitemap:", missing_sitemap_entries)
+
     return 0
 
 
