@@ -22,6 +22,7 @@
 
 Что осталось:
 
+- запросить недостающие данные по `docs/materials-request-checklist.md`;
 - заполнить `docs/confirmed-materials-template.md`;
 - собрать фото по `docs/photo-materials-checklist.md`;
 - после подтверждения обновить публичные страницы сайта.
