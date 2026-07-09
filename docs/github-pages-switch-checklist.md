@@ -8,6 +8,7 @@
 - `robots.txt` указывает sitemap и host для `parket36.ru`.
 - `.github/workflows/pages.yml` собирает сайт и публикует `_site` через GitHub Pages.
 - `.github/workflows/site-quality.yml` запускает общий quality gate.
+- `tools/check_guardrails.py` блокирует возврат `WhatsApp` и `wa.me` в публичные текстовые файлы.
 
 ## Что проверить вручную
 
