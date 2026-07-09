@@ -1,0 +1,18 @@
+# Индекс рабочих документов
+
+Этот файл помогает быстро найти внутренние документы проекта.
+
+## Запуск и публикация
+
+- `docs/github-pages-switch-checklist.md` — проверка переключения `parket36.ru` на GitHub Pages.
+
+## Материалы для сайта
+
+- `docs/materials-index.md` — порядок работы с материалами.
+- `docs/confirmed-materials-template.md` — основной шаблон сбора данных.
+- `docs/photo-materials-checklist.md` — чек-лист фотоматериалов.
+
+## Аудиты
+
+- `docs/call-growth-audit-2026-07-01.md` — аудит конверсии в звонки.
+- `docs/advice-index-link-audit-2026-07-03.md` — аудит карточек раздела советов.
