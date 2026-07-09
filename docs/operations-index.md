@@ -17,6 +17,7 @@
 ## Материалы для сайта
 
 - `docs/materials-index.md` — порядок работы с материалами.
+- `docs/materials-request-checklist.md` — короткий чек-лист запроса недостающих данных.
 - `docs/confirmed-materials-template.md` — основной шаблон сбора данных.
 - `docs/photo-materials-checklist.md` — чек-лист фотоматериалов.
 
