@@ -10,6 +10,10 @@
 
 - `docs/github-pages-switch-checklist.md` — проверка переключения `parket36.ru` на GitHub Pages.
 
+## Аналитика
+
+- `docs/analytics-events.md` — события звонков, заявок, UTM-атрибуции и цели Метрики/GTM.
+
 ## Материалы для сайта
 
 - `docs/materials-index.md` — порядок работы с материалами.
