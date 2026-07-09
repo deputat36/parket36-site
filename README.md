@@ -87,6 +87,10 @@ python tools/run_quality_checks.py
 - `request-submit` — успешная заявка через Supabase;
 - `request-copy` — fallback, когда текст подготовлен, но автоотправка не прошла.
 
+## Рабочие документы
+
+Навигация по внутренним чек-листам, аудитам и следующим действиям проекта хранится в `docs/operations-index.md`.
+
 ## Автоматическая проверка
 
 Каждый Pull Request, изменение ветки `main` и еженедельный запуск проверяются workflow `Site quality`.
