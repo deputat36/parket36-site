@@ -109,7 +109,6 @@ python tools/run_quality_checks.py
 - `check_quality_runner.py` — точный состав и порядок общего quality gate;
 - `check_docs.py` — актуальность README и workflow относительно общего quality runner;
 - `check_sitemap_helper.py` — проверка вспомогательного инструмента добавления sitemap-записей;
-- `report_advice_index_gaps.py` — ручной информационный отчёт по страницам советов из sitemap без карточки в `/sovety/`;
 - `check_site.py` — общий статический аудит страниц;
 - `check_guardrails.py` — дополнительные правила фокуса, индексации и внутренних страниц;
 - `check_conversion_paths.py` — телефон, мобильная CTA, финальные CTA и ссылки на оценку по фото;
@@ -127,7 +126,6 @@ python tools/run_quality_checks.py
 - безопасное подключение основного JavaScript через `defer`;
 - версии GitHub Actions и обязательный запуск quality gate перед деплоем;
 - фиксированный состав общего quality gate;
-- информационный отчёт по страницам советов, которые есть в sitemap, но пока не имеют карточки в `/sovety/`;
 - отсутствие WhatsApp, старой цветовой схемы и устаревших ссылок;
 - отсутствие видимых SEO-списков;
 - корректный `noindex` для 404, политики, страницы-переходника, внутренних рабочих страниц и дополнительных смежных услуг;
