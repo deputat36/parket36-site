@@ -18,6 +18,7 @@ PACKAGE_JSON = ROOT / "package.json"
 DENO_CONFIG = ROOT / "deno.json"
 E2E_TEST = ROOT / "tests" / "e2e" / "site-smoke.spec.mjs"
 ACCESSIBILITY_TEST = ROOT / "tests" / "e2e" / "accessibility.spec.mjs"
+ACCESSIBILITY_CSS = ROOT / "css" / "accessibility-polish.css"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
 DENO_SETUP = "uses: denoland/setup-deno@v2"
@@ -106,6 +107,12 @@ REQUIRED_BROWSER_FILES = {
         "wcag21a",
         "wcag21aa",
         "accessibility.spec.mjs",
+    ],
+    ACCESSIBILITY_CSS: [
+        ".person-card .muted",
+        '.form-help a[href$="/politika/"]',
+        '.footer__bottom a[href$="/politika/"]',
+        "text-decoration: underline",
     ],
 }
 
