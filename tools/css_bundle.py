@@ -9,6 +9,7 @@ import re
 import shutil
 
 from html_accessibility import inject_accessibility_html
+from shared_shell import apply_shared_shell
 
 CSS_MODULES = (
     "style.css",
@@ -148,12 +149,13 @@ def validate_bundle(destination: Path, bundle_href: str, errors: list[str]) -> N
 
 
 def prepare_css_bundle(root: Path, destination: Path, errors: list[str]) -> str | None:
-    """Build, inject and validate public CSS and mandatory static markup."""
+    """Build, inject and validate public CSS, shell and mandatory static markup."""
     bundle_href = build_bundle(root, destination, errors)
     if bundle_href is None:
         return None
 
     rewrite_html(destination, bundle_href, errors)
+    apply_shared_shell(root, destination, errors)
     inject_accessibility_html(destination, errors)
     remove_dynamic_css_loader(destination, errors)
     validate_bundle(destination, bundle_href, errors)
