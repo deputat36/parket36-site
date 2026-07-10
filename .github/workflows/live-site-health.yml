@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  issues: write
 
 jobs:
   health:
@@ -31,6 +33,18 @@ jobs:
           path: live-health-report.md
           if-no-files-found: error
           retention-days: 30
+      - name: Update repeated failure issue
+        if: steps.live_health.outcome == 'failure'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_live_health_issue.py failure --report live-health-report.md
+      - name: Close recovered issue
+        if: steps.live_health.outcome == 'success'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_live_health_issue.py success
       - name: Fail on live health errors
         if: steps.live_health.outcome == 'failure'
         run: exit 1
