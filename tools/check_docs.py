@@ -34,6 +34,7 @@ def main() -> int:
         "check_empty_link_attributes.py",
         "check_conversion_paths.py",
         "check_lead_paths.py",
+        "check_lead_reliability.py",
     ]
     for marker in required_readme_markers:
         if marker not in readme:

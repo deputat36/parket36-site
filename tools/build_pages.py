@@ -17,6 +17,8 @@ DEST = ROOT / "_site"
 SITE_CONFIG = load_config()
 DOMAIN = str(SITE_CONFIG["domain"])
 DEFAULT_REQUEST_DIR = str(SITE_CONFIG["default_request_path"]).strip("/").split("/", 1)[0]
+LEAD_RELIABILITY_SCRIPT = '<script src="/js/lead-reliability.js" defer></script>'
+MAIN_SCRIPT = '<script src="/js/main.js" defer></script>'
 
 PUBLIC_DIRS = {
     "css",
@@ -87,6 +89,31 @@ def remove_internal_working_paths() -> None:
             shutil.rmtree(target)
         elif target.exists():
             target.unlink()
+
+
+def inject_lead_reliability(errors: list[str]) -> None:
+    script_path = DEST / "js" / "lead-reliability.js"
+    if not script_path.exists():
+        errors.append("Lead reliability script is missing from the public build")
+        return
+
+    for html_file in sorted(DEST.rglob("*.html")):
+        text = html_file.read_text(encoding="utf-8")
+        if 'id="request-form"' not in text:
+            continue
+        if LEAD_RELIABILITY_SCRIPT in text:
+            continue
+        if MAIN_SCRIPT not in text:
+            errors.append(
+                f"{html_file.relative_to(DEST).as_posix()}: request form page is missing main.js"
+            )
+            continue
+        text = text.replace(
+            MAIN_SCRIPT,
+            f"{LEAD_RELIABILITY_SCRIPT}\n{MAIN_SCRIPT}",
+            1,
+        )
+        html_file.write_text(text, encoding="utf-8")
 
 
 def iter_source_html() -> list[Path]:
@@ -219,6 +246,8 @@ def main() -> int:
     remove_internal_working_paths()
 
     errors: list[str] = []
+    inject_lead_reliability(errors)
+
     required = ["index.html", "404.html", "CNAME", "robots.txt", "sitemap.xml"]
     missing = [name for name in required if not (DEST / name).exists()]
     if missing:
