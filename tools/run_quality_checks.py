@@ -16,6 +16,7 @@ CHECKS = [
     ("Validate quality runner", ["tools/check_quality_runner.py"]),
     ("Validate operational docs", ["tools/check_docs.py"]),
     ("Validate sitemap helper", ["tools/check_sitemap_helper.py"]),
+    ("Validate live health checker", ["tools/check_live_site.py", "--self-test"]),
     ("Validate link attributes", ["tools/check_empty_link_attributes.py"]),
     ("Run static audit", ["tools/check_site.py"]),
     ("Run extra guardrails", ["tools/check_guardrails.py"]),

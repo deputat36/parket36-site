@@ -1,0 +1,36 @@
+name: Live site health
+
+on:
+  schedule:
+    - cron: "23 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run live health check
+        id: live_health
+        continue-on-error: true
+        run: python tools/check_live_site.py --report live-health-report.md
+      - name: Upload live health report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-health-report
+          path: live-health-report.md
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail on live health errors
+        if: steps.live_health.outcome == 'failure'
+        run: exit 1

@@ -9,6 +9,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 SITE_QUALITY_PATH = ROOT / ".github" / "workflows" / "site-quality.yml"
 PAGES_PATH = ROOT / ".github" / "workflows" / "pages.yml"
+LIVE_HEALTH_PATH = ROOT / ".github" / "workflows" / "live-site-health.yml"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
 
@@ -28,6 +29,17 @@ EXPECTED_MARKERS = {
         "uses: actions/upload-pages-artifact@v4",
         "uses: actions/deploy-pages@v4",
         'path: "_site"',
+    ],
+    LIVE_HEALTH_PATH: [
+        'cron: "23 4 * * *"',
+        "workflow_dispatch:",
+        "uses: actions/checkout@v4",
+        "uses: actions/setup-python@v5",
+        PYTHON_VERSION,
+        "run: python tools/check_live_site.py --report live-health-report.md",
+        "continue-on-error: true",
+        "uses: actions/upload-artifact@v4",
+        "if: steps.live_health.outcome == 'failure'",
     ],
 }
 

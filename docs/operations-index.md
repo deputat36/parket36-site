@@ -10,6 +10,7 @@
 ## Запуск и публикация
 
 - `docs/github-pages-switch-checklist.md` — проверка переключения `parket36.ru` на GitHub Pages.
+- `docs/live-site-monitoring.md` — ежедневный контроль DNS, HTTPS, главной страницы, robots и sitemap.
 
 ## Аналитика
 
