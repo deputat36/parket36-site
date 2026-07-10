@@ -26,6 +26,7 @@ CSS_LINK_RE = re.compile(
     r"(?=[^>]*\bhref=[\"']/css/[^\"']+[\"'])[^>]*>[ \t]*\n?",
     re.IGNORECASE,
 )
+CSS_HREF_RE = re.compile(r"href=[\"'](/css/[^\"']+\.css)[\"']", re.IGNORECASE)
 
 DYNAMIC_CSS_BLOCK = """  const ensureStylesheet = href => {
     if (document.querySelector(`link[href="${href}"]`)) return;
@@ -129,13 +130,15 @@ def validate_bundle(destination: Path, bundle_href: str, errors: list[str]) -> N
     for html_file in sorted(destination.rglob("*.html")):
         text = html_file.read_text(encoding="utf-8")
         relative = html_file.relative_to(destination).as_posix()
+        css_hrefs = CSS_HREF_RE.findall(text)
+
         if text.count(BUNDLE_MARKER) != 1:
             errors.append(f"{relative}: expected exactly one CSS bundle marker")
-        if text.count(bundle_href) != 1:
-            errors.append(f"{relative}: expected exactly one CSS bundle reference")
-        remaining_links = CSS_LINK_RE.findall(text)
-        if remaining_links:
-            errors.append(f"{relative}: source CSS links remain after bundling")
+        if css_hrefs != [bundle_href]:
+            found = ", ".join(css_hrefs) or "none"
+            errors.append(
+                f"{relative}: expected only CSS bundle {bundle_href}; found: {found}"
+            )
 
     main_js = destination / "js" / "main.js"
     if main_js.is_file() and "ensureStylesheet('/css/" in main_js.read_text(encoding="utf-8"):
