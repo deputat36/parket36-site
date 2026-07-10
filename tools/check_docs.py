@@ -31,6 +31,8 @@ def main() -> int:
         "check_domain_settings.py",
         "check_workflows.py",
         "check_quality_runner.py",
+        "check_content_inventory.py",
+        "content-inventory",
         "check_live_site.py",
         "check_empty_link_attributes.py",
         "check_conversion_paths.py",
