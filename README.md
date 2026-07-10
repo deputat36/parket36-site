@@ -109,6 +109,7 @@ python tools/run_quality_checks.py
 - `check_quality_runner.py` — точный состав и порядок общего quality gate;
 - `check_docs.py` — актуальность README и workflow относительно общего quality runner;
 - `check_sitemap_helper.py` — проверка вспомогательного инструмента добавления sitemap-записей;
+- `check_empty_link_attributes.py` — отсутствие пустых `href` и `src` в публичных HTML-страницах;
 - `check_site.py` — общий статический аудит страниц;
 - `check_guardrails.py` — дополнительные правила фокуса, индексации и внутренних страниц;
 - `check_conversion_paths.py` — телефон, мобильная CTA, финальные CTA и ссылки на оценку по фото;
@@ -118,6 +119,7 @@ python tools/run_quality_checks.py
 Проверки покрывают:
 
 - внутренние ссылки и изображения;
+- отсутствие пустых `href` и `src`;
 - уникальность title и canonical;
 - description, Open Graph, theme-color и H1;
 - наличие страниц в sitemap;
