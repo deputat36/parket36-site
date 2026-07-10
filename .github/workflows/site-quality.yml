@@ -27,6 +27,19 @@ jobs:
         with:
           deno-version: lts
       - name: Type-check Edge Function
-        run: deno check supabase/functions/parket-public-lead/index.ts
+        id: edge_typecheck
+        continue-on-error: true
+        run: deno check supabase/functions/parket-public-lead/index.ts > edge-function-check.log 2>&1
+      - name: Upload Edge Function check log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: edge-function-check
+          path: edge-function-check.log
+          if-no-files-found: error
+          retention-days: 14
+      - name: Fail on Edge Function type errors
+        if: steps.edge_typecheck.outcome == 'failure'
+        run: cat edge-function-check.log && exit 1
       - name: Run quality gate
         run: python tools/run_quality_checks.py
