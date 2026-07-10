@@ -12,6 +12,11 @@
 - `docs/github-pages-switch-checklist.md` — проверка переключения `parket36.ru` на GitHub Pages.
 - `docs/live-site-monitoring.md` — ежедневный контроль DNS, HTTPS, главной страницы, robots и sitemap.
 
+## Заявки и безопасность
+
+- `docs/supabase-parket-leads.md` — схема хранения заявок, RLS и текущее состояние Supabase.
+- `docs/lead-endpoint-test-mode.md` — обязательная соль IP-хэша и безопасная проверка Edge Function без создания заявки.
+
 ## Аналитика
 
 - `docs/analytics-events.md` — события звонков, заявок, UTM-атрибуции и цели Метрики/GTM.
