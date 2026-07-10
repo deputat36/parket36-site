@@ -21,8 +21,10 @@ DENO_CONFIG = ROOT / "deno.json"
 E2E_TEST = ROOT / "tests" / "e2e" / "site-smoke.spec.mjs"
 ACCESSIBILITY_TEST = ROOT / "tests" / "e2e" / "accessibility.spec.mjs"
 NO_JS_ACCESSIBILITY_TEST = ROOT / "tests" / "e2e" / "no-js-accessibility.spec.mjs"
+SHARED_SHELL_TEST = ROOT / "tests" / "e2e" / "shared-shell.spec.mjs"
 ACCESSIBILITY_CSS = ROOT / "css" / "accessibility-polish.css"
 HTML_ACCESSIBILITY = ROOT / "tools" / "html_accessibility.py"
+SHARED_SHELL_TOOL = ROOT / "tools" / "shared_shell.py"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
 DENO_SETUP = "uses: denoland/setup-deno@v2"
@@ -144,6 +146,14 @@ REQUIRED_QUALITY_FILES = {
         "aria-controls",
         "data-css-bundle",
     ],
+    SHARED_SHELL_TEST: [
+        "javaScriptEnabled: false",
+        "header.topbar",
+        "section.final-cta",
+        "footer.footer",
+        "div.mobile-cta",
+        "expect(request).toEqual(home)",
+    ],
     ACCESSIBILITY_CSS: [
         ".person-card .muted",
         '.form-help a[href$="/politika/"]',
@@ -155,6 +165,12 @@ REQUIRED_QUALITY_FILES = {
         "main-content",
         "site-navigation",
         "inject_accessibility_html",
+    ],
+    SHARED_SHELL_TOOL: [
+        "PILOT_PAGES",
+        "data/shared-shell/header.html",
+        "shared-shell:final-cta",
+        "apply_shared_shell",
     ],
 }
 
