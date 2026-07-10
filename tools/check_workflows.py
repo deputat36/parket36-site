@@ -25,6 +25,7 @@ SHARED_SHELL_TEST = ROOT / "tests" / "e2e" / "shared-shell.spec.mjs"
 ACCESSIBILITY_CSS = ROOT / "css" / "accessibility-polish.css"
 HTML_ACCESSIBILITY = ROOT / "tools" / "html_accessibility.py"
 SHARED_SHELL_TOOL = ROOT / "tools" / "shared_shell.py"
+CONTENT_INVENTORY_TOOL = ROOT / "tools" / "build_content_inventory.py"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
 DENO_SETUP = "uses: denoland/setup-deno@v2"
@@ -45,6 +46,9 @@ EXPECTED_MARKERS = {
         "name: edge-function-check",
         "if: steps.edge_typecheck.outcome == 'failure'",
         f"run: {QUALITY_RUNNER}",
+        "run: python tools/build_content_inventory.py --output-dir reports/content-inventory",
+        "name: content-inventory",
+        "path: reports/content-inventory",
     ],
     PAGES_PATH: [
         "uses: actions/checkout@v4",
@@ -171,6 +175,14 @@ REQUIRED_QUALITY_FILES = {
         "data/shared-shell/header.html",
         "shared-shell:final-cta",
         "apply_shared_shell",
+    ],
+    CONTENT_INVENTORY_TOOL: [
+        "PageRecord",
+        "THIN_WORD_LIMIT",
+        "inbound_links",
+        "title_duplicate_count",
+        "content-inventory.csv",
+        "content-inventory.md",
     ],
 }
 

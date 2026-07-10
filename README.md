@@ -109,6 +109,7 @@ python tools/run_quality_checks.py
 - `check_workflows.py` — версии GitHub Actions и обязательные шаги CI/деплоя;
 - `check_quality_runner.py` — точный состав и порядок общего quality gate;
 - `check_docs.py` — актуальность README и workflow относительно общего quality runner;
+- `check_content_inventory.py` — соответствие сохранённого реестра текущим HTML-страницам и sitemap;
 - `check_sitemap_helper.py` — проверка вспомогательного инструмента добавления sitemap-записей;
 - `check_live_site.py --self-test` — офлайн-проверка генерации диагностического отчёта без обращения к боевому домену;
 - `check_empty_link_attributes.py` — отсутствие пустых `href` и `src` в публичных HTML-страницах;
@@ -127,6 +128,7 @@ python tools/run_quality_checks.py
 - description, Open Graph, theme-color и H1;
 - наличие страниц в sitemap;
 - соответствие `dateModified` в HTML и `lastmod` в sitemap;
+- актуальность реестра страниц, объёма текста, внутренних ссылок и конверсионных элементов;
 - alt у изображений;
 - безопасное подключение основного JavaScript через `defer`;
 - версии GitHub Actions и обязательный запуск quality gate перед деплоем;
@@ -144,6 +146,8 @@ python tools/run_quality_checks.py
 - успешную генерацию диагностического отчёта live health checker;
 - успешная сборка чистого публичного каталога;
 - отсутствие внутренних рабочих страниц и приватных файлов в публичной сборке.
+
+`Site quality` дополнительно сохраняет artifact `content-inventory` на 30 дней. В нём находятся Markdown и CSV с title, H1, description, canonical, word count, lastmod, внутренними ссылками и конверсионными элементами каждой страницы. Актуальная Markdown-версия хранится в `docs/content-inventory.md`.
 
 Локальная проверка перед PR:
 
