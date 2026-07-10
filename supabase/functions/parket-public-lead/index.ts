@@ -18,7 +18,7 @@ const LEADS_TABLE = "parket_leads";
 const AUDIT_TABLE = "parket_public_lead_audit";
 
 type LeadPayload = Record<string, unknown>;
-type SupabaseClient = ReturnType<typeof createClient>;
+type SupabaseClient = ReturnType<typeof createClient<any, "public", "public">>;
 
 function allowedOrigins() {
   const configured = Deno.env.get("PARKET_PUBLIC_ALLOWED_ORIGINS");
