@@ -21,6 +21,7 @@ CHECKS = [
     ("Run extra guardrails", ["tools/check_guardrails.py"]),
     ("Validate conversion paths", ["tools/check_conversion_paths.py"]),
     ("Validate lead paths", ["tools/check_lead_paths.py"]),
+    ("Validate lead reliability", ["tools/check_lead_reliability.py"]),
     ("Build public directory", ["tools/build_pages.py"]),
 ]
 
