@@ -20,7 +20,9 @@ PACKAGE_JSON = ROOT / "package.json"
 DENO_CONFIG = ROOT / "deno.json"
 E2E_TEST = ROOT / "tests" / "e2e" / "site-smoke.spec.mjs"
 ACCESSIBILITY_TEST = ROOT / "tests" / "e2e" / "accessibility.spec.mjs"
+NO_JS_ACCESSIBILITY_TEST = ROOT / "tests" / "e2e" / "no-js-accessibility.spec.mjs"
 ACCESSIBILITY_CSS = ROOT / "css" / "accessibility-polish.css"
+HTML_ACCESSIBILITY = ROOT / "tools" / "html_accessibility.py"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
 DENO_SETUP = "uses: denoland/setup-deno@v2"
@@ -135,11 +137,24 @@ REQUIRED_QUALITY_FILES = {
         "wcag21aa",
         "accessibility.spec.mjs",
     ],
+    NO_JS_ACCESSIBILITY_TEST: [
+        "javaScriptEnabled: false",
+        "a.skip-link",
+        "main#main-content",
+        "aria-controls",
+        "data-css-bundle",
+    ],
     ACCESSIBILITY_CSS: [
         ".person-card .muted",
         '.form-help a[href$="/politika/"]',
         '.footer__bottom a[href$="/politika/"]',
         "text-decoration: underline",
+    ],
+    HTML_ACCESSIBILITY: [
+        "SKIP_LINK",
+        "main-content",
+        "site-navigation",
+        "inject_accessibility_html",
     ],
 }
 

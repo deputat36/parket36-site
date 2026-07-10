@@ -8,6 +8,8 @@ from pathlib import Path
 import re
 import shutil
 
+from html_accessibility import inject_accessibility_html
+
 CSS_MODULES = (
     "style.css",
     "enhancements.css",
@@ -146,12 +148,13 @@ def validate_bundle(destination: Path, bundle_href: str, errors: list[str]) -> N
 
 
 def prepare_css_bundle(root: Path, destination: Path, errors: list[str]) -> str | None:
-    """Build, inject and validate the production CSS bundle."""
+    """Build, inject and validate public CSS and mandatory static markup."""
     bundle_href = build_bundle(root, destination, errors)
     if bundle_href is None:
         return None
 
     rewrite_html(destination, bundle_href, errors)
+    inject_accessibility_html(destination, errors)
     remove_dynamic_css_loader(destination, errors)
     validate_bundle(destination, bundle_href, errors)
     return bundle_href
