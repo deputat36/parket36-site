@@ -1,25 +1,38 @@
 # Supabase-лиды Паркет36
 
-Дата проверки: 2026-07-02.
+Дата обновления документа: 2026-07-10.
 
-Документ фиксирует текущую схему публичной формы `/zayavka/`, чтобы при следующих правках сайта не потерять связь с Supabase и не ослабить безопасность таблиц с контактными данными.
+Документ фиксирует схему публичной формы `/zayavka/`, требования безопасности и порядок проверки Edge Function.
 
 ## Проект и endpoint
 
-- Supabase project id: `ofewxuqfjhamgerwzull`
-- Project URL: `https://ofewxuqfjhamgerwzull.supabase.co`
-- Edge Function для публичной формы: `parket-public-lead`
-- Endpoint в коде сайта: `https://ofewxuqfjhamgerwzull.supabase.co/functions/v1/parket-public-lead`
+- Supabase project id: `ofewxuqfjhamgerwzull`.
+- Project URL: `https://ofewxuqfjhamgerwzull.supabase.co`.
+- Edge Function: `parket-public-lead`.
+- Endpoint: `https://ofewxuqfjhamgerwzull.supabase.co/functions/v1/parket-public-lead`.
 - `verify_jwt`: `false`, потому что заявка отправляется с публичного сайта без авторизации.
-- Статус Edge Function на 2026-07-02: `ACTIVE`, версия `1`.
 
-Публичный сайт не должен содержать `service_role` key или другие секреты. Запись в БД должна проходить только через Edge Function.
+Публичный сайт не должен содержать service role key, health-токен, соль IP-хэша или другие секреты. Запись в БД проходит только через Edge Function.
+
+Изменение исходника в GitHub не обновляет развёрнутую Edge Function автоматически. После изменений в `supabase/functions/parket-public-lead/index.ts` нужен отдельный деплой в Supabase.
 
 ## Файлы сайта
 
 - `js/main.js` собирает payload формы, отправляет его в Edge Function и оставляет fallback через копирование текста.
-- `zayavka/index.html` содержит публичную форму оценки паркета по фото.
+- `js/lead-reliability.js` добавляет timeout, одну повторную попытку и honeypot-поля.
+- `zayavka/index.html` и главная страница содержат публичную форму оценки.
 - `/politika/` используется как ссылка на согласие с обработкой контактных данных.
+- `docs/lead-endpoint-test-mode.md` описывает секреты и безопасную проверку endpoint.
+
+## Обязательные production-настройки
+
+- `SUPABASE_URL`.
+- Service role secret.
+- `PARKET_IP_HASH_SALT` — непубличная случайная соль.
+- `PARKET_HEALTHCHECK_TOKEN` — отдельный токен тестового режима.
+- `PARKET_PUBLIC_ALLOWED_ORIGINS` — при необходимости явный список разрешённых origin.
+
+Без `PARKET_IP_HASH_SALT` новая версия функции возвращает `ip_hash_salt_required` и не принимает заявку. Флаг `PARKET_ALLOW_UNSALTED_IP_HASH=true` разрешён только для локальной разработки.
 
 ## Таблицы
 
@@ -29,31 +42,25 @@
 
 Ключевые поля:
 
-- `request_id` — idempotency key, уникальный идентификатор заявки.
-- `created_at` — дата создания.
-- `status` — `new`, `in_progress`, `done`, `spam`, `archived`.
-- `service`, `location`, `area`, `photos`, `video`, `task`, `callback_time` — данные формы.
-- `contact` — контакт клиента, содержит персональные данные.
+- `request_id` — idempotency key и защита от дублей;
+- `created_at` — дата создания;
+- `status` — `new`, `in_progress`, `done`, `spam`, `archived`;
+- `service`, `location`, `area`, `photos`, `video`, `task`, `callback_time` — данные формы;
+- `contact` — контакт клиента, содержит персональные данные;
 - `page`, `attribution`, `metadata`, `user_agent` — технический и рекламный контекст.
-
-На момент проверки строк: `0`.
-Последняя заявка: нет данных.
 
 ### `public.parket_public_lead_audit`
 
-Назначение: аудит публичных отправок формы и мягкий антиспам.
+Назначение: аудит публичных отправок и мягкий антиспам.
 
 Ключевые поля:
 
-- `request_id` — связь с попыткой отправки.
-- `created_at` — дата попытки.
-- `origin` — источник запроса.
-- `ip_hash` — SHA-256 hash, не сырой IP.
-- `user_agent` — браузер/устройство.
+- `request_id` — связь с попыткой отправки;
+- `created_at` — дата попытки;
+- `origin` — источник запроса;
+- `ip_hash` — SHA-256 hash с непубличной солью, не сырой IP;
+- `user_agent` — браузер/устройство;
 - `accepted`, `reason`, `payload_summary` — результат обработки.
-
-На момент проверки строк: `0`.
-Последняя попытка отправки: нет данных.
 
 ## RLS и доступ
 
@@ -61,47 +68,54 @@ RLS включён на обеих таблицах.
 
 Для ролей `anon` и `authenticated` действуют restrictive-политики:
 
-- `parket_leads_no_public_direct_access`: `using false`, `with check false`.
+- `parket_leads_no_public_direct_access`: `using false`, `with check false`;
 - `parket_public_lead_audit_no_public_direct_access`: `using false`, `with check false`.
 
-Прямые table privileges для `anon` и `authenticated` не выданы. Права на таблицы есть у `service_role`.
+Прямые table privileges для публичных ролей не выдаются. Права на таблицы используются только внутри Edge Function через service role.
 
-Практический вывод: публичная форма не должна писать напрямую в таблицы через REST API. Любые изменения фронтенда должны сохранять отправку через Edge Function.
+## Антиспам и надёжность
 
-## Текущие advisors и логи
+- Максимальный размер JSON: 25 000 байт.
+- Honeypot-поля: `website` и `company`.
+- Не более 30 любых попыток за 15 минут на один IP-хэш.
+- Не более 6 принятых заявок за 15 минут на один IP-хэш.
+- Одинаковый `request_id` не создаёт вторую заявку при retry.
+- Фронтенд прекращает зависший запрос через 12 секунд и выполняет не более одной повторной попытки.
+- При сбое backend текст обращения остаётся доступным для ручной отправки.
 
-Security advisors по проекту показывают много предупреждений по `SECURITY DEFINER` функциям других модулей (`nav_*`, `nav_v2_*`) и предупреждение о выключенной leaked password protection в Auth.
+## Безопасный тестовый режим
 
-По `parket_*` критичных security-предупреждений при проверке не выявлено.
+Payload:
 
-Свежая проверка логов Edge Functions через Supabase connector не показала событий в доступном окне логов. При этом таблицы `parket_leads` и `parket_public_lead_audit` остаются пустыми, поэтому реальных успешных или отклонённых отправок формы пока не видно.
+```json
+{"test_mode":true}
+```
 
-Performance advisors ранее показывали INFO по неиспользованным индексам `parket_*`:
+Обязательный заголовок:
 
-- `parket_leads_created_at_idx`
-- `parket_leads_status_created_at_idx`
-- `parket_leads_attribution_gin_idx`
-- `parket_public_lead_audit_created_at_idx`
-- `parket_public_lead_audit_ip_hash_created_at_idx`
-- `parket_public_lead_audit_request_id_idx`
+```text
+x-parket-health-token: <секрет>
+```
 
-Эти индексы не удалять автоматически: таблицы пока пустые, поэтому отсутствие использования ожидаемо. Решение об удалении возможно только после накопления реального трафика и проверки запросов.
+Тестовый режим выполняет read-only проверку доступа к обеим таблицам. Он не создаёт строку в `parket_leads` и не добавляет запись в audit-таблицу.
 
-## Что проверять после правок формы
+## Что проверять после деплоя функции
 
-1. Edge Function `parket-public-lead` остаётся активной.
-2. На сайте нет публичных секретов Supabase.
-3. Форма сохраняет fallback: если отправка в Supabase не прошла, текст заявки можно скопировать и отправить вручную.
-4. `anon` и `authenticated` не получают прямой доступ к `parket_leads` и `parket_public_lead_audit`.
-5. В `parket_leads` не сохраняются фото как файлы. Фото клиент отправляет отдельно, а форма фиксирует только статус готовности фото.
-6. При изменении payload нужно сверить поля с Edge Function и таблицей `parket_leads`.
-7. После реального теста формы проверить, что появилась строка в `parket_leads` и соответствующая запись в `parket_public_lead_audit`.
+1. Функция остаётся активной.
+2. Production secrets настроены.
+3. Без health-токена тестовый режим возвращает отказ.
+4. С правильным токеном обе таблицы имеют `ok: true`.
+5. На сайте нет публичных секретов Supabase.
+6. Публичные роли не получили прямой доступ к таблицам.
+7. Реальная тестовая заявка создаёт одну строку в `parket_leads` и одну принятую audit-запись.
+8. Повтор с тем же `request_id` не создаёт дубль.
+9. При сбое Supabase форма сохраняет fallback-копирование текста.
 
-## Что можно улучшить позже
+## Следующие улучшения
 
-- Провести ручной тест публичной формы на боевом сайте и убедиться, что заявка доходит до Supabase.
-- Добавить админский просмотр заявок для Ивана без раскрытия публичного доступа к таблицам.
-- Добавить уведомление о новой заявке в Telegram или email через Edge Function.
-- Добавить отдельный статус обработки заявки и короткий журнал действий мастера.
-- После появления трафика проверить использование индексов и реальные причины отказов в `parket_public_lead_audit`.
-- Отдельно разобрать security advisors по `nav_*`, `nav_v2_*` и Auth, потому что они относятся к общему Supabase-проекту, а не только к сайту Паркет36.
+- Добавить retention SQL для автоматического удаления старых audit-записей и заявок по утверждённому сроку хранения.
+- Подключить уведомление Ивану о новой заявке через Telegram или email.
+- Добавить защищённый административный просмотр заявок.
+- Добавить журнал смены статуса заявки.
+- После накопления трафика проверить индексы и реальные причины отказов.
+- Отдельно разбирать advisors по `nav_*`, `nav_v2_*` и Auth: они относятся к общему Supabase-проекту, а не только к Паркет36.
