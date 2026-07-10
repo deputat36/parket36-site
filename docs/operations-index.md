@@ -16,6 +16,7 @@
 
 - `docs/supabase-parket-leads.md` — схема хранения заявок, RLS и текущее состояние Supabase.
 - `docs/lead-endpoint-test-mode.md` — обязательная соль IP-хэша и безопасная проверка Edge Function без создания заявки.
+- `docs/lead-retention.md` — preview и ручная очистка старых audit-данных и завершённых заявок без автоматического расписания.
 
 ## Аналитика
 
