@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail when public HTML contains empty href or src attributes."""
+"""Fail when public HTML contains empty or insecure href/src attributes."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
 
 
-class EmptyAttributeParser(HTMLParser):
+class LinkAttributeParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.findings: list[str] = []
@@ -24,6 +24,9 @@ class EmptyAttributeParser(HTMLParser):
                 continue
             if value is None or not value.strip():
                 self.findings.append(f"<{tag}> has empty {attr}")
+                continue
+            if value.strip().lower().startswith("http://"):
+                self.findings.append(f"<{tag}> has insecure {attr}: {value.strip()}")
 
 
 def is_ignored(path: Path) -> bool:
@@ -38,18 +41,18 @@ def main() -> int:
     findings: list[str] = []
 
     for path in html_files():
-        parser = EmptyAttributeParser()
+        parser = LinkAttributeParser()
         parser.feed(path.read_text(encoding="utf-8", errors="ignore"))
         rel = path.relative_to(ROOT).as_posix()
         findings.extend(f"{rel}: {finding}" for finding in parser.findings)
 
     if findings:
-        print("Empty link attribute findings:")
+        print("Link attribute findings:")
         for finding in sorted(findings):
             print(f"  - {finding}")
         return 1
 
-    print("Empty href/src attribute check passed")
+    print("Empty and insecure href/src attribute check passed")
     return 0
 
 
