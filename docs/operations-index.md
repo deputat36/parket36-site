@@ -12,6 +12,7 @@
 - `docs/github-pages-switch-checklist.md` — проверка переключения `parket36.ru` на GitHub Pages.
 - `docs/live-site-monitoring.md` — ежедневный контроль DNS, HTTPS, главной страницы, robots и sitemap.
 - `docs/browser-smoke-tests.md` — Playwright-проверки меню, телефона, формы, fallback и 404.
+- `docs/accessibility-audit.md` — автоматический axe-аудит ключевых страниц по WCAG A/AA.
 - `docs/edge-function-ci.md` — Deno type-check Edge Function в PR и перед Pages-деплоем.
 
 ## Заявки и безопасность
