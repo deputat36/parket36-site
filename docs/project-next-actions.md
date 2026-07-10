@@ -25,6 +25,7 @@
 - запросить недостающие данные по `docs/materials-request-checklist.md`;
 - заполнить `docs/confirmed-materials-template.md`;
 - собрать фото по `docs/photo-materials-checklist.md`;
+- зафиксировать статус подтверждения: что можно публиковать, что нужно уточнить и что нельзя использовать;
 - после подтверждения обновить публичные страницы сайта.
 
 Индекс документов: `docs/materials-index.md`.
