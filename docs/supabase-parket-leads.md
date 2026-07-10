@@ -4,17 +4,32 @@
 
 Документ фиксирует схему публичной формы `/zayavka/`, требования безопасности и порядок проверки Edge Function.
 
+Фактическое production-состояние вынесено в `docs/supabase-production-status-2026-07-10.md`.
+
 ## Проект и endpoint
 
 - Supabase project id: `ofewxuqfjhamgerwzull`.
 - Project URL: `https://ofewxuqfjhamgerwzull.supabase.co`.
 - Edge Function: `parket-public-lead`.
 - Endpoint: `https://ofewxuqfjhamgerwzull.supabase.co/functions/v1/parket-public-lead`.
-- `verify_jwt`: `false`, потому что заявка отправляется с публичного сайта без авторизации.
+- `verify_jwt`: `false`, потому что заявка отправляется с публичного сайта без авторизации, а функция сама проверяет origin, payload, rate limit и honeypot.
 
-Публичный сайт не должен содержать service role key, health-токен, соль IP-хэша или другие секреты. Запись в БД проходит только через Edge Function.
+Публичный сайт не должен содержать service role key, health-токен, соль IP-хэша или секреты уведомлений. Запись в БД проходит только через Edge Function.
 
 Изменение исходника в GitHub не обновляет развёрнутую Edge Function автоматически. После изменений в `supabase/functions/parket-public-lead/index.ts` нужен отдельный деплой в Supabase.
+
+## Текущий production-статус
+
+На 2026-07-10:
+
+- проект имеет статус `ACTIVE_HEALTHY`;
+- Edge Function `parket-public-lead` активна, но остаётся в версии `1`;
+- актуальный исходник из `main` ещё не развёрнут;
+- `parket_leads` и `parket_public_lead_audit` пусты;
+- retention-миграция применена и проверена;
+- Telegram и email подготовлены в исходнике, но не включены без secrets и деплоя.
+
+Подробности и порядок production-деплоя: `docs/supabase-production-status-2026-07-10.md`.
 
 ## Файлы сайта
 
@@ -22,12 +37,14 @@
 - `js/lead-reliability.js` добавляет timeout, одну повторную попытку и honeypot-поля.
 - `zayavka/index.html` и главная страница содержат публичную форму оценки.
 - `/politika/` используется как ссылка на согласие с обработкой контактных данных.
-- `docs/lead-endpoint-test-mode.md` описывает секреты и безопасную проверку endpoint.
+- `docs/lead-endpoint-test-mode.md` описывает secrets и безопасную проверку endpoint.
+- `docs/lead-notifications.md` описывает Telegram и email.
+- `docs/lead-retention.md` описывает preview и ручную очистку.
 
 ## Обязательные production-настройки
 
 - `SUPABASE_URL`.
-- Service role secret.
+- Secret/service role key, доступный только Edge Function.
 - `PARKET_IP_HASH_SALT` — непубличная случайная соль.
 - `PARKET_HEALTHCHECK_TOKEN` — отдельный токен тестового режима.
 - `PARKET_PUBLIC_ALLOWED_ORIGINS` — при необходимости явный список разрешённых origin.
@@ -60,7 +77,7 @@
 - `origin` — источник запроса;
 - `ip_hash` — SHA-256 hash с непубличной солью, не сырой IP;
 - `user_agent` — браузер/устройство;
-- `accepted`, `reason`, `payload_summary` — результат обработки.
+- `accepted`, `reason`, `payload_summary` — результат обработки и доставки уведомлений.
 
 ## RLS и доступ
 
@@ -71,9 +88,9 @@ RLS включён на обеих таблицах.
 - `parket_leads_no_public_direct_access`: `using false`, `with check false`;
 - `parket_public_lead_audit_no_public_direct_access`: `using false`, `with check false`.
 
-Прямые table privileges для публичных ролей не выдаются. Права на таблицы используются только внутри Edge Function через service role.
+Прямые table privileges для публичных ролей не выдаются. Права на таблицы используются только внутри Edge Function через secret/service role key.
 
-## Антиспам и надёжность
+## Антиспам и надёжность актуального исходника
 
 - Максимальный размер JSON: 25 000 байт.
 - Honeypot-поля: `website` и `company`.
@@ -82,6 +99,9 @@ RLS включён на обеих таблицах.
 - Одинаковый `request_id` не создаёт вторую заявку при retry.
 - Фронтенд прекращает зависший запрос через 12 секунд и выполняет не более одной повторной попытки.
 - При сбое backend текст обращения остаётся доступным для ручной отправки.
+- Уведомления отправляются только после сохранения заявки и не могут отменить успешную запись.
+
+Эти возможности относятся к актуальному исходнику. Они начнут работать в production только после настройки secrets и деплоя новой версии Edge Function.
 
 ## Безопасный тестовый режим
 
@@ -97,24 +117,38 @@ Payload:
 x-parket-health-token: <секрет>
 ```
 
-Тестовый режим выполняет read-only проверку доступа к обеим таблицам. Он не создаёт строку в `parket_leads` и не добавляет запись в audit-таблицу.
+Тестовый режим выполняет read-only проверку доступа к обеим таблицам и полноты конфигурации уведомлений. Он не создаёт заявку, audit-запись, Telegram-сообщение или письмо.
+
+## Retention
+
+В production применена миграция `20260710155135_add_parket_lead_retention_helpers`.
+
+Она добавляет:
+
+- `parket_retention_preview` — read-only подсчёт строк;
+- `parket_apply_retention` — явную ручную очистку.
+
+Функции доступны только `service_role`, не имеют автоматического расписания и не позволяют удалять статусы `new` или `in_progress`.
 
 ## Что проверять после деплоя функции
 
-1. Функция остаётся активной.
-2. Production secrets настроены.
+1. Функция получила новую версию и остаётся `ACTIVE`.
+2. Production secrets настроены до деплоя.
 3. Без health-токена тестовый режим возвращает отказ.
 4. С правильным токеном обе таблицы имеют `ok: true`.
-5. На сайте нет публичных секретов Supabase.
-6. Публичные роли не получили прямой доступ к таблицам.
-7. Реальная тестовая заявка создаёт одну строку в `parket_leads` и одну принятую audit-запись.
-8. Повтор с тем же `request_id` не создаёт дубль.
-9. При сбое Supabase форма сохраняет fallback-копирование текста.
+5. Настроенные каналы уведомлений имеют статус `configured`.
+6. На сайте и в логах нет публичных secrets Supabase.
+7. Публичные роли не получили прямой доступ к таблицам.
+8. Реальная тестовая заявка создаёт одну строку в `parket_leads` и одну принятую audit-запись.
+9. Фактически приходит Telegram-сообщение или email.
+10. Повтор с тем же `request_id` не создаёт дубль.
+11. При сбое Supabase форма сохраняет fallback-копирование текста.
 
 ## Следующие улучшения
 
-- Добавить retention SQL для автоматического удаления старых audit-записей и заявок по утверждённому сроку хранения.
-- Подключить уведомление Ивану о новой заявке через Telegram или email.
+- Настроить production secrets и развернуть актуальную Edge Function.
+- Выполнить защищённый healthcheck и одну контролируемую реальную заявку.
+- Добавить браузерный end-to-end тест формы.
 - Добавить защищённый административный просмотр заявок.
 - Добавить журнал смены статуса заявки.
 - После накопления трафика проверить индексы и реальные причины отказов.

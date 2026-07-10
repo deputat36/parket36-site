@@ -15,7 +15,8 @@
 
 ## Заявки и безопасность
 
-- `docs/supabase-parket-leads.md` — схема хранения заявок, RLS и текущее состояние Supabase.
+- `docs/supabase-parket-leads.md` — схема хранения заявок, RLS и архитектура Edge Function.
+- `docs/supabase-production-status-2026-07-10.md` — проверенное состояние production, применённые миграции и безопасный порядок деплоя.
 - `docs/lead-endpoint-test-mode.md` — обязательная соль IP-хэша и безопасная проверка Edge Function без создания заявки.
 - `docs/lead-retention.md` — preview и ручная очистка старых audit-данных и завершённых заявок без автоматического расписания.
 - `docs/lead-notifications.md` — Telegram и email-уведомления о новых заявках через secrets Edge Function.
