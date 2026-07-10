@@ -12,18 +12,32 @@ PAGES_PATH = ROOT / ".github" / "workflows" / "pages.yml"
 LIVE_HEALTH_PATH = ROOT / ".github" / "workflows" / "live-site-health.yml"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
+DENO_SETUP = "uses: denoland/setup-deno@v2"
+DENO_VERSION = "deno-version: lts"
+DENO_CHECK = "deno check supabase/functions/parket-public-lead/index.ts"
 
 EXPECTED_MARKERS = {
     SITE_QUALITY_PATH: [
         "uses: actions/checkout@v4",
         "uses: actions/setup-python@v5",
         PYTHON_VERSION,
+        DENO_SETUP,
+        DENO_VERSION,
+        DENO_CHECK,
+        "id: edge_typecheck",
+        "continue-on-error: true",
+        "uses: actions/upload-artifact@v4",
+        "name: edge-function-check",
+        "if: steps.edge_typecheck.outcome == 'failure'",
         f"run: {QUALITY_RUNNER}",
     ],
     PAGES_PATH: [
         "uses: actions/checkout@v4",
         "uses: actions/setup-python@v5",
         PYTHON_VERSION,
+        DENO_SETUP,
+        DENO_VERSION,
+        DENO_CHECK,
         f"run: {QUALITY_RUNNER}",
         "uses: actions/configure-pages@v5",
         "uses: actions/upload-pages-artifact@v4",
@@ -45,6 +59,7 @@ EXPECTED_MARKERS = {
 
 FORBIDDEN_MARKERS = [
     "uses: actions/checkout@v6",
+    "uses: denoland/setup-deno@v3",
 ]
 
 
