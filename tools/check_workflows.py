@@ -26,6 +26,7 @@ ACCESSIBILITY_CSS = ROOT / "css" / "accessibility-polish.css"
 HTML_ACCESSIBILITY = ROOT / "tools" / "html_accessibility.py"
 SHARED_SHELL_TOOL = ROOT / "tools" / "shared_shell.py"
 CONTENT_INVENTORY_TOOL = ROOT / "tools" / "build_content_inventory.py"
+CONTENT_SIMILARITY_TOOL = ROOT / "tools" / "build_content_similarity_report.py"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
 DENO_SETUP = "uses: denoland/setup-deno@v2"
@@ -45,10 +46,16 @@ EXPECTED_MARKERS = {
         "uses: actions/upload-artifact@v4",
         "name: edge-function-check",
         "if: steps.edge_typecheck.outcome == 'failure'",
-        f"run: {QUALITY_RUNNER}",
+        "id: quality_gate",
+        "name: quality-gate-log",
+        "if: steps.quality_gate.outcome == 'failure'",
+        "quality-gate.log",
         "run: python tools/build_content_inventory.py --output-dir reports/content-inventory",
         "name: content-inventory",
         "path: reports/content-inventory",
+        "run: python tools/build_content_similarity_report.py --output-dir reports/content-similarity",
+        "name: content-similarity-report",
+        "path: reports/content-similarity",
     ],
     PAGES_PATH: [
         "uses: actions/checkout@v4",
@@ -119,7 +126,11 @@ REQUIRED_QUALITY_FILES = {
         '"test:lighthouse": "lhci autorun --config=./lighthouserc.cjs"',
     ],
     DENO_CONFIG: ['"nodeModulesDir": "auto"'],
-    PLAYWRIGHT_CONFIG: ["python tools/build_pages.py", "python -m http.server 4173", "trace: 'retain-on-failure'"],
+    PLAYWRIGHT_CONFIG: [
+        "python tools/build_pages.py",
+        "python -m http.server 4173",
+        "trace: 'retain-on-failure'",
+    ],
     LIGHTHOUSE_CONFIG: [
         "staticDistDir: './_site'",
         "http://localhost/zayavka/",
@@ -183,6 +194,13 @@ REQUIRED_QUALITY_FILES = {
         "title_duplicate_count",
         "content-inventory.csv",
         "content-inventory.md",
+    ],
+    CONTENT_SIMILARITY_TOOL: [
+        "MainContentParser",
+        "SIMILARITY_THRESHOLD",
+        "canonical_groups",
+        "content-similarity-report.md",
+        "content-similarity-pairs.csv",
     ],
 }
 

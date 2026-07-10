@@ -42,13 +42,39 @@ jobs:
         if: steps.edge_typecheck.outcome == 'failure'
         run: cat edge-function-check.log && exit 1
       - name: Run quality gate
-        run: python tools/run_quality_checks.py
+        id: quality_gate
+        continue-on-error: true
+        run: python tools/run_quality_checks.py > quality-gate.log 2>&1
+      - name: Upload quality gate log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-log
+          path: quality-gate.log
+          if-no-files-found: error
+          retention-days: 14
       - name: Generate content inventory
+        if: always()
         run: python tools/build_content_inventory.py --output-dir reports/content-inventory
       - name: Upload content inventory
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: content-inventory
           path: reports/content-inventory
           if-no-files-found: error
           retention-days: 30
+      - name: Generate content similarity report
+        if: always()
+        run: python tools/build_content_similarity_report.py --output-dir reports/content-similarity
+      - name: Upload content similarity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-similarity-report
+          path: reports/content-similarity
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail on quality gate errors
+        if: steps.quality_gate.outcome == 'failure'
+        run: cat quality-gate.log && exit 1

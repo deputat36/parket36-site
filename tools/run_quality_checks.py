@@ -16,6 +16,7 @@ CHECKS = [
     ("Validate quality runner", ["tools/check_quality_runner.py"]),
     ("Validate operational docs", ["tools/check_docs.py"]),
     ("Validate content inventory", ["tools/check_content_inventory.py"]),
+    ("Validate content similarity", ["tools/check_content_similarity.py"]),
     ("Validate sitemap helper", ["tools/check_sitemap_helper.py"]),
     ("Validate live health checker", ["tools/check_live_site.py", "--self-test"]),
     ("Validate Supabase retention", ["tools/check_supabase_retention.py"]),
