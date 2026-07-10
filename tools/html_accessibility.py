@@ -83,7 +83,12 @@ def inject_menu_aria(text: str, context: str, errors: list[str]) -> str:
 def validate_accessibility_markup(text: str, context: str, errors: list[str]) -> None:
     if text.count(SKIP_LINK) != 1:
         errors.append(f"{context}: expected exactly one static skip link")
-    if len(re.findall(r'<main\b[^>]*\bid=[\"']main-content[\"']', text, re.IGNORECASE)) != 1:
+    main_landmarks = re.findall(
+        r"<main\b[^>]*\bid=[\"']main-content[\"']",
+        text,
+        re.IGNORECASE,
+    )
+    if len(main_landmarks) != 1:
         errors.append(f"{context}: expected exactly one main-content landmark")
 
     button = MENU_BUTTON_RE.search(text)
