@@ -11,7 +11,11 @@ ROOT = Path(__file__).resolve().parents[1]
 SITE_QUALITY_PATH = ROOT / ".github" / "workflows" / "site-quality.yml"
 PAGES_PATH = ROOT / ".github" / "workflows" / "pages.yml"
 LIVE_HEALTH_PATH = ROOT / ".github" / "workflows" / "live-site-health.yml"
+BROWSER_SMOKE_PATH = ROOT / ".github" / "workflows" / "browser-smoke.yml"
 LIVE_ISSUE_MANAGER = ROOT / "tools" / "manage_live_health_issue.py"
+PLAYWRIGHT_CONFIG = ROOT / "playwright.config.mjs"
+PACKAGE_JSON = ROOT / "package.json"
+E2E_TEST = ROOT / "tests" / "e2e" / "site-smoke.spec.mjs"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
 DENO_SETUP = "uses: denoland/setup-deno@v2"
@@ -63,6 +67,31 @@ EXPECTED_MARKERS = {
         "if: steps.live_health.outcome == 'failure'",
         "if: steps.live_health.outcome == 'success'",
     ],
+    BROWSER_SMOKE_PATH: [
+        'cron: "41 5 * * 1"',
+        "workflow_dispatch:",
+        "uses: actions/checkout@v4",
+        "uses: actions/setup-python@v5",
+        PYTHON_VERSION,
+        "uses: actions/setup-node@v4",
+        'node-version: "20"',
+        "run: npm install --no-audit --no-fund",
+        "run: npx playwright install --with-deps chromium",
+        "run: npm run test:e2e",
+        "uses: actions/upload-artifact@v4",
+        "name: browser-smoke-report",
+    ],
+}
+
+REQUIRED_BROWSER_FILES = {
+    PACKAGE_JSON: ['"@playwright/test": "1.54.2"', '"test:e2e": "playwright test"'],
+    PLAYWRIGHT_CONFIG: ["python tools/build_pages.py", "python -m http.server 4173", "trace: 'retain-on-failure'"],
+    E2E_TEST: [
+        "мобильное меню открывается",
+        "успешный backend сохраняет заявку",
+        "форма показывает ручной fallback",
+        "страница 404 остаётся noindex",
+    ],
 }
 
 FORBIDDEN_MARKERS = [
@@ -90,6 +119,15 @@ def main() -> int:
         for marker in FORBIDDEN_MARKERS:
             if marker in text:
                 findings.append(f"{rel} must not contain {marker}")
+
+    for path, expected_markers in REQUIRED_BROWSER_FILES.items():
+        if not path.exists():
+            findings.append(f"{path.relative_to(ROOT)} is missing")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for marker in expected_markers:
+            if marker not in text:
+                findings.append(f"{path.relative_to(ROOT)} must contain {marker}")
 
     if not LIVE_ISSUE_MANAGER.exists():
         findings.append("tools/manage_live_health_issue.py is missing")
