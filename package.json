@@ -2,12 +2,13 @@
   "name": "parket36-site",
   "version": "1.0.0",
   "private": true,
-  "description": "Quality and browser smoke tests for the Parket36 static site.",
+  "description": "Quality, browser smoke and accessibility tests for the Parket36 static site.",
   "scripts": {
     "build:site": "python tools/build_pages.py",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
     "@playwright/test": "1.54.2"
   },
   "engines": {

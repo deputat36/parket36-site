@@ -17,6 +17,8 @@ PLAYWRIGHT_CONFIG = ROOT / "playwright.config.mjs"
 PACKAGE_JSON = ROOT / "package.json"
 DENO_CONFIG = ROOT / "deno.json"
 E2E_TEST = ROOT / "tests" / "e2e" / "site-smoke.spec.mjs"
+ACCESSIBILITY_TEST = ROOT / "tests" / "e2e" / "accessibility.spec.mjs"
+ACCESSIBILITY_CSS = ROOT / "css" / "accessibility-polish.css"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
 DENO_SETUP = "uses: denoland/setup-deno@v2"
@@ -85,7 +87,11 @@ EXPECTED_MARKERS = {
 }
 
 REQUIRED_BROWSER_FILES = {
-    PACKAGE_JSON: ['"@playwright/test": "1.54.2"', '"test:e2e": "playwright test"'],
+    PACKAGE_JSON: [
+        '"@axe-core/playwright": "4.10.2"',
+        '"@playwright/test": "1.54.2"',
+        '"test:e2e": "playwright test"',
+    ],
     DENO_CONFIG: ['"nodeModulesDir": "auto"'],
     PLAYWRIGHT_CONFIG: ["python tools/build_pages.py", "python -m http.server 4173", "trace: 'retain-on-failure'"],
     E2E_TEST: [
@@ -93,6 +99,20 @@ REQUIRED_BROWSER_FILES = {
         "успешный backend сохраняет заявку",
         "форма показывает ручной fallback",
         "страница 404 остаётся noindex",
+    ],
+    ACCESSIBILITY_TEST: [
+        "AxeBuilder",
+        "wcag2a",
+        "wcag2aa",
+        "wcag21a",
+        "wcag21aa",
+        "accessibility.spec.mjs",
+    ],
+    ACCESSIBILITY_CSS: [
+        ".person-card .muted",
+        '.form-help a[href$="/politika/"]',
+        '.footer__bottom a[href$="/politika/"]',
+        "text-decoration: underline",
     ],
 }
 
