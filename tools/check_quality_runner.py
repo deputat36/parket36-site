@@ -17,6 +17,7 @@ EXPECTED_CHECKS = [
     ["tools/check_quality_runner.py"],
     ["tools/check_docs.py"],
     ["tools/check_sitemap_helper.py"],
+    ["tools/check_empty_link_attributes.py"],
     ["tools/check_site.py"],
     ["tools/check_guardrails.py"],
     ["tools/check_conversion_paths.py"],
