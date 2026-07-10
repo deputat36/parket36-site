@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate timeout, retry and honeypot protection for public lead forms."""
+"""Validate timeout, retry, honeypot and rate-limit protection for public lead forms."""
 
 from __future__ import annotations
 
@@ -28,6 +28,12 @@ FILES = {
         "cleanText(body.website": "backend website honeypot",
         "cleanText(body.company": "backend company honeypot",
         'reason: "honeypot_filled"': "honeypot audit reason",
+        "RATE_LIMIT_MAX_ATTEMPTS = 30": "all-attempt rate limit",
+        "RATE_LIMIT_MAX_ACCEPTED = 6": "accepted-lead rate limit",
+        "recentAuditCount(": "shared audit rate counter",
+        '"all_attempts"': "all-attempt rate scope",
+        '"accepted_attempts"': "accepted rate scope",
+        "attemptCount >= RATE_LIMIT_MAX_ATTEMPTS": "all-attempt rejection guard",
     },
 }
 
