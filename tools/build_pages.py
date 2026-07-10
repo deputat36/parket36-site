@@ -10,6 +10,7 @@ import shutil
 import sys
 import xml.etree.ElementTree as ET
 
+from css_bundle import prepare_css_bundle
 from site_settings import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,7 +22,6 @@ LEAD_RELIABILITY_SCRIPT = '<script src="/js/lead-reliability.js" defer></script>
 MAIN_SCRIPT = '<script src="/js/main.js" defer></script>'
 
 PUBLIC_DIRS = {
-    "css",
     "js",
     "img",
     "uslugi",
@@ -246,6 +246,7 @@ def main() -> int:
     remove_internal_working_paths()
 
     errors: list[str] = []
+    prepare_css_bundle(ROOT, DEST, errors)
     inject_lead_reliability(errors)
 
     required = ["index.html", "404.html", "CNAME", "robots.txt", "sitemap.xml"]
@@ -266,7 +267,11 @@ def main() -> int:
 
     total = sum(1 for path in DEST.rglob("*") if path.is_file())
     html_total = sum(1 for path in DEST.rglob("*.html") if path.is_file())
-    print(f"Prepared {total} public files, including {html_total} HTML pages, in {DEST}")
+    css_total = sum(1 for path in DEST.rglob("*.css") if path.is_file())
+    print(
+        f"Prepared {total} public files, including {html_total} HTML pages "
+        f"and {css_total} CSS bundle, in {DEST}"
+    )
     return 0
 
 

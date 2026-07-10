@@ -14,6 +14,7 @@
 - `docs/browser-smoke-tests.md` — Playwright-проверки меню, телефона, формы, fallback и 404.
 - `docs/accessibility-audit.md` — автоматический axe-аудит ключевых страниц по WCAG A/AA.
 - `docs/lighthouse-ci.md` — Lighthouse-проверки производительности, доступности, Best Practices и SEO.
+- `docs/css-bundle.md` — объединение CSS-модулей в один cache-busted файл публичной сборки.
 - `docs/edge-function-ci.md` — Deno type-check Edge Function в PR и перед Pages-деплоем.
 
 ## Заявки и безопасность
