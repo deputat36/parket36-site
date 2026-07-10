@@ -15,6 +15,7 @@ BROWSER_SMOKE_PATH = ROOT / ".github" / "workflows" / "browser-smoke.yml"
 LIVE_ISSUE_MANAGER = ROOT / "tools" / "manage_live_health_issue.py"
 PLAYWRIGHT_CONFIG = ROOT / "playwright.config.mjs"
 PACKAGE_JSON = ROOT / "package.json"
+DENO_CONFIG = ROOT / "deno.json"
 E2E_TEST = ROOT / "tests" / "e2e" / "site-smoke.spec.mjs"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
@@ -85,6 +86,7 @@ EXPECTED_MARKERS = {
 
 REQUIRED_BROWSER_FILES = {
     PACKAGE_JSON: ['"@playwright/test": "1.54.2"', '"test:e2e": "playwright test"'],
+    DENO_CONFIG: ['"nodeModulesDir": "auto"'],
     PLAYWRIGHT_CONFIG: ["python tools/build_pages.py", "python -m http.server 4173", "trace: 'retain-on-failure'"],
     E2E_TEST: [
         "мобильное меню открывается",
