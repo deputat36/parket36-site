@@ -7,7 +7,7 @@
 
 - публичных страниц: 107;
 - индексируемых страниц: 94;
-- страниц короче 250 слов: 1;
+- страниц короче 250 слов: 0;
 - кандидатов без входящих внутренних ссылок: 0;
 - страниц с повторяющимся title: 0;
 - страниц с повторяющимся H1: 0;
@@ -43,7 +43,7 @@
 | https://parket36.ru/sovety/kak-podgotovit-komnatu-k-ciklevke/ | sovety | 554 | 18 | 15 | 4 | 4 | нет | 2026-06-23 | Как подготовить комнату к циклёвке паркета — чек-лист |
 | https://parket36.ru/sovety/kak-ponyat-chto-parket-mozhno-lakirovat/ | sovety | 477 | 3 | 18 | 4 | 3 | нет | 2026-07-01 | Как понять, что паркет можно лакировать — Паркет36 |
 | https://parket36.ru/sovety/kak-prinyat-rabotu-posle-ciklevki-parketa/ | sovety | 683 | 8 | 14 | 5 | 4 | нет | 2026-06-27 | Как принять работу после циклёвки паркета — Паркет36 |
-| https://parket36.ru/sovety/kak-proverit-shlifovku-parketa-pered-lakom/ | sovety | 244 | 1 | 16 | 4 | 3 | нет | 2026-07-05 | Как проверить шлифовку паркета перед лаком — Паркет36 |
+| https://parket36.ru/sovety/kak-proverit-shlifovku-parketa-pered-lakom/ | sovety | 505 | 1 | 16 | 4 | 3 | нет | 2026-07-10 | Как проверить шлифовку паркета перед лаком — Паркет36 |
 | https://parket36.ru/sovety/kak-provetrivat-komnatu-posle-lakirovki-parketa/ | sovety | 631 | 8 | 17 | 5 | 5 | нет | 2026-06-28 | Как проветривать комнату после лакировки паркета — Паркет36 |
 | https://parket36.ru/sovety/kak-sfotografirovat-pol-dlya-ocenki/ | sovety | 808 | 36 | 15 | 6 | 6 | нет | 2026-06-23 | Как сфотографировать паркет и пол для оценки — Паркет36 |
 | https://parket36.ru/sovety/kak-ubrat-pyl-posle-ciklevki-pered-lakom/ | sovety | 455 | 2 | 17 | 4 | 3 | нет | 2026-07-02 | Как убрать пыль после циклёвки перед лаком — Паркет36 |
@@ -64,8 +64,8 @@
 | https://parket36.ru/sovety/lokalnyy-remont-parketnyh-planok/ | sovety | 666 | 5 | 15 | 5 | 5 | нет | 2026-06-27 | Локальный ремонт паркетных планок — Паркет36 |
 | https://parket36.ru/sovety/matovyy-ili-glyancevyy-lak-dlya-parketa/ | sovety | 701 | 7 | 14 | 5 | 5 | нет | 2026-06-27 | Матовый или глянцевый лак для паркета — Паркет36 |
 | https://parket36.ru/sovety/mozhno-li-ciklevat-krashenyy-derevyannyy-pol/ | sovety | 624 | 1 | 15 | 4 | 4 | нет | 2026-06-28 | Можно ли циклевать окрашенный деревянный пол — Паркет36 |
-| https://parket36.ru/sovety/mozhno-li-ciklevat-parketnuyu-dosku/ | sovety | 731 | 1 | 15 | 5 | 5 | нет | 2026-06-27 | Можно ли циклевать паркетную доску — Паркет36 |
-| https://parket36.ru/sovety/mozhno-li-pokryt-parket-lakom-bez-ciklevki/ | sovety | 672 | 4 | 16 | 5 | 5 | нет | 2026-06-28 | Можно ли покрыть паркет лаком без циклёвки — Паркет36 |
+| https://parket36.ru/sovety/mozhno-li-ciklevat-parketnuyu-dosku/ | sovety | 640 | 2 | 15 | 5 | 5 | нет | 2026-06-27 | Можно ли циклевать паркетную доску — Паркет36 |
+| https://parket36.ru/sovety/mozhno-li-pokryt-parket-lakom-bez-ciklevki/ | sovety | 630 | 4 | 17 | 5 | 5 | нет | 2026-06-28 | Можно ли покрыть паркет лаком без циклёвки — Паркет36 |
 | https://parket36.ru/sovety/mozhno-li-vosstanovit-staryy-parket/ | sovety | 559 | 9 | 16 | 4 | 4 | нет | 2026-06-23 | Можно ли восстановить старый паркет — признаки и честная оценка |
 | https://parket36.ru/sovety/mozhno-li-zhit-v-kvartire-vo-vremya-ciklevki-parketa/ | sovety | 702 | 1 | 14 | 5 | 5 | нет | 2026-06-27 | Можно ли жить в квартире во время циклёвки паркета — Паркет36 |
 | https://parket36.ru/sovety/nuzhna-li-mezhsloynaya-shlifovka-laka-na-parkete/ | sovety | 661 | 13 | 16 | 5 | 5 | нет | 2026-06-28 | Нужна ли межслойная шлифовка лака на паркете — Паркет36 |
