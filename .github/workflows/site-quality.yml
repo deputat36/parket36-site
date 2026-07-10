@@ -22,5 +22,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: lts
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/parket-public-lead/index.ts
       - name: Run quality gate
         run: python tools/run_quality_checks.py
