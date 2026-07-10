@@ -29,6 +29,24 @@
   line-height: 1.45;
 }
 
+.person-card .muted {
+  color: var(--muted) !important;
+}
+
+.form-help a[href$="/politika/"],
+.footer__bottom a[href$="/politika/"] {
+  text-decoration: underline;
+  text-decoration-thickness: .1em;
+  text-underline-offset: .18em;
+}
+
+.form-help a[href$="/politika/"]:hover,
+.form-help a[href$="/politika/"]:focus-visible,
+.footer__bottom a[href$="/politika/"]:hover,
+.footer__bottom a[href$="/politika/"]:focus-visible {
+  text-decoration-thickness: .16em;
+}
+
 .skip-link {
   position: fixed;
   left: 16px;
