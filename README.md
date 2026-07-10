@@ -110,6 +110,7 @@ python tools/run_quality_checks.py
 - `check_quality_runner.py` — точный состав и порядок общего quality gate;
 - `check_docs.py` — актуальность README и workflow относительно общего quality runner;
 - `check_sitemap_helper.py` — проверка вспомогательного инструмента добавления sitemap-записей;
+- `check_live_site.py --self-test` — офлайн-проверка генерации диагностического отчёта без обращения к боевому домену;
 - `check_empty_link_attributes.py` — отсутствие пустых `href` и `src` в публичных HTML-страницах;
 - `check_site.py` — общий статический аудит страниц;
 - `check_guardrails.py` — дополнительные правила фокуса, индексации и внутренних страниц;
@@ -140,6 +141,7 @@ python tools/run_quality_checks.py
 - конверсионный путь: телефон, мобильная CTA, финальные CTA и ссылки на оценку по фото;
 - целостность формы оценки: поля по фото, видео, площади, задаче, времени звонка и контакту;
 - timeout, повторную попытку и honeypot-защиту публичной формы;
+- успешную генерацию диагностического отчёта live health checker;
 - успешная сборка чистого публичного каталога;
 - отсутствие внутренних рабочих страниц и приватных файлов в публичной сборке.
 
@@ -165,6 +167,8 @@ Workflow `Deploy GitHub Pages` после изменения `main`:
 4. публикует артефакт в GitHub Pages.
 
 Для автоматического деплоя в `Settings → Pages` источником должен быть выбран `GitHub Actions`.
+
+Ежедневный workflow `Live site health` проверяет DNS, HTTPS, главную страницу, `robots.txt`, sitemap и отсутствие старого WhatsApp. Отчёт сохраняется в artifact `live-health-report` на 30 дней. Подробности: `docs/live-site-monitoring.md`.
 
 ## Домен
 
