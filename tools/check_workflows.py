@@ -14,7 +14,7 @@ QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
 DENO_SETUP = "uses: denoland/setup-deno@v2"
 DENO_VERSION = "deno-version: lts"
-DENO_CHECK = "run: deno check supabase/functions/parket-public-lead/index.ts"
+DENO_CHECK = "deno check supabase/functions/parket-public-lead/index.ts"
 
 EXPECTED_MARKERS = {
     SITE_QUALITY_PATH: [
@@ -24,6 +24,11 @@ EXPECTED_MARKERS = {
         DENO_SETUP,
         DENO_VERSION,
         DENO_CHECK,
+        "id: edge_typecheck",
+        "continue-on-error: true",
+        "uses: actions/upload-artifact@v4",
+        "name: edge-function-check",
+        "if: steps.edge_typecheck.outcome == 'failure'",
         f"run: {QUALITY_RUNNER}",
     ],
     PAGES_PATH: [
