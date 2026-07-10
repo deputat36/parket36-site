@@ -1,0 +1,8 @@
+<!-- shared-shell:final-cta -->
+<section class="final-cta">
+  <div class="container">
+    <h2>Начните с фотографий пола и короткого разговора</h2>
+    <p>Иван поможет понять, что можно восстановить, где есть ограничения и нужен ли осмотр перед расчётом.</p>
+    <div class="hero__actions"><a class="btn btn--light" href="tel:+79009267929">Позвонить 8 (900) 926-79-29</a><a class="btn btn--dark" href="#request">Получить оценку по фото</a></div>
+  </div>
+</section>
