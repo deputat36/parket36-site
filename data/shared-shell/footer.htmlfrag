@@ -1,0 +1,5 @@
+<!-- shared-shell:footer -->
+<footer class="footer">
+  <div class="container footer__grid"><div><a class="brand" href="/"><span class="brand__mark">36</span><span><strong>Паркет36</strong><small>мастер Иван · Воронеж и область</small></span></a><p>Циклёвка, реставрация и ремонт паркета. Предварительная оценка начинается с фото и описания пола.</p></div><div><h3>Основные направления</h3><ul class="footer__list"><li><a href="/uslugi/ciklevka-parketa/">Циклёвка паркета</a></li><li><a href="/uslugi/restavraciya-parketa/">Реставрация паркета</a></li><li><a href="/uslugi/shlifovka-doshchatogo-pola/">Шлифовка дощатого пола</a></li><li><a href="/uslugi/pokrytie-lakom-i-maslom/">Лак, масло и воск</a></li><li><a href="/sovety/">Советы</a></li></ul></div><div><h3>Связаться</h3><p><a class="footer__phone" href="tel:+79009267929">8 (900) 926-79-29</a></p><p class="muted">Телефон — основной канал связи.</p></div></div>
+  <div class="footer__bottom"><div class="container">© <span data-current-year>2026</span> Паркет36 · <a href="/politika/">Обработка данных</a></div></div>
+</footer>
