@@ -43,3 +43,12 @@ jobs:
         run: cat edge-function-check.log && exit 1
       - name: Run quality gate
         run: python tools/run_quality_checks.py
+      - name: Generate content inventory
+        run: python tools/build_content_inventory.py --output-dir reports/content-inventory
+      - name: Upload content inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-inventory
+          path: reports/content-inventory
+          if-no-files-found: error
+          retention-days: 30
