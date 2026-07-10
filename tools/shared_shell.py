@@ -18,6 +18,13 @@ FRAGMENTS = {
     "mobile-cta": Path("data/shared-shell/mobile-cta.html"),
 }
 
+FRAGMENT_MARKERS = {
+    "header": "<!-- shared-shell:header -->",
+    "final-cta": "<!-- shared-shell:final-cta -->",
+    "footer": "<!-- shared-shell:footer -->",
+    "mobile-cta": "<!-- shared-shell:mobile-cta -->",
+}
+
 PATTERNS = {
     "header": re.compile(r'<header\b[^>]*class=["\']topbar["\'][^>]*>.*?</header>', re.IGNORECASE | re.DOTALL),
     "final-cta": re.compile(r'<section\b[^>]*class=["\']final-cta["\'][^>]*>.*?</section>', re.IGNORECASE | re.DOTALL),
@@ -34,7 +41,7 @@ def load_fragments(root: Path, errors: list[str]) -> dict[str, str]:
             errors.append(f"Shared shell fragment is missing: {relative.as_posix()}")
             continue
         text = path.read_text(encoding="utf-8").strip()
-        marker = f"<!-- shared-shell:{name} -->"
+        marker = FRAGMENT_MARKERS[name]
         if text.count(marker) != 1:
             errors.append(f"{relative.as_posix()}: expected exactly one marker {marker}")
             continue
@@ -58,7 +65,7 @@ def replace_fragment(
 
 def validate_page(text: str, context: str, fragments: dict[str, str], errors: list[str]) -> None:
     for name, fragment in fragments.items():
-        marker = f"<!-- shared-shell:{name} -->"
+        marker = FRAGMENT_MARKERS[name]
         if text.count(marker) != 1:
             errors.append(f"{context}: expected exactly one {marker}")
         if text.count(fragment) != 1:
