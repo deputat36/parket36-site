@@ -12,13 +12,23 @@ const MAX_BODY_BYTES = 25_000;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX_ATTEMPTS = 30;
 const RATE_LIMIT_MAX_ACCEPTED = 6;
+const NOTIFICATION_TIMEOUT_MS = 4_000;
 const HEALTHCHECK_HEADER = "x-parket-health-token";
 
 const LEADS_TABLE = "parket_leads";
 const AUDIT_TABLE = "parket_public_lead_audit";
+const RESEND_API_URL = "https://api.resend.com/emails";
 
 type LeadPayload = Record<string, unknown>;
+type LeadRecord = Record<string, unknown>;
 type SupabaseClient = ReturnType<typeof createClient<any, "public", "public">>;
+type NotificationChannel = "telegram" | "email";
+type NotificationResult = {
+  channel: NotificationChannel;
+  configured: boolean;
+  ok: boolean;
+  detail: string;
+};
 
 function allowedOrigins() {
   const configured = Deno.env.get("PARKET_PUBLIC_ALLOWED_ORIGINS");
@@ -67,6 +77,10 @@ function cleanMultiline(value: unknown, max = 3000) {
   return String(value ?? "").replace(/\r\n/g, "\n").trim().slice(0, max);
 }
 
+function envText(name: string, max = 1000) {
+  return cleanText(Deno.env.get(name), max);
+}
+
 function envFlag(name: string) {
   return ["1", "true", "yes"].includes((Deno.env.get(name) || "").trim().toLowerCase());
 }
@@ -93,11 +107,19 @@ function getServiceKey() {
 }
 
 function getIpHashSalt() {
-  return cleanText(Deno.env.get("PARKET_IP_HASH_SALT"), 500);
+  return envText("PARKET_IP_HASH_SALT", 500);
 }
 
 function getHealthcheckToken() {
-  return cleanText(Deno.env.get("PARKET_HEALTHCHECK_TOKEN"), 500);
+  return envText("PARKET_HEALTHCHECK_TOKEN", 500);
+}
+
+function emailRecipients() {
+  return (Deno.env.get("PARKET_EMAIL_TO") || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .slice(0, 20);
 }
 
 function safeEqual(left: string, right: string) {
@@ -202,6 +224,33 @@ async function tableHealth(supabase: SupabaseClient, table: string) {
   };
 }
 
+function optionalConfigHealth(values: string[], label: string) {
+  const present = values.filter(Boolean).length;
+  if (present === 0) return { ok: true, detail: "disabled" };
+  if (present === values.length) return { ok: true, detail: "configured" };
+  return {
+    ok: false,
+    detail: `${label} is partially configured: ${present}/${values.length}`,
+  };
+}
+
+function notificationConfigHealth() {
+  const telegram = optionalConfigHealth(
+    [envText("PARKET_TELEGRAM_BOT_TOKEN", 500), envText("PARKET_TELEGRAM_CHAT_ID", 200)],
+    "Telegram",
+  );
+  const email = optionalConfigHealth(
+    [
+      envText("PARKET_RESEND_API_KEY", 500),
+      envText("PARKET_EMAIL_FROM", 320),
+      emailRecipients().join(","),
+    ],
+    "Email",
+  );
+
+  return { telegram, email };
+}
+
 async function runHealthcheck(req: Request, supabase: SupabaseClient, salt: string) {
   const expectedToken = getHealthcheckToken();
   if (!expectedToken) {
@@ -215,11 +264,14 @@ async function runHealthcheck(req: Request, supabase: SupabaseClient, salt: stri
 
   const leads = await tableHealth(supabase, LEADS_TABLE);
   const audit = await tableHealth(supabase, AUDIT_TABLE);
+  const notifications = notificationConfigHealth();
   const checks = {
     service_role: { ok: true, detail: "configured" },
     ip_hash_salt: { ok: Boolean(salt), detail: salt ? "configured" : "local override enabled" },
     parket_leads: leads,
     parket_public_lead_audit: audit,
+    telegram_notification: notifications.telegram,
+    email_notification: notifications.email,
   };
   const ok = Object.values(checks).every((check) => check.ok);
 
@@ -251,6 +303,148 @@ function attributionFromBody(body: LeadPayload, req: Request) {
     utm_content: cleanText(body.utm_content, 220),
     utm_term: cleanText(body.utm_term, 220),
   };
+}
+
+function leadNotificationText(lead: LeadRecord, leadId: string, requestId: string) {
+  const rows = [
+    "Новая заявка Паркет36",
+    `ID: ${leadId || requestId}`,
+    `Контакт: ${cleanText(lead.contact, 240)}`,
+    `Услуга: ${cleanText(lead.service, 160) || "не указана"}`,
+    `Где: ${cleanText(lead.location, 160) || "не указано"}`,
+    `Площадь: ${cleanText(lead.area, 80) || "не указана"}`,
+    `Когда позвонить: ${cleanText(lead.callback_time, 160) || "не указано"}`,
+    `Задача: ${cleanMultiline(lead.task, 1800)}`,
+    `Страница: ${cleanText(lead.page, 500) || "не указана"}`,
+  ];
+
+  return rows.join("\n").slice(0, 3900);
+}
+
+async function postJson(
+  url: string,
+  body: unknown,
+  headers: Record<string, string> = {},
+) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), NOTIFICATION_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    const responseText = await response.text();
+    let responseBody: Record<string, unknown> = {};
+
+    if (responseText) {
+      try {
+        responseBody = JSON.parse(responseText);
+      } catch (_) {
+        responseBody = { raw: responseText.slice(0, 500) };
+      }
+    }
+
+    if (!response.ok) {
+      const description = cleanText(responseBody.description || responseBody.message, 300);
+      throw new Error(`HTTP ${response.status}${description ? `: ${description}` : ""}`);
+    }
+
+    return responseBody;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function sendTelegramNotification(
+  lead: LeadRecord,
+  leadId: string,
+  requestId: string,
+): Promise<NotificationResult> {
+  const token = envText("PARKET_TELEGRAM_BOT_TOKEN", 500);
+  const chatId = envText("PARKET_TELEGRAM_CHAT_ID", 200);
+  if (!token && !chatId) {
+    return { channel: "telegram", configured: false, ok: true, detail: "disabled" };
+  }
+  if (!token || !chatId) {
+    return { channel: "telegram", configured: true, ok: false, detail: "partial configuration" };
+  }
+
+  try {
+    const response = await postJson(
+      `https://api.telegram.org/bot${token}/sendMessage`,
+      {
+        chat_id: chatId,
+        text: leadNotificationText(lead, leadId, requestId),
+      },
+    );
+    if (response.ok !== true) {
+      throw new Error(cleanText(response.description, 300) || "Telegram returned ok=false");
+    }
+    return { channel: "telegram", configured: true, ok: true, detail: "sent" };
+  } catch (error) {
+    return {
+      channel: "telegram",
+      configured: true,
+      ok: false,
+      detail: error instanceof Error ? error.message : "telegram_send_failed",
+    };
+  }
+}
+
+async function sendEmailNotification(
+  lead: LeadRecord,
+  leadId: string,
+  requestId: string,
+): Promise<NotificationResult> {
+  const apiKey = envText("PARKET_RESEND_API_KEY", 500);
+  const from = envText("PARKET_EMAIL_FROM", 320);
+  const to = emailRecipients();
+  if (!apiKey && !from && to.length === 0) {
+    return { channel: "email", configured: false, ok: true, detail: "disabled" };
+  }
+  if (!apiKey || !from || to.length === 0) {
+    return { channel: "email", configured: true, ok: false, detail: "partial configuration" };
+  }
+
+  const subject = envText("PARKET_EMAIL_SUBJECT", 200) || "Новая заявка Паркет36";
+
+  try {
+    await postJson(
+      RESEND_API_URL,
+      {
+        from,
+        to,
+        subject,
+        text: leadNotificationText(lead, leadId, requestId),
+      },
+      { Authorization: `Bearer ${apiKey}` },
+    );
+    return { channel: "email", configured: true, ok: true, detail: "sent" };
+  } catch (error) {
+    return {
+      channel: "email",
+      configured: true,
+      ok: false,
+      detail: error instanceof Error ? error.message : "email_send_failed",
+    };
+  }
+}
+
+async function sendLeadNotifications(
+  lead: LeadRecord,
+  leadId: string,
+  requestId: string,
+) {
+  return Promise.all([
+    sendTelegramNotification(lead, leadId, requestId),
+    sendEmailNotification(lead, leadId, requestId),
+  ]);
 }
 
 Deno.serve(async (req: Request) => {
@@ -391,6 +585,51 @@ Deno.serve(async (req: Request) => {
     return json(req, 500, { ok: false, error: "temporary_error", request_id: requestId });
   }
 
-  await writeAudit(supabase, { ...auditBase, accepted: true, reason: "accepted" });
-  return json(req, 200, { ok: true, request_id: requestId, lead_id: data?.id });
+  const leadId = cleanText(data?.id, 120);
+  const notificationResults = await sendLeadNotifications(lead, leadId, requestId);
+  const configuredNotifications = notificationResults.filter((result) => result.configured);
+  const failedNotifications = configuredNotifications.filter((result) => !result.ok);
+  const notificationState = configuredNotifications.length === 0
+    ? "disabled"
+    : failedNotifications.length === 0
+    ? "sent"
+    : "partial_failure";
+
+  if (failedNotifications.length > 0) {
+    console.error("parket_public_lead_notification_failed", {
+      request_id: requestId,
+      channels: failedNotifications.map((result) => ({
+        channel: result.channel,
+        detail: result.detail,
+      })),
+    });
+  }
+
+  await writeAudit(supabase, {
+    ...auditBase,
+    accepted: true,
+    reason: notificationState === "sent"
+      ? "accepted_notified"
+      : notificationState === "disabled"
+      ? "accepted_notification_disabled"
+      : "accepted_notification_failed",
+    payload_summary: {
+      ...summary,
+      notification: {
+        state: notificationState,
+        channels: notificationResults.map((result) => ({
+          channel: result.channel,
+          configured: result.configured,
+          ok: result.ok,
+        })),
+      },
+    },
+  });
+
+  return json(req, 200, {
+    ok: true,
+    request_id: requestId,
+    lead_id: data?.id,
+    notification: notificationState,
+  });
 });
