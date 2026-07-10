@@ -11,10 +11,12 @@
 
 Единым источником для обеих страниц служат:
 
-- `data/shared-shell/header.html`;
-- `data/shared-shell/final-cta.html`;
-- `data/shared-shell/footer.html`;
-- `data/shared-shell/mobile-cta.html`.
+- `data/shared-shell/header.htmlfrag`;
+- `data/shared-shell/final-cta.htmlfrag`;
+- `data/shared-shell/footer.htmlfrag`;
+- `data/shared-shell/mobile-cta.htmlfrag`.
+
+Расширение `.htmlfrag` используется специально: статический SEO-аудит не должен воспринимать fragment как самостоятельную публичную HTML-страницу.
 
 Во время сборки `tools/shared_shell.py` заменяет соответствующие блоки только в сгенерированной папке `_site`. Исходные HTML-страницы пока сохраняются как полный читаемый fallback, поэтому переход можно продолжать постепенно и без массовой миграции.
 
