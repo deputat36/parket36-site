@@ -2,6 +2,8 @@ node_modules/
 _site/
 playwright-report/
 test-results/
+lighthouse-report/
+.lighthouseci/
 
 .env
 .env.*

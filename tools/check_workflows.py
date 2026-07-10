@@ -12,8 +12,10 @@ SITE_QUALITY_PATH = ROOT / ".github" / "workflows" / "site-quality.yml"
 PAGES_PATH = ROOT / ".github" / "workflows" / "pages.yml"
 LIVE_HEALTH_PATH = ROOT / ".github" / "workflows" / "live-site-health.yml"
 BROWSER_SMOKE_PATH = ROOT / ".github" / "workflows" / "browser-smoke.yml"
+LIGHTHOUSE_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "lighthouse.yml"
 LIVE_ISSUE_MANAGER = ROOT / "tools" / "manage_live_health_issue.py"
 PLAYWRIGHT_CONFIG = ROOT / "playwright.config.mjs"
+LIGHTHOUSE_CONFIG = ROOT / "lighthouserc.cjs"
 PACKAGE_JSON = ROOT / "package.json"
 DENO_CONFIG = ROOT / "deno.json"
 E2E_TEST = ROOT / "tests" / "e2e" / "site-smoke.spec.mjs"
@@ -84,16 +86,41 @@ EXPECTED_MARKERS = {
         "uses: actions/upload-artifact@v4",
         "name: browser-smoke-report",
     ],
+    LIGHTHOUSE_WORKFLOW_PATH: [
+        'cron: "7 6 * * 1"',
+        "workflow_dispatch:",
+        "uses: actions/checkout@v4",
+        "uses: actions/setup-python@v5",
+        PYTHON_VERSION,
+        "uses: actions/setup-node@v4",
+        'node-version: "20"',
+        "run: npm install --no-audit --no-fund",
+        "run: python tools/build_pages.py",
+        "run: npm run test:lighthouse",
+        "uses: actions/upload-artifact@v4",
+        "name: lighthouse-report",
+    ],
 }
 
-REQUIRED_BROWSER_FILES = {
+REQUIRED_QUALITY_FILES = {
     PACKAGE_JSON: [
         '"@axe-core/playwright": "4.10.2"',
+        '"@lhci/cli": "0.15.1"',
         '"@playwright/test": "1.54.2"',
         '"test:e2e": "playwright test"',
+        '"test:lighthouse": "lhci autorun --config=./lighthouserc.cjs"',
     ],
     DENO_CONFIG: ['"nodeModulesDir": "auto"'],
     PLAYWRIGHT_CONFIG: ["python tools/build_pages.py", "python -m http.server 4173", "trace: 'retain-on-failure'"],
+    LIGHTHOUSE_CONFIG: [
+        "staticDistDir: './_site'",
+        "http://localhost/zayavka/",
+        "'categories:performance'",
+        "'categories:accessibility'",
+        "'categories:best-practices'",
+        "'categories:seo'",
+        "target: 'filesystem'",
+    ],
     E2E_TEST: [
         "мобильное меню открывается",
         "успешный backend сохраняет заявку",
@@ -142,7 +169,7 @@ def main() -> int:
             if marker in text:
                 findings.append(f"{rel} must not contain {marker}")
 
-    for path, expected_markers in REQUIRED_BROWSER_FILES.items():
+    for path, expected_markers in REQUIRED_QUALITY_FILES.items():
         if not path.exists():
             findings.append(f"{path.relative_to(ROOT)} is missing")
             continue

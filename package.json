@@ -2,13 +2,15 @@
   "name": "parket36-site",
   "version": "1.0.0",
   "private": true,
-  "description": "Quality, browser smoke and accessibility tests for the Parket36 static site.",
+  "description": "Quality, browser, accessibility and Lighthouse checks for the Parket36 static site.",
   "scripts": {
     "build:site": "python tools/build_pages.py",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:lighthouse": "lhci autorun --config=./lighthouserc.cjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.10.2",
+    "@lhci/cli": "0.15.1",
     "@playwright/test": "1.54.2"
   },
   "engines": {
