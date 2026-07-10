@@ -10,6 +10,7 @@ from pathlib import Path
 import socket
 import ssl
 import sys
+from tempfile import TemporaryDirectory
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
@@ -86,10 +87,42 @@ def write_report(path: Path, domain: str, results: list[CheckResult]) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def self_test() -> int:
+    results = [
+        CheckResult("Passing check", True, "ok"),
+        CheckResult("Failing check", False, "line one|line two\nline three"),
+    ]
+
+    with TemporaryDirectory() as temporary:
+        report = Path(temporary) / "report.md"
+        write_report(report, "https://example.test", results)
+        text = report.read_text(encoding="utf-8")
+
+    required = [
+        "# Parket36 live health report",
+        "Domain: `https://example.test`",
+        "| Passing check | PASS | ok |",
+        "| Failing check | FAIL | line one\\|line two line three |",
+    ]
+    missing = [marker for marker in required if marker not in text]
+    if missing:
+        print("Live health self-test failed:")
+        for marker in missing:
+            print(f"  - missing report marker: {marker}")
+        return 1
+
+    print("Live health self-test passed")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", default="live-health-report.md")
+    parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
+
+    if args.self_test:
+        return self_test()
 
     config = load_config()
     domain = str(config["domain"]).rstrip("/")
