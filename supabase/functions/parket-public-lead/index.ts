@@ -12,8 +12,13 @@ const MAX_BODY_BYTES = 25_000;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX_ATTEMPTS = 30;
 const RATE_LIMIT_MAX_ACCEPTED = 6;
+const HEALTHCHECK_HEADER = "x-parket-health-token";
+
+const LEADS_TABLE = "parket_leads";
+const AUDIT_TABLE = "parket_public_lead_audit";
 
 type LeadPayload = Record<string, unknown>;
+type SupabaseClient = ReturnType<typeof createClient>;
 
 function allowedOrigins() {
   const configured = Deno.env.get("PARKET_PUBLIC_ALLOWED_ORIGINS");
@@ -40,7 +45,7 @@ function corsHeadersFor(req: Request) {
   const allowOrigin = origin && origins.includes(origin) ? origin : origins[0];
   return {
     "Access-Control-Allow-Origin": allowOrigin,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Headers": `authorization, x-client-info, apikey, content-type, ${HEALTHCHECK_HEADER}`,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Content-Type": "application/json; charset=utf-8",
     "Vary": "Origin",
@@ -62,6 +67,10 @@ function cleanMultiline(value: unknown, max = 3000) {
   return String(value ?? "").replace(/\r\n/g, "\n").trim().slice(0, max);
 }
 
+function envFlag(name: string) {
+  return ["1", "true", "yes"].includes((Deno.env.get(name) || "").trim().toLowerCase());
+}
+
 function parseEnvKeyMap(raw: string | undefined) {
   if (!raw) return "";
   try {
@@ -81,6 +90,23 @@ function getServiceKey() {
     Deno.env.get("SERVICE_ROLE_KEY") ||
     ""
   );
+}
+
+function getIpHashSalt() {
+  return cleanText(Deno.env.get("PARKET_IP_HASH_SALT"), 500);
+}
+
+function getHealthcheckToken() {
+  return cleanText(Deno.env.get("PARKET_HEALTHCHECK_TOKEN"), 500);
+}
+
+function safeEqual(left: string, right: string) {
+  if (!left || !right || left.length !== right.length) return false;
+  let difference = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    difference |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  }
+  return difference === 0;
 }
 
 function requestIdFromBody(body: LeadPayload) {
@@ -105,20 +131,19 @@ function bytesToHex(bytes: Uint8Array) {
     .join("");
 }
 
-async function ipHashFor(req: Request) {
+async function ipHashFor(req: Request, salt: string) {
   const ip = clientIp(req);
   if (!ip) return "";
-  const salt = Deno.env.get("PARKET_IP_HASH_SALT") || "";
   const bytes = new TextEncoder().encode(`${salt}:${ip}`);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return bytesToHex(new Uint8Array(digest));
 }
 
 async function writeAudit(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   row: Record<string, unknown>,
 ) {
-  const { error } = await supabase.from("parket_public_lead_audit").insert(row);
+  const { error } = await supabase.from(AUDIT_TABLE).insert(row);
   if (error) {
     console.error("parket_public_lead_audit_failed", {
       request_id: row.request_id || null,
@@ -130,7 +155,7 @@ async function writeAudit(
 }
 
 async function recentAuditCount(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   ipHash: string,
   since: string,
   accepted: boolean | null,
@@ -138,7 +163,7 @@ async function recentAuditCount(
   scope: string,
 ) {
   let query = supabase
-    .from("parket_public_lead_audit")
+    .from(AUDIT_TABLE)
     .select("id", { count: "exact", head: true })
     .eq("ip_hash", ipHash)
     .gte("created_at", since);
@@ -157,6 +182,52 @@ async function recentAuditCount(
   }
 
   return count || 0;
+}
+
+async function tableHealth(supabase: SupabaseClient, table: string) {
+  const { count, error } = await supabase
+    .from(table)
+    .select("id", { count: "exact", head: true });
+
+  if (error) {
+    return {
+      ok: false,
+      detail: `${error.code || "db_error"}: ${error.message}`,
+    };
+  }
+
+  return {
+    ok: true,
+    detail: `readable; rows=${count || 0}`,
+  };
+}
+
+async function runHealthcheck(req: Request, supabase: SupabaseClient, salt: string) {
+  const expectedToken = getHealthcheckToken();
+  if (!expectedToken) {
+    return json(req, 503, { ok: false, test_mode: true, error: "healthcheck_not_configured" });
+  }
+
+  const providedToken = cleanText(req.headers.get(HEALTHCHECK_HEADER), 500);
+  if (!safeEqual(expectedToken, providedToken)) {
+    return json(req, 403, { ok: false, test_mode: true, error: "healthcheck_forbidden" });
+  }
+
+  const leads = await tableHealth(supabase, LEADS_TABLE);
+  const audit = await tableHealth(supabase, AUDIT_TABLE);
+  const checks = {
+    service_role: { ok: true, detail: "configured" },
+    ip_hash_salt: { ok: Boolean(salt), detail: salt ? "configured" : "local override enabled" },
+    parket_leads: leads,
+    parket_public_lead_audit: audit,
+  };
+  const ok = Object.values(checks).every((check) => check.ok);
+
+  return json(req, ok ? 200 : 503, {
+    ok,
+    test_mode: true,
+    checks,
+  });
 }
 
 function payloadSummary(body: LeadPayload) {
@@ -197,10 +268,6 @@ Deno.serve(async (req: Request) => {
     return json(req, 413, { ok: false, error: "payload_too_large" });
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-  const serviceKey = getServiceKey();
-  if (!supabaseUrl || !serviceKey) return json(req, 500, { ok: false, error: "server_not_configured" });
-
   let body: LeadPayload;
   try {
     body = JSON.parse(bodyText);
@@ -208,14 +275,31 @@ Deno.serve(async (req: Request) => {
     return json(req, 400, { ok: false, error: "bad_json" });
   }
 
-  const requestId = requestIdFromBody(body);
-  const ipHash = await ipHashFor(req);
-  const userAgent = cleanText(req.headers.get("user-agent"), 500);
-  const origin = requestOrigin(req);
-  const summary = payloadSummary(body);
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+  const serviceKey = getServiceKey();
+  if (!supabaseUrl || !serviceKey) {
+    return json(req, 500, { ok: false, error: "server_not_configured" });
+  }
+
+  const salt = getIpHashSalt();
+  const allowUnsalted = envFlag("PARKET_ALLOW_UNSALTED_IP_HASH");
+  if (!salt && !allowUnsalted) {
+    return json(req, 503, { ok: false, error: "ip_hash_salt_required" });
+  }
+
   const supabase = createClient(supabaseUrl, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+
+  if (body.test_mode === true) {
+    return runHealthcheck(req, supabase, salt);
+  }
+
+  const requestId = requestIdFromBody(body);
+  const ipHash = await ipHashFor(req, salt);
+  const userAgent = cleanText(req.headers.get("user-agent"), 500);
+  const origin = requestOrigin(req);
+  const summary = payloadSummary(body);
 
   const auditBase = {
     request_id: requestId,
@@ -287,7 +371,7 @@ Deno.serve(async (req: Request) => {
   };
 
   const { data, error } = await supabase
-    .from("parket_leads")
+    .from(LEADS_TABLE)
     .insert(lead)
     .select("id")
     .single();
