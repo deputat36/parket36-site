@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import difflib
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import sys
@@ -36,6 +37,15 @@ def main() -> int:
             "python tools/build_content_inventory.py --output-dir reports/content-inventory"
         )
         print("Then copy reports/content-inventory/content-inventory.md to docs/content-inventory.md")
+        print("Unified diff:")
+        for line in difflib.unified_diff(
+            actual.splitlines(),
+            expected.splitlines(),
+            fromfile="docs/content-inventory.md",
+            tofile="generated/content-inventory.md",
+            lineterm="",
+        ):
+            print(line)
         return 1
 
     print("Content inventory check passed")
