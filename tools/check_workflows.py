@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE_QUALITY_PATH = ROOT / ".github" / "workflows" / "site-quality.yml"
 PAGES_PATH = ROOT / ".github" / "workflows" / "pages.yml"
 LIVE_HEALTH_PATH = ROOT / ".github" / "workflows" / "live-site-health.yml"
+LIVE_ISSUE_MANAGER = ROOT / "tools" / "manage_live_health_issue.py"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
 DENO_SETUP = "uses: denoland/setup-deno@v2"
@@ -47,19 +49,26 @@ EXPECTED_MARKERS = {
     LIVE_HEALTH_PATH: [
         'cron: "23 4 * * *"',
         "workflow_dispatch:",
+        "actions: read",
+        "issues: write",
         "uses: actions/checkout@v4",
         "uses: actions/setup-python@v5",
         PYTHON_VERSION,
         "run: python tools/check_live_site.py --report live-health-report.md",
         "continue-on-error: true",
         "uses: actions/upload-artifact@v4",
+        "GITHUB_TOKEN: ${{ github.token }}",
+        "run: python tools/manage_live_health_issue.py failure --report live-health-report.md",
+        "run: python tools/manage_live_health_issue.py success",
         "if: steps.live_health.outcome == 'failure'",
+        "if: steps.live_health.outcome == 'success'",
     ],
 }
 
 FORBIDDEN_MARKERS = [
     "uses: actions/checkout@v6",
     "uses: denoland/setup-deno@v3",
+    "permissions: write-all",
 ]
 
 
@@ -81,6 +90,20 @@ def main() -> int:
         for marker in FORBIDDEN_MARKERS:
             if marker in text:
                 findings.append(f"{rel} must not contain {marker}")
+
+    if not LIVE_ISSUE_MANAGER.exists():
+        findings.append("tools/manage_live_health_issue.py is missing")
+    else:
+        completed = subprocess.run(
+            [sys.executable, str(LIVE_ISSUE_MANAGER), "--self-test"],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if completed.returncode != 0:
+            detail = (completed.stdout + completed.stderr).strip()
+            findings.append("live-health issue manager self-test failed: " + detail)
 
     if findings:
         print("Workflow findings:")
