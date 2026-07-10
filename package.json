@@ -1,0 +1,16 @@
+{
+  "name": "parket36-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Quality and browser smoke tests for the Parket36 static site.",
+  "scripts": {
+    "build:site": "python tools/build_pages.py",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.54.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
