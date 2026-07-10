@@ -16,6 +16,7 @@
 - `docs/static-accessibility.md` — обязательные skip-link, landmark и ARIA-связи в готовом HTML без зависимости от JavaScript.
 - `docs/lighthouse-ci.md` — Lighthouse-проверки производительности, доступности, Best Practices и SEO.
 - `docs/css-bundle.md` — объединение CSS-модулей в один cache-busted файл публичной сборки.
+- `docs/shared-shell-pilot.md` — общий header, footer и CTA для главной и формы оценки.
 - `docs/edge-function-ci.md` — Deno type-check Edge Function в PR и перед Pages-деплоем.
 
 ## Заявки и безопасность
