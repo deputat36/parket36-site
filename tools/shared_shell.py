@@ -12,10 +12,10 @@ PILOT_PAGES = (
 )
 
 FRAGMENTS = {
-    "header": Path("data/shared-shell/header.html"),
-    "final-cta": Path("data/shared-shell/final-cta.html"),
-    "footer": Path("data/shared-shell/footer.html"),
-    "mobile-cta": Path("data/shared-shell/mobile-cta.html"),
+    "header": Path("data/shared-shell/header.htmlfrag"),
+    "final-cta": Path("data/shared-shell/final-cta.htmlfrag"),
+    "footer": Path("data/shared-shell/footer.htmlfrag"),
+    "mobile-cta": Path("data/shared-shell/mobile-cta.htmlfrag"),
 }
 
 FRAGMENT_MARKERS = {
