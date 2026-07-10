@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail when public HTML contains empty or insecure href/src attributes."""
+"""Fail when public HTML contains unsafe link and resource attributes."""
 
 from __future__ import annotations
 
@@ -18,15 +18,25 @@ class LinkAttributeParser(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs_list: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
-        for name, value in attrs_list:
-            attr = name.lower()
-            if attr not in {"href", "src"}:
+        attrs = {name.lower(): (value or "") for name, value in attrs_list}
+
+        for attr in ("href", "src"):
+            if attr not in attrs:
                 continue
-            if value is None or not value.strip():
+            value = attrs[attr]
+            if not value.strip():
                 self.findings.append(f"<{tag}> has empty {attr}")
                 continue
             if value.strip().lower().startswith("http://"):
                 self.findings.append(f"<{tag}> has insecure {attr}: {value.strip()}")
+
+        if attrs.get("target", "").strip().lower() == "_blank":
+            rel_tokens = set(attrs.get("rel", "").lower().split())
+            missing = sorted({"noopener", "noreferrer"} - rel_tokens)
+            if missing:
+                self.findings.append(
+                    f"<{tag}> target=_blank is missing rel tokens: {', '.join(missing)}"
+                )
 
 
 def is_ignored(path: Path) -> bool:
@@ -52,7 +62,7 @@ def main() -> int:
             print(f"  - {finding}")
         return 1
 
-    print("Empty and insecure href/src attribute check passed")
+    print("Link attribute check passed")
     return 0
 
 
