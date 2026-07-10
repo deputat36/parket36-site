@@ -10,6 +10,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
 ];
 const MAX_BODY_BYTES = 25_000;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const RATE_LIMIT_MAX_ATTEMPTS = 30;
 const RATE_LIMIT_MAX_ACCEPTED = 6;
 
 type LeadPayload = Record<string, unknown>;
@@ -128,6 +129,36 @@ async function writeAudit(
   }
 }
 
+async function recentAuditCount(
+  supabase: ReturnType<typeof createClient>,
+  ipHash: string,
+  since: string,
+  accepted: boolean | null,
+  requestId: string,
+  scope: string,
+) {
+  let query = supabase
+    .from("parket_public_lead_audit")
+    .select("id", { count: "exact", head: true })
+    .eq("ip_hash", ipHash)
+    .gte("created_at", since);
+
+  if (accepted !== null) query = query.eq("accepted", accepted);
+
+  const { count, error } = await query;
+  if (error) {
+    console.error("parket_public_lead_rate_check_failed", {
+      request_id: requestId,
+      scope,
+      code: error.code || null,
+      message: error.message,
+    });
+    return null;
+  }
+
+  return count || 0;
+}
+
 function payloadSummary(body: LeadPayload) {
   return {
     service: cleanText(body.service, 120),
@@ -194,6 +225,21 @@ Deno.serve(async (req: Request) => {
     payload_summary: summary,
   };
 
+  const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
+  if (ipHash) {
+    const attemptCount = await recentAuditCount(
+      supabase,
+      ipHash,
+      since,
+      null,
+      requestId,
+      "all_attempts",
+    );
+    if (attemptCount !== null && attemptCount >= RATE_LIMIT_MAX_ATTEMPTS) {
+      return json(req, 429, { ok: false, error: "rate_limited", request_id: requestId });
+    }
+  }
+
   if (cleanText(body.website, 200) || cleanText(body.company, 200)) {
     await writeAudit(supabase, { ...auditBase, accepted: false, reason: "honeypot_filled" });
     return json(req, 200, { ok: true, request_id: requestId });
@@ -207,21 +253,15 @@ Deno.serve(async (req: Request) => {
   }
 
   if (ipHash) {
-    const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-    const { count, error } = await supabase
-      .from("parket_public_lead_audit")
-      .select("id", { count: "exact", head: true })
-      .eq("ip_hash", ipHash)
-      .eq("accepted", true)
-      .gte("created_at", since);
-
-    if (error) {
-      console.error("parket_public_lead_rate_check_failed", {
-        request_id: requestId,
-        code: error.code || null,
-        message: error.message,
-      });
-    } else if ((count || 0) >= RATE_LIMIT_MAX_ACCEPTED) {
+    const acceptedCount = await recentAuditCount(
+      supabase,
+      ipHash,
+      since,
+      true,
+      requestId,
+      "accepted_attempts",
+    );
+    if (acceptedCount !== null && acceptedCount >= RATE_LIMIT_MAX_ACCEPTED) {
       await writeAudit(supabase, { ...auditBase, accepted: false, reason: "rate_limited" });
       return json(req, 429, { ok: false, error: "rate_limited", request_id: requestId });
     }
