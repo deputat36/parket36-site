@@ -18,6 +18,7 @@ CHECKS = [
     ("Validate content inventory", ["tools/check_content_inventory.py"]),
     ("Validate content similarity", ["tools/check_content_similarity.py"]),
     ("Validate internal link map", ["tools/check_internal_link_map.py"]),
+    ("Validate structured data", ["tools/check_structured_data.py"]),
     ("Validate generated sitemap", ["tools/check_generated_sitemap.py"]),
     ("Validate sitemap helper", ["tools/check_sitemap_helper.py"]),
     ("Validate OG cards", ["tools/check_og_cards.py"]),
