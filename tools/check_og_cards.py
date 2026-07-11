@@ -19,6 +19,7 @@ FIXTURE = """<!doctype html>
   <meta property="og:title" content="Как проверить старый паркет перед работами">
   <meta property="og:description" content="Практический чек-лист для осмотра паркета, щелей, скрипа и старого покрытия.">
   <meta property="og:image" content="https://parket36.ru/img/og-master36.svg">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Тестовая страница","author":{"@type":"Person","name":"Иван"},"publisher":{"@type":"Organization","name":"Паркет36"},"datePublished":"2026-07-01","dateModified":"2026-07-01","mainEntityOfPage":"https://parket36.ru/test-og/"},{"@type":"ProfessionalService","name":"Паркет36 — мастер Иван","url":"https://parket36.ru/","telephone":"+79009267929"}]}</script>
 </head>
 <body><main><h1>Тестовая страница</h1></main></body>
 </html>
@@ -59,10 +60,15 @@ def main() -> int:
             'property="og:image:height" content="630"',
             'name="twitter:card" content="summary_large_image"',
             'name="twitter:image" content="https://parket36.ru/img/og/',
+            '"@type":"Article"',
+            '"@type":"ProfessionalService"',
+            '"image":"https://parket36.ru/img/og/',
         )
         for marker in required_markers:
             if marker not in built_html:
                 findings.append(f"Generated HTML is missing marker: {marker}")
+        if built_html.count('"image":"https://parket36.ru/img/og/') != 2:
+            findings.append("Article and ProfessionalService must share the generated PNG")
 
     if findings:
         print("OG card findings:")
