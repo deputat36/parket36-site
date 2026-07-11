@@ -19,6 +19,7 @@ EXPECTED_CHECKS = [
     ["tools/check_content_inventory.py"],
     ["tools/check_content_similarity.py"],
     ["tools/check_internal_link_map.py"],
+    ["tools/check_generated_sitemap.py"],
     ["tools/check_sitemap_helper.py"],
     ["tools/check_live_site.py", "--self-test"],
     ["tools/check_supabase_retention.py"],
