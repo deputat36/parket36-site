@@ -28,6 +28,7 @@ EXPECTED_CHECKS = [
     ["tools/check_site.py"],
     ["tools/check_guardrails.py"],
     ["tools/check_conversion_paths.py"],
+    ["tools/check_commercial_pages.py"],
     ["tools/check_lead_paths.py"],
     ["tools/check_lead_reliability.py"],
     ["tools/build_pages.py"],
