@@ -9,9 +9,10 @@
 - сохраняет её в `_site/img/og/`;
 - заменяет публичный `og:image` на URL PNG;
 - добавляет `og:image:type`, ширину и высоту;
-- добавляет `twitter:card=summary_large_image` и `twitter:image`.
+- добавляет `twitter:card=summary_large_image` и `twitter:image`;
+- синхронизирует поле `image` у `Article` и `ProfessionalService` в JSON-LD с тем же PNG.
 
-Исходные HTML-файлы не переписываются. Растровые изображения создаются только в чистой публичной сборке `_site`.
+Исходные HTML-файлы не переписываются. Растровые изображения и обновлённая микроразметка создаются только в чистой публичной сборке `_site`.
 
 ## Cache busting
 
@@ -50,8 +51,10 @@ CI проверяет:
 - размер 1200×630;
 - наличие файла для `og:image`;
 - совпадение `twitter:image` и `og:image`;
+- совпадение `Article.image` и `ProfessionalService.image` с `og:image`;
 - обязательные метатеги типа и размеров;
-- фактическую загрузку изображения в Playwright.
+- фактическую загрузку изображения в Playwright;
+- JSON-LD image на главной и на реальной статье в Chromium.
 
 ## Шрифты
 

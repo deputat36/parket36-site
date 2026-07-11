@@ -6,10 +6,12 @@ from __future__ import annotations
 from hashlib import sha256
 from html import escape
 from html.parser import HTMLParser
+import json
 from pathlib import Path
-from urllib.parse import urlsplit
 import re
 import shutil
+from typing import Any
+from urllib.parse import urlsplit
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -17,6 +19,7 @@ WIDTH = 1200
 HEIGHT = 630
 PHONE = "8 (900) 926-79-29"
 BRAND = "ПАРКЕТ36"
+STRUCTURED_IMAGE_TYPES = {"Article", "ProfessionalService"}
 FONT_REGULAR_CANDIDATES = (
     Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
     Path("/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf"),
@@ -28,6 +31,10 @@ FONT_BOLD_CANDIDATES = (
 META_CONTENT_RE_TEMPLATE = (
     r'(<meta\b(?=[^>]*\b{attribute}=["\']{key}["\'])[^>]*?\bcontent=["\'])'
     r'([^"\']*)(["\'][^>]*>)'
+)
+JSON_LD_SCRIPT_RE = re.compile(
+    r'(<script\b[^>]*\btype=["\']application/ld\+json["\'][^>]*>)(.*?)(</script>)',
+    re.IGNORECASE | re.DOTALL,
 )
 
 
@@ -231,6 +238,86 @@ def _set_meta(text: str, attribute: str, key: str, value: str) -> str:
     return text.replace("</head>", marker + "</head>", 1)
 
 
+def _schema_types(value: Any) -> set[str]:
+    if isinstance(value, str):
+        return {value}
+    if isinstance(value, list):
+        return {item for item in value if isinstance(item, str)}
+    return set()
+
+
+def _walk_schema(value: Any):
+    if isinstance(value, dict):
+        yield value
+        for nested in value.values():
+            yield from _walk_schema(nested)
+    elif isinstance(value, list):
+        for nested in value:
+            yield from _walk_schema(nested)
+
+
+def _set_structured_images(payload: Any, public_url: str) -> int:
+    updated = 0
+    for node in _walk_schema(payload):
+        if _schema_types(node.get("@type")) & STRUCTURED_IMAGE_TYPES:
+            if node.get("image") != public_url:
+                node["image"] = public_url
+            updated += 1
+    return updated
+
+
+def _rewrite_structured_images(
+    text: str,
+    public_url: str,
+    relative: str,
+    errors: list[str],
+) -> tuple[str, int]:
+    updated_nodes = 0
+
+    def replace(match: re.Match[str]) -> str:
+        nonlocal updated_nodes
+        raw = match.group(2).strip()
+        try:
+            payload = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            errors.append(
+                f"{relative}: cannot update JSON-LD image "
+                f"(line {exc.lineno}, column {exc.colno}: {exc.msg})"
+            )
+            return match.group(0)
+        count = _set_structured_images(payload, public_url)
+        updated_nodes += count
+        if count == 0:
+            return match.group(0)
+        compact = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+        return match.group(1) + compact + match.group(3)
+
+    return JSON_LD_SCRIPT_RE.sub(replace, text), updated_nodes
+
+
+def _validate_structured_images(
+    text: str,
+    image_url: str,
+    relative: str,
+    errors: list[str],
+) -> int:
+    checked = 0
+    for match in JSON_LD_SCRIPT_RE.finditer(text):
+        try:
+            payload = json.loads(match.group(2).strip())
+        except json.JSONDecodeError:
+            continue
+        for node in _walk_schema(payload):
+            if not (_schema_types(node.get("@type")) & STRUCTURED_IMAGE_TYPES):
+                continue
+            checked += 1
+            if node.get("image") != image_url:
+                errors.append(
+                    f"{relative}: Article/ProfessionalService image must match generated og:image"
+                )
+    return checked
+
+
 def apply_og_cards(destination: Path, domain: str, errors: list[str]) -> int:
     output_dir = destination / "img" / "og"
     if output_dir.exists():
@@ -276,6 +363,7 @@ def apply_og_cards(destination: Path, domain: str, errors: list[str]) -> int:
         text = _set_meta(text, "property", "og:image:height", str(HEIGHT))
         text = _set_meta(text, "name", "twitter:card", "summary_large_image")
         text = _set_meta(text, "name", "twitter:image", public_url)
+        text, _ = _rewrite_structured_images(text, public_url, relative, errors)
         html_file.write_text(text, encoding="utf-8")
         generated += 1
 
@@ -286,9 +374,11 @@ def apply_og_cards(destination: Path, domain: str, errors: list[str]) -> int:
 
 def validate_og_cards(destination: Path, domain: str, errors: list[str]) -> int:
     checked = 0
+    structured_checked = 0
     for html_file in sorted(destination.rglob("*.html")):
+        text = html_file.read_text(encoding="utf-8")
         parser = OgPageParser()
-        parser.feed(html_file.read_text(encoding="utf-8"))
+        parser.feed(text)
         image_url = parser.properties.get("og:image", "")
         if not image_url:
             continue
@@ -324,8 +414,11 @@ def validate_og_cards(destination: Path, domain: str, errors: list[str]) -> int:
             errors.append(f"{relative}: twitter:card must be summary_large_image")
         if parser.names.get("twitter:image") != image_url:
             errors.append(f"{relative}: twitter:image must match og:image")
+        structured_checked += _validate_structured_images(text, image_url, relative, errors)
         checked += 1
 
     if checked == 0:
         errors.append("No raster OG cards were validated")
+    if structured_checked == 0:
+        errors.append("No Article or ProfessionalService JSON-LD images were validated")
     return checked
