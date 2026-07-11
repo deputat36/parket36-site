@@ -6,12 +6,12 @@
 ## Сводка
 
 - индексируемых страниц: 94;
-- уникальных внутренних связей во всём HTML: 1408;
-- уникальных контекстных связей внутри `<main>`: 818;
-- страниц без контекстных входящих ссылок: 3;
+- уникальных внутренних связей во всём HTML: 1409;
+- уникальных контекстных связей внутри `<main>`: 821;
+- страниц без контекстных входящих ссылок: 0;
 - страниц с 0–1 контекстной входящей ссылкой: 16;
-- страниц, зависящих только от общих элементов: 3;
-- страниц, недостижимых от главной по контекстным ссылкам: 3;
+- страниц, зависящих только от общих элементов: 0;
+- страниц, недостижимых от главной по контекстным ссылкам: 0;
 - страниц, недостижимых от главной по любым внутренним ссылкам: 0.
 
 Порог низкой связности является сигналом для редакторской проверки, а не автоматическим требованием добавить ссылку.
@@ -20,9 +20,6 @@
 
 | URL | Раздел | Контекстные входящие | Все входящие | Контекстная глубина | Только общие элементы |
 |---|---|---:|---:|---:|:---:|
-| https://parket36.ru/voprosy-i-otvety/ | voprosy-i-otvety | 0 | 2 | — | да |
-| https://parket36.ru/kontakty/ | kontakty | 0 | 93 | — | да |
-| https://parket36.ru/o-mastere/ | o-mastere | 0 | 93 | — | да |
 | https://parket36.ru/sovety/kak-proverit-shlifovku-parketa-pered-lakom/ | sovety | 1 | 1 | 3 | нет |
 | https://parket36.ru/sovety/kak-uhazhivat-za-parketom-vesnoy/ | sovety | 1 | 1 | 3 | нет |
 | https://parket36.ru/sovety/mozhno-li-ciklevat-krashenyy-derevyannyy-pol/ | sovety | 1 | 1 | 3 | нет |
@@ -35,6 +32,9 @@
 | https://parket36.ru/sovety/sledy-ot-zhivotnyh-na-parkete/ | sovety | 1 | 1 | 3 | нет |
 | https://parket36.ru/uslugi/terrasy-i-derevyannye-poly/ | uslugi | 1 | 1 | 2 | нет |
 | https://parket36.ru/kak-rabotaem/ | kak-rabotaem | 1 | 3 | 1 | нет |
+| https://parket36.ru/voprosy-i-otvety/ | voprosy-i-otvety | 1 | 3 | 2 | нет |
+| https://parket36.ru/kontakty/ | kontakty | 1 | 93 | 2 | нет |
+| https://parket36.ru/o-mastere/ | o-mastere | 1 | 93 | 2 | нет |
 | https://parket36.ru/portfolio/ | portfolio | 1 | 93 | 4 | нет |
 
 ## Главные получатели контекстных ссылок
@@ -65,6 +65,7 @@
 | https://parket36.ru/uslugi/parket-i-poly/ | 14 | 18 |
 | https://parket36.ru/ | 12 | 17 |
 | https://parket36.ru/uslugi/ | 11 | 17 |
+| https://parket36.ru/resheniya/ | 11 | 16 |
 | https://parket36.ru/sovety/kak-ponyat-chto-parket-mozhno-lakirovat/ | 10 | 17 |
 | https://parket36.ru/sovety/kogda-mozhno-stelit-kover-posle-lakirovki-parketa/ | 10 | 17 |
 | https://parket36.ru/sovety/pochemu-lak-na-parkete-beleet-posle-lakirovki/ | 10 | 17 |
@@ -75,7 +76,6 @@
 | https://parket36.ru/sovety/mozhno-li-pokryt-parket-lakom-bez-ciklevki/ | 10 | 15 |
 | https://parket36.ru/sovety/nuzhna-li-mezhsloynaya-shlifovka-laka-na-parkete/ | 10 | 15 |
 | https://parket36.ru/uslugi/restavraciya-parketa/ | 9 | 17 |
-| https://parket36.ru/sovety/kak-provetrivat-komnatu-posle-lakirovki-parketa/ | 9 | 16 |
 
 ## Связи между разделами
 
@@ -87,7 +87,7 @@
 | kontakty | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 2 | 0 | 1 |
 | o-mastere | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 5 | 2 | 0 | 1 |
 | portfolio | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 1 |
-| resheniya | 0 | 6 | 0 | 0 | 0 | 0 | 16 | 2 | 3 | 0 | 6 |
+| resheniya | 0 | 6 | 0 | 1 | 1 | 0 | 16 | 2 | 3 | 1 | 6 |
 | sovety | 1 | 70 | 0 | 0 | 0 | 1 | 3 | 467 | 51 | 0 | 71 |
 | uslugi | 5 | 9 | 0 | 0 | 0 | 0 | 0 | 18 | 32 | 0 | 9 |
 | voprosy-i-otvety | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 4 | 1 | 0 | 1 |
