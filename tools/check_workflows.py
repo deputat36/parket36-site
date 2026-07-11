@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate GitHub Actions workflow configuration."""
+"""Validate GitHub Actions workflow and browser-quality configuration."""
 
 from __future__ import annotations
 
@@ -18,10 +18,12 @@ PLAYWRIGHT_CONFIG = ROOT / "playwright.config.mjs"
 LIGHTHOUSE_CONFIG = ROOT / "lighthouserc.cjs"
 PACKAGE_JSON = ROOT / "package.json"
 DENO_CONFIG = ROOT / "deno.json"
+REQUIREMENTS_QUALITY = ROOT / "requirements-quality.txt"
 E2E_TEST = ROOT / "tests" / "e2e" / "site-smoke.spec.mjs"
 ACCESSIBILITY_TEST = ROOT / "tests" / "e2e" / "accessibility.spec.mjs"
 NO_JS_ACCESSIBILITY_TEST = ROOT / "tests" / "e2e" / "no-js-accessibility.spec.mjs"
 SHARED_SHELL_TEST = ROOT / "tests" / "e2e" / "shared-shell.spec.mjs"
+OG_CARD_TEST = ROOT / "tests" / "e2e" / "og-cards.spec.mjs"
 ACCESSIBILITY_CSS = ROOT / "css" / "accessibility-polish.css"
 HTML_ACCESSIBILITY = ROOT / "tools" / "html_accessibility.py"
 SHARED_SHELL_TOOL = ROOT / "tools" / "shared_shell.py"
@@ -29,23 +31,34 @@ CONTENT_INVENTORY_TOOL = ROOT / "tools" / "build_content_inventory.py"
 CONTENT_SIMILARITY_TOOL = ROOT / "tools" / "build_content_similarity_report.py"
 INTERNAL_LINK_MAP_TOOL = ROOT / "tools" / "build_internal_link_map.py"
 SITEMAP_TOOL = ROOT / "tools" / "build_sitemap.py"
-QUALITY_RUNNER = "python tools/run_quality_checks.py"
+OG_CARD_TOOL = ROOT / "tools" / "og_cards.py"
+
+CHECKOUT = "uses: actions/checkout@v7"
+SETUP_PYTHON = "uses: actions/setup-python@v6"
+SETUP_NODE = "uses: actions/setup-node@v6"
+UPLOAD_ARTIFACT = "uses: actions/upload-artifact@v7"
+CONFIGURE_PAGES = "uses: actions/configure-pages@v6"
+UPLOAD_PAGES = "uses: actions/upload-pages-artifact@v5"
+DEPLOY_PAGES = "uses: actions/deploy-pages@v5"
 PYTHON_VERSION = 'python-version: "3.12"'
 DENO_SETUP = "uses: denoland/setup-deno@v2"
 DENO_VERSION = "deno-version: lts"
 DENO_CHECK = "deno check supabase/functions/parket-public-lead/index.ts"
+QUALITY_DEPS = "python -m pip install --disable-pip-version-check -r requirements-quality.txt"
+QUALITY_RUNNER = "python tools/run_quality_checks.py"
 
 EXPECTED_MARKERS = {
     SITE_QUALITY_PATH: [
-        "uses: actions/checkout@v4",
-        "uses: actions/setup-python@v5",
+        CHECKOUT,
+        SETUP_PYTHON,
         PYTHON_VERSION,
+        QUALITY_DEPS,
         DENO_SETUP,
         DENO_VERSION,
         DENO_CHECK,
         "id: edge_typecheck",
         "continue-on-error: true",
-        "uses: actions/upload-artifact@v4",
+        UPLOAD_ARTIFACT,
         "name: edge-function-check",
         "if: steps.edge_typecheck.outcome == 'failure'",
         "id: quality_gate",
@@ -66,16 +79,17 @@ EXPECTED_MARKERS = {
         "path: reports/generated-sitemap.xml",
     ],
     PAGES_PATH: [
-        "uses: actions/checkout@v4",
-        "uses: actions/setup-python@v5",
+        CHECKOUT,
+        SETUP_PYTHON,
         PYTHON_VERSION,
+        QUALITY_DEPS,
         DENO_SETUP,
         DENO_VERSION,
         DENO_CHECK,
         f"run: {QUALITY_RUNNER}",
-        "uses: actions/configure-pages@v5",
-        "uses: actions/upload-pages-artifact@v4",
-        "uses: actions/deploy-pages@v4",
+        CONFIGURE_PAGES,
+        UPLOAD_PAGES,
+        DEPLOY_PAGES,
         'path: "_site"',
     ],
     LIVE_HEALTH_PATH: [
@@ -83,12 +97,12 @@ EXPECTED_MARKERS = {
         "workflow_dispatch:",
         "actions: read",
         "issues: write",
-        "uses: actions/checkout@v4",
-        "uses: actions/setup-python@v5",
+        CHECKOUT,
+        SETUP_PYTHON,
         PYTHON_VERSION,
         "run: python tools/check_live_site.py --report live-health-report.md",
         "continue-on-error: true",
-        "uses: actions/upload-artifact@v4",
+        UPLOAD_ARTIFACT,
         "GITHUB_TOKEN: ${{ github.token }}",
         "run: python tools/manage_live_health_issue.py failure --report live-health-report.md",
         "run: python tools/manage_live_health_issue.py success",
@@ -98,29 +112,33 @@ EXPECTED_MARKERS = {
     BROWSER_SMOKE_PATH: [
         'cron: "41 5 * * 1"',
         "workflow_dispatch:",
-        "uses: actions/checkout@v4",
-        "uses: actions/setup-python@v5",
+        CHECKOUT,
+        SETUP_PYTHON,
         PYTHON_VERSION,
-        "uses: actions/setup-node@v4",
+        QUALITY_DEPS,
+        SETUP_NODE,
         'node-version: "20"',
+        "package-manager-cache: false",
         "run: npm install --no-audit --no-fund",
         "run: npx playwright install --with-deps chromium",
         "run: npm run test:e2e",
-        "uses: actions/upload-artifact@v4",
+        UPLOAD_ARTIFACT,
         "name: browser-smoke-report",
     ],
     LIGHTHOUSE_WORKFLOW_PATH: [
         'cron: "7 6 * * 1"',
         "workflow_dispatch:",
-        "uses: actions/checkout@v4",
-        "uses: actions/setup-python@v5",
+        CHECKOUT,
+        SETUP_PYTHON,
         PYTHON_VERSION,
-        "uses: actions/setup-node@v4",
+        QUALITY_DEPS,
+        SETUP_NODE,
         'node-version: "20"',
+        "package-manager-cache: false",
         "run: npm install --no-audit --no-fund",
         "run: python tools/build_pages.py",
         "run: npm run test:lighthouse",
-        "uses: actions/upload-artifact@v4",
+        UPLOAD_ARTIFACT,
         "name: lighthouse-report",
     ],
 }
@@ -134,6 +152,7 @@ REQUIRED_QUALITY_FILES = {
         '"test:lighthouse": "lhci autorun --config=./lighthouserc.cjs"',
     ],
     DENO_CONFIG: ['"nodeModulesDir": "auto"'],
+    REQUIREMENTS_QUALITY: ["Pillow==12.2.0"],
     PLAYWRIGHT_CONFIG: [
         "python tools/build_pages.py",
         "python -m http.server 4173",
@@ -154,14 +173,7 @@ REQUIRED_QUALITY_FILES = {
         "форма показывает ручной fallback",
         "страница 404 остаётся noindex",
     ],
-    ACCESSIBILITY_TEST: [
-        "AxeBuilder",
-        "wcag2a",
-        "wcag2aa",
-        "wcag21a",
-        "wcag21aa",
-        "accessibility.spec.mjs",
-    ],
+    ACCESSIBILITY_TEST: ["AxeBuilder", "wcag2a", "wcag2aa", "wcag21a", "wcag21aa"],
     NO_JS_ACCESSIBILITY_TEST: [
         "javaScriptEnabled: false",
         "a.skip-link",
@@ -177,24 +189,20 @@ REQUIRED_QUALITY_FILES = {
         "div.mobile-cta",
         "expect(request).toEqual(home)",
     ],
+    OG_CARD_TEST: [
+        "og:image",
+        "image/png",
+        "summary_large_image",
+        "137, 80, 78, 71, 13, 10, 26, 10",
+    ],
     ACCESSIBILITY_CSS: [
         ".person-card .muted",
         '.form-help a[href$="/politika/"]',
         '.footer__bottom a[href$="/politika/"]',
         "text-decoration: underline",
     ],
-    HTML_ACCESSIBILITY: [
-        "SKIP_LINK",
-        "main-content",
-        "site-navigation",
-        "inject_accessibility_html",
-    ],
-    SHARED_SHELL_TOOL: [
-        "PILOT_PAGES",
-        "data/shared-shell/header.html",
-        "shared-shell:final-cta",
-        "apply_shared_shell",
-    ],
+    HTML_ACCESSIBILITY: ["SKIP_LINK", "main-content", "site-navigation", "inject_accessibility_html"],
+    SHARED_SHELL_TOOL: ["PILOT_PAGES", "data/shared-shell/header.html", "shared-shell:final-cta", "apply_shared_shell"],
     CONTENT_INVENTORY_TOOL: [
         "PageRecord",
         "THIN_WORD_LIMIT",
@@ -225,12 +233,26 @@ REQUIRED_QUALITY_FILES = {
         "default_policy",
         "generated-sitemap.xml",
     ],
+    OG_CARD_TOOL: [
+        "WIDTH = 1200",
+        "HEIGHT = 630",
+        "summary_large_image",
+        "validate_og_cards",
+    ],
 }
 
 FORBIDDEN_MARKERS = [
+    "uses: actions/checkout@v4",
     "uses: actions/checkout@v6",
+    "uses: actions/setup-python@v5",
+    "uses: actions/setup-node@v4",
+    "uses: actions/upload-artifact@v4",
+    "uses: actions/configure-pages@v5",
+    "uses: actions/upload-pages-artifact@v4",
+    "uses: actions/deploy-pages@v4",
     "uses: denoland/setup-deno@v3",
     "permissions: write-all",
+    "package-manager-cache: true",
 ]
 
 
@@ -241,17 +263,14 @@ def main() -> int:
         if not path.exists():
             findings.append(f"{path.relative_to(ROOT)} is missing")
             continue
-
         text = path.read_text(encoding="utf-8")
-        rel = path.relative_to(ROOT)
-
+        relative = path.relative_to(ROOT)
         for marker in expected_markers:
             if marker not in text:
-                findings.append(f"{rel} must contain {marker}")
-
+                findings.append(f"{relative} must contain {marker}")
         for marker in FORBIDDEN_MARKERS:
             if marker in text:
-                findings.append(f"{rel} must not contain {marker}")
+                findings.append(f"{relative} must not contain {marker}")
 
     for path, expected_markers in REQUIRED_QUALITY_FILES.items():
         if not path.exists():
