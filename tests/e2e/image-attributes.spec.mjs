@@ -8,7 +8,11 @@ test('изображения портфолио имеют реальные ра
 
   for (let index = 0; index < 6; index += 1) {
     const image = images.nth(index);
+    await image.scrollIntoViewIfNeeded();
     await expect(image).toBeVisible();
+    await expect.poll(async () => image.evaluate(element => (
+      element.complete && element.naturalWidth > 0 && element.naturalHeight > 0
+    ))).toBe(true);
 
     const state = await image.evaluate(element => ({
       width: Number(element.getAttribute('width')),
@@ -20,8 +24,6 @@ test('изображения портфолио имеют реальные ра
       alt: element.getAttribute('alt'),
     }));
 
-    expect(state.naturalWidth).toBeGreaterThan(0);
-    expect(state.naturalHeight).toBeGreaterThan(0);
     expect(state.width).toBe(state.naturalWidth);
     expect(state.height).toBe(state.naturalHeight);
     expect(state.loading).toBe('lazy');
