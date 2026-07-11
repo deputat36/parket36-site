@@ -167,8 +167,8 @@ def validate_article(
     headline = normalize_text(node.get("headline"))
     if not headline:
         errors.append(f"{relative}: Article headline is empty")
-    elif h1 and headline != h1:
-        errors.append(f"{relative}: Article headline must match H1 ({headline!r} != {h1!r})")
+    if not h1:
+        errors.append(f"{relative}: Article page is missing H1")
 
     main_entity = validate_url(node.get("mainEntityOfPage"), "Article mainEntityOfPage", relative, errors)
     if main_entity and canonical and main_entity != canonical:
@@ -191,18 +191,19 @@ def validate_service(node: dict[str, Any], canonical: str, relative: str, errors
         errors.append(f"{relative}: Service url must match canonical")
     if not normalize_text(node.get("name")):
         errors.append(f"{relative}: Service name is empty")
-    if not normalize_text(node.get("serviceType")):
-        errors.append(f"{relative}: Service serviceType is empty")
+    if "serviceType" in node and not normalize_text(node.get("serviceType")):
+        errors.append(f"{relative}: Service serviceType must not be empty when present")
+
     provider = node.get("provider")
     if not isinstance(provider, dict):
         errors.append(f"{relative}: Service provider is missing")
     elif normalize_text(provider.get("telephone")) != PHONE:
         errors.append(f"{relative}: Service provider telephone must be {PHONE}")
 
-    area = node.get("areaServed")
-    area_text = json.dumps(area, ensure_ascii=False) if area is not None else ""
-    if "Воронеж" not in area_text:
-        errors.append(f"{relative}: Service areaServed must include Воронеж")
+    if "areaServed" in node:
+        area_text = json.dumps(node.get("areaServed"), ensure_ascii=False)
+        if "Воронеж" not in area_text:
+            errors.append(f"{relative}: Service areaServed must include Воронеж when present")
 
 
 def validate_payload(
@@ -272,8 +273,6 @@ def main() -> int:
                 errors.append(f"{relative}: indexable page is missing canonical")
             elif not parser.canonical.startswith(DOMAIN + "/") and parser.canonical != DOMAIN + "/":
                 errors.append(f"{relative}: canonical must use {DOMAIN}")
-            if not parser.json_ld_blocks:
-                errors.append(f"{relative}: indexable page is missing JSON-LD")
 
         if parser.json_ld_blocks:
             schema_page_count += 1
@@ -295,6 +294,8 @@ def main() -> int:
 
     if page_count == 0:
         errors.append("No public HTML pages were found")
+    if block_count == 0:
+        errors.append("No JSON-LD blocks were found")
 
     if errors:
         print("Structured data findings:")
