@@ -75,6 +75,17 @@ jobs:
           path: reports/content-similarity
           if-no-files-found: error
           retention-days: 30
+      - name: Generate internal link map
+        if: always()
+        run: python tools/build_internal_link_map.py --output-dir reports/internal-links
+      - name: Upload internal link map
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: internal-link-map
+          path: reports/internal-links
+          if-no-files-found: error
+          retention-days: 30
       - name: Fail on quality gate errors
         if: steps.quality_gate.outcome == 'failure'
         run: cat quality-gate.log && exit 1
