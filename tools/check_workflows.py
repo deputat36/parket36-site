@@ -27,6 +27,7 @@ HTML_ACCESSIBILITY = ROOT / "tools" / "html_accessibility.py"
 SHARED_SHELL_TOOL = ROOT / "tools" / "shared_shell.py"
 CONTENT_INVENTORY_TOOL = ROOT / "tools" / "build_content_inventory.py"
 CONTENT_SIMILARITY_TOOL = ROOT / "tools" / "build_content_similarity_report.py"
+INTERNAL_LINK_MAP_TOOL = ROOT / "tools" / "build_internal_link_map.py"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 PYTHON_VERSION = 'python-version: "3.12"'
 DENO_SETUP = "uses: denoland/setup-deno@v2"
@@ -56,6 +57,9 @@ EXPECTED_MARKERS = {
         "run: python tools/build_content_similarity_report.py --output-dir reports/content-similarity",
         "name: content-similarity-report",
         "path: reports/content-similarity",
+        "run: python tools/build_internal_link_map.py --output-dir reports/internal-links",
+        "name: internal-link-map",
+        "path: reports/internal-links",
     ],
     PAGES_PATH: [
         "uses: actions/checkout@v4",
@@ -201,6 +205,14 @@ REQUIRED_QUALITY_FILES = {
         "canonical_groups",
         "content-similarity-report.md",
         "content-similarity-pairs.csv",
+    ],
+    INTERNAL_LINK_MAP_TOOL: [
+        "LinkMapParser",
+        "contextual_inbound",
+        "shared_only_inbound",
+        "internal-link-nodes.csv",
+        "internal-link-edges.csv",
+        "internal-link-map.md",
     ],
 }
 
