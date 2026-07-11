@@ -18,6 +18,7 @@
 - `docs/css-bundle.md` — объединение CSS-модулей в один cache-busted файл публичной сборки.
 - `docs/shared-shell-pilot.md` — общий header, footer и CTA для главной и формы оценки.
 - `docs/edge-function-ci.md` — Deno type-check Edge Function в PR и перед Pages-деплоем.
+- `docs/sitemap-automation.md` — генерация sitemap из indexable canonical и структурированных дат страниц.
 
 ## Заявки и безопасность
 
