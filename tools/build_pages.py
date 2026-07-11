@@ -11,6 +11,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 from css_bundle import prepare_css_bundle
+from image_attributes import normalize_image_attributes
 from site_settings import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -247,6 +248,7 @@ def main() -> int:
 
     errors: list[str] = []
     prepare_css_bundle(ROOT, DEST, errors)
+    normalize_image_attributes(DEST, errors)
     inject_lead_reliability(errors)
 
     required = ["index.html", "404.html", "CNAME", "robots.txt", "sitemap.xml"]
