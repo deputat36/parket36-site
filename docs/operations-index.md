@@ -19,6 +19,7 @@
 - `docs/shared-shell-pilot.md` — общий header, footer и CTA для главной и формы оценки.
 - `docs/edge-function-ci.md` — Deno type-check Edge Function в PR и перед Pages-деплоем.
 - `docs/sitemap-automation.md` — генерация sitemap из indexable canonical и структурированных дат страниц.
+- `docs/raster-og-cards.md` — индивидуальные PNG-карточки 1200×630 для соцсетей и мессенджеров.
 
 ## Заявки и безопасность
 
