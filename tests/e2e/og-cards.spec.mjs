@@ -51,4 +51,4 @@ test('публичная сборка отдаёт единый растровы
   const articleImage = await ogImage(page);
   expect(articleImage).toMatch(/^https:\/\/parket36\.ru\/img\/og\/og-[a-f0-9]{16}\.png$/);
   expect(await structuredImage(page, 'Article')).toBe(articleImage);
-}
+});
