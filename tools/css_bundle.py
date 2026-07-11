@@ -9,7 +9,9 @@ import re
 import shutil
 
 from html_accessibility import inject_accessibility_html
+from og_cards import apply_og_cards, validate_og_cards
 from shared_shell import apply_shared_shell
+from site_settings import load_config
 
 CSS_MODULES = (
     "style.css",
@@ -23,7 +25,6 @@ CSS_MODULES = (
     "cta-polish.css",
     "logo-brand.css",
 )
-
 CSS_LINK_RE = re.compile(
     r"[ \t]*<link\b(?=[^>]*\brel=[\"']stylesheet[\"'])"
     r"(?=[^>]*\bhref=[\"']/css/[^\"']+[\"'])[^>]*>[ \t]*\n?",
@@ -149,7 +150,7 @@ def validate_bundle(destination: Path, bundle_href: str, errors: list[str]) -> N
 
 
 def prepare_css_bundle(root: Path, destination: Path, errors: list[str]) -> str | None:
-    """Build, inject and validate public CSS, shell and mandatory static markup."""
+    """Build and validate public CSS, shared shell, accessibility and OG assets."""
     bundle_href = build_bundle(root, destination, errors)
     if bundle_href is None:
         return None
@@ -157,6 +158,9 @@ def prepare_css_bundle(root: Path, destination: Path, errors: list[str]) -> str 
     rewrite_html(destination, bundle_href, errors)
     apply_shared_shell(root, destination, errors)
     inject_accessibility_html(destination, errors)
+    domain = str(load_config()["domain"])
+    apply_og_cards(destination, domain, errors)
+    validate_og_cards(destination, domain, errors)
     remove_dynamic_css_loader(destination, errors)
     validate_bundle(destination, bundle_href, errors)
     return bundle_href
