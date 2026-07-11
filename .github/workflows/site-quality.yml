@@ -86,6 +86,17 @@ jobs:
           path: reports/internal-links
           if-no-files-found: error
           retention-days: 30
+      - name: Generate sitemap candidate
+        if: always()
+        run: python tools/build_sitemap.py --source sitemap.xml --output reports/generated-sitemap.xml
+      - name: Upload sitemap candidate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-sitemap
+          path: reports/generated-sitemap.xml
+          if-no-files-found: error
+          retention-days: 30
       - name: Fail on quality gate errors
         if: steps.quality_gate.outcome == 'failure'
         run: cat quality-gate.log && exit 1
