@@ -21,6 +21,7 @@ CHECKS = [
     ("Validate generated sitemap", ["tools/check_generated_sitemap.py"]),
     ("Validate sitemap helper", ["tools/check_sitemap_helper.py"]),
     ("Validate OG cards", ["tools/check_og_cards.py"]),
+    ("Validate image attributes", ["tools/check_image_attributes.py"]),
     ("Validate live health checker", ["tools/check_live_site.py", "--self-test"]),
     ("Validate Supabase retention", ["tools/check_supabase_retention.py"]),
     ("Validate link attributes", ["tools/check_empty_link_attributes.py"]),
