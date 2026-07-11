@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install Python quality dependencies
@@ -34,7 +34,7 @@ jobs:
         run: deno check supabase/functions/parket-public-lead/index.ts > edge-function-check.log 2>&1
       - name: Upload Edge Function check log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: edge-function-check
           path: edge-function-check.log
@@ -49,7 +49,7 @@ jobs:
         run: python tools/run_quality_checks.py > quality-gate.log 2>&1
       - name: Upload quality gate log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: quality-gate-log
           path: quality-gate.log
@@ -60,7 +60,7 @@ jobs:
         run: python tools/build_content_inventory.py --output-dir reports/content-inventory
       - name: Upload content inventory
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: content-inventory
           path: reports/content-inventory
@@ -71,7 +71,7 @@ jobs:
         run: python tools/build_content_similarity_report.py --output-dir reports/content-similarity
       - name: Upload content similarity report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: content-similarity-report
           path: reports/content-similarity
@@ -82,7 +82,7 @@ jobs:
         run: python tools/build_internal_link_map.py --output-dir reports/internal-links
       - name: Upload internal link map
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: internal-link-map
           path: reports/internal-links
@@ -93,7 +93,7 @@ jobs:
         run: python tools/build_sitemap.py --source sitemap.xml --output reports/generated-sitemap.xml
       - name: Upload sitemap candidate
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: generated-sitemap
           path: reports/generated-sitemap.xml
