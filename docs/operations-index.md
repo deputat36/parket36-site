@@ -20,6 +20,7 @@
 - `docs/edge-function-ci.md` — Deno type-check Edge Function в PR и перед Pages-деплоем.
 - `docs/sitemap-automation.md` — генерация sitemap из indexable canonical и структурированных дат страниц.
 - `docs/raster-og-cards.md` — индивидуальные PNG-карточки 1200×630 для соцсетей и мессенджеров.
+- `docs/image-delivery.md` — реальные размеры, alt и правила загрузки контентных изображений в публичной сборке.
 
 ## Заявки и безопасность
 
