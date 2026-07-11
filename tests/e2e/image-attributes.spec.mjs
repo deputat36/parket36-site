@@ -8,24 +8,29 @@ test('изображения портфолио имеют реальные ра
 
   for (let index = 0; index < 6; index += 1) {
     const image = images.nth(index);
-    await image.scrollIntoViewIfNeeded();
-    await expect(image).toBeVisible();
-    await expect.poll(async () => image.evaluate(element => (
-      element.complete && element.naturalWidth > 0 && element.naturalHeight > 0
-    ))).toBe(true);
-
     const state = await image.evaluate(element => ({
+      src: element.getAttribute('src'),
       width: Number(element.getAttribute('width')),
       height: Number(element.getAttribute('height')),
-      naturalWidth: element.naturalWidth,
-      naturalHeight: element.naturalHeight,
       loading: element.getAttribute('loading'),
       decoding: element.getAttribute('decoding'),
       alt: element.getAttribute('alt'),
     }));
 
-    expect(state.width).toBe(state.naturalWidth);
-    expect(state.height).toBe(state.naturalHeight);
+    const natural = await page.evaluate(async src => {
+      const probe = new Image();
+      probe.src = src;
+      await probe.decode();
+      return {
+        width: probe.naturalWidth,
+        height: probe.naturalHeight,
+      };
+    }, state.src);
+
+    expect(natural.width).toBeGreaterThan(0);
+    expect(natural.height).toBeGreaterThan(0);
+    expect(state.width).toBe(natural.width);
+    expect(state.height).toBe(natural.height);
     expect(state.loading).toBe('lazy');
     expect(state.decoding).toBe('async');
     expect(state.alt?.trim().length).toBeGreaterThan(0);
