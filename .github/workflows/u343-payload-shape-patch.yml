@@ -1,0 +1,35 @@
+name: U343 Payload shape patch
+
+on:
+  push:
+    branches:
+      - u-343-1
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v7
+        with:
+          ref: u-343-1
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Apply deterministic patch
+        run: python tools/apply_u343_payload_shape_patch.py
+      - name: Commit patch when needed
+        run: |
+          if git diff --quiet; then
+            echo "Patch already applied"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/functions/parket-public-lead/index.ts
+          git commit -m "Apply payload shape validation"
+          git push origin HEAD:u-343-1
