@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { firstOversizedLeadField } from "./field-limits.ts";
 
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://parket36.ru",
@@ -521,6 +522,22 @@ Deno.serve(async (req: Request) => {
   if (cleanText(body.website, 200) || cleanText(body.company, 200)) {
     await writeAudit(supabase, { ...auditBase, accepted: false, reason: "honeypot_filled" });
     return json(req, 200, { ok: true, request_id: requestId });
+  }
+
+  const oversizedField = firstOversizedLeadField(body);
+  if (oversizedField) {
+    await writeAudit(supabase, {
+      ...auditBase,
+      accepted: false,
+      reason: "field_too_long",
+      payload_summary: { ...summary, ...oversizedField },
+    });
+    return json(req, 422, {
+      ok: false,
+      error: "field_too_long",
+      request_id: requestId,
+      ...oversizedField,
+    });
   }
 
   const task = cleanMultiline(body.task, 3000);
