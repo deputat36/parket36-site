@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { evaluateOriginPolicy } from "./origin-policy.ts";
 import { firstOversizedLeadField } from "./field-limits.ts";
+import { validateLeadPayload } from "./payload-shape.ts";
 
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://parket36.ru",
@@ -471,12 +472,24 @@ Deno.serve(async (req: Request) => {
     return json(req, 413, { ok: false, error: "payload_too_large" });
   }
 
-  let body: LeadPayload;
+  let parsedBody: unknown;
   try {
-    body = JSON.parse(bodyText);
+    parsedBody = JSON.parse(bodyText);
   } catch (_) {
     return json(req, 400, { ok: false, error: "bad_json" });
   }
+
+  const payloadShape = validateLeadPayload(parsedBody);
+  if (!payloadShape.ok) {
+    return json(req, payloadShape.status, {
+      ok: false,
+      error: payloadShape.error,
+      field: payloadShape.field,
+      expected: payloadShape.expected,
+      received: payloadShape.received,
+    });
+  }
+  const body: LeadPayload = payloadShape.body;
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
   const serviceKey = getServiceKey();
