@@ -11,6 +11,7 @@
 
 - `docs/github-pages-switch-checklist.md` — проверка переключения `parket36.ru` на GitHub Pages.
 - `docs/live-site-monitoring.md` — ежедневный контроль DNS, HTTPS, главной страницы, robots и sitemap.
+- `docs/search-discovery-launch.md` — запуск индексации, IndexNow и ручные действия в кабинетах поисковиков.
 - `docs/browser-smoke-tests.md` — Playwright-проверки меню, телефона, формы, fallback и 404.
 - `docs/accessibility-audit.md` — автоматический axe-аудит ключевых страниц по WCAG A/AA.
 - `docs/static-accessibility.md` — обязательные skip-link, landmark и ARIA-связи в готовом HTML без зависимости от JavaScript.
