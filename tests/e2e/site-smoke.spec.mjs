@@ -87,6 +87,66 @@ test('шаблон формы заполняет задачу, а успешны
   await expect.poll(() => page.evaluate(() => window.__parketCopiedText || '')).toContain('Здравствуйте, Иван!');
 });
 
+test('форма сообщает об ошибках и блокирует повторную отправку', async ({ page }) => {
+  let attempts = 0;
+  let releaseResponse;
+  const responseGate = new Promise(resolve => {
+    releaseResponse = resolve;
+  });
+
+  await page.route(leadEndpoint, async route => {
+    attempts += 1;
+    const payload = route.request().postDataJSON();
+    await responseGate;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, request_id: payload.request_id, lead_id: 202 })
+    });
+  });
+
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async () => {} }
+    });
+  });
+
+  await page.goto('/');
+
+  const form = page.locator('#request-form');
+  const status = page.locator('#request-status');
+  const task = page.locator('#request-task');
+
+  await expect(status).toHaveAttribute('role', 'status');
+  await expect(status).toHaveAttribute('aria-live', 'polite');
+  await expect(status).toHaveAttribute('aria-atomic', 'true');
+  await expect(form).toHaveAttribute('aria-busy', 'false');
+
+  await page.getByRole('button', { name: 'Отправить заявку и скопировать текст' }).click();
+  await expect(task).toHaveAttribute('aria-invalid', 'true');
+  await expect(task).toBeFocused();
+  await expect(status).toContainText('обязательное поле');
+
+  await fillMinimumRequest(page);
+  await expect(task).not.toHaveAttribute('aria-invalid');
+
+  await page.evaluate(() => {
+    const requestForm = document.getElementById('request-form');
+    requestForm.requestSubmit();
+    requestForm.dispatchEvent(new SubmitEvent('submit', { bubbles: true, cancelable: true }));
+  });
+
+  await expect.poll(() => attempts).toBe(1);
+  await expect(form).toHaveAttribute('aria-busy', 'true');
+  await expect(status).toContainText('уже отправляется');
+
+  releaseResponse();
+  await expect(status).toContainText('Заявка отправлена Ивану');
+  await expect(form).toHaveAttribute('aria-busy', 'false');
+  expect(attempts).toBe(1);
+});
+
 test('при отказе backend и clipboard форма показывает ручной fallback', async ({ page }) => {
   let attempts = 0;
   await page.route(leadEndpoint, async route => {
