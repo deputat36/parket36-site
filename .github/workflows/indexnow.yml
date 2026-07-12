@@ -1,0 +1,44 @@
+name: IndexNow
+
+on:
+  workflow_run:
+    workflows: ["Deploy GitHub Pages"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Validate IndexNow configuration
+        run: python tools/submit_indexnow.py --check
+
+      - name: Check deployed ownership key
+        id: live_key
+        shell: bash
+        run: |
+          if python tools/submit_indexnow.py --verify-live-key; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "IndexNow ownership key is available on the live domain." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "IndexNow submission skipped: the live key file is not available yet. Check DNS, GitHub Pages and HTTPS." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Submit sitemap URLs
+        if: steps.live_key.outputs.ready == 'true'
+        run: |
+          python tools/submit_indexnow.py --submit | tee indexnow-result.txt
+          cat indexnow-result.txt >> "$GITHUB_STEP_SUMMARY"
