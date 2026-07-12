@@ -3,6 +3,7 @@
   const LEAD_TIMEOUT_MS = 12_000;
   const LEAD_MAX_ATTEMPTS = 2;
   const RETRY_DELAY_MS = 650;
+  const SUBMISSION_STATE_TIMEOUT_MS = (LEAD_TIMEOUT_MS * LEAD_MAX_ATTEMPTS) + RETRY_DELAY_MS + 5_000;
   const originalFetch = window.fetch.bind(window);
 
   const sleep = delay => new Promise(resolve => window.setTimeout(resolve, delay));
@@ -35,7 +36,85 @@
     });
   };
 
-  document.querySelectorAll('#request-form').forEach(addHoneypotFields);
+  const setupLeadFormState = form => {
+    const status = form.querySelector('#request-status');
+    const submitButton = form.querySelector('button[type="submit"]');
+    let submissionInFlight = false;
+    let submissionStateTimeout = 0;
+    let invalidAnnouncementTimer = 0;
+
+    if (status) {
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
+      status.setAttribute('aria-atomic', 'true');
+    }
+    form.setAttribute('aria-busy', 'false');
+
+    const clearSubmissionState = () => {
+      submissionInFlight = false;
+      form.setAttribute('aria-busy', 'false');
+      if (submissionStateTimeout) {
+        window.clearTimeout(submissionStateTimeout);
+        submissionStateTimeout = 0;
+      }
+    };
+
+    const announceFirstInvalidField = () => {
+      invalidAnnouncementTimer = 0;
+      if (!status) return;
+      const firstInvalid = form.querySelector('input:invalid, textarea:invalid, select:invalid');
+      status.textContent = firstInvalid?.id === 'request-contact'
+        ? 'Укажите имя и телефон, чтобы Иван мог связаться с вами.'
+        : 'Заполните обязательное поле перед отправкой заявки.';
+    };
+
+    form.addEventListener('invalid', event => {
+      const field = event.target;
+      if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement)) return;
+
+      field.setAttribute('aria-invalid', 'true');
+      if (!invalidAnnouncementTimer) {
+        invalidAnnouncementTimer = window.setTimeout(announceFirstInvalidField, 0);
+      }
+    }, true);
+
+    form.addEventListener('input', event => {
+      const field = event.target;
+      if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement)) return;
+      if (field.validity.valid) field.removeAttribute('aria-invalid');
+    });
+
+    form.addEventListener('change', event => {
+      const field = event.target;
+      if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement)) return;
+      if (field.validity.valid) field.removeAttribute('aria-invalid');
+    });
+
+    form.addEventListener('submit', event => {
+      if (submissionInFlight) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (status) status.textContent = 'Заявка уже отправляется. Дождитесь результата.';
+        return;
+      }
+
+      submissionInFlight = true;
+      form.setAttribute('aria-busy', 'true');
+      submissionStateTimeout = window.setTimeout(clearSubmissionState, SUBMISSION_STATE_TIMEOUT_MS);
+    }, true);
+
+    if (submitButton && typeof MutationObserver === 'function') {
+      const observer = new MutationObserver(() => {
+        if (!submitButton.disabled && submissionInFlight) clearSubmissionState();
+      });
+      observer.observe(submitButton, { attributes: true, attributeFilter: ['disabled'] });
+    }
+  };
+
+  document.querySelectorAll('#request-form').forEach(form => {
+    addHoneypotFields(form);
+    setupLeadFormState(form);
+  });
 
   const bodyWithHoneypot = body => {
     if (typeof body !== 'string') return body;
