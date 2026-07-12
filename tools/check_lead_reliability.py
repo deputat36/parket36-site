@@ -8,6 +8,9 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 EDGE_FUNCTION = "supabase/functions/parket-public-lead/index.ts"
+FIELD_LIMITS = "supabase/functions/parket-public-lead/field-limits.ts"
+FIELD_LIMITS_TEST = "supabase/functions/parket-public-lead/field-limits_test.ts"
+DENO_FIELD_TEST = "deno test supabase/functions/parket-public-lead/field-limits_test.ts"
 
 FILES = {
     "js/lead-reliability.js": {
@@ -43,7 +46,34 @@ FILES = {
         "inject_lead_reliability(errors)": "build injection call",
         'if \'id="request-form"\' not in text': "form-only injection guard",
     },
+    FIELD_LIMITS: {
+        "LEAD_FIELD_LIMITS = Object.freeze": "server field limit map",
+        "location: 160": "server location limit",
+        "area: 80": "server area limit",
+        "task: 3000": "server task limit",
+        "callback_time: 160": "server callback limit",
+        "contact: 240": "server contact limit",
+        "firstOversizedLeadField": "server oversized field detector",
+        "received > limit": "server length comparison",
+    },
+    FIELD_LIMITS_TEST: {
+        'Deno.test("lead field limits match public form contract"': "field limit contract test",
+        'Deno.test("firstOversizedLeadField accepts exact limits"': "exact limit test",
+        'Deno.test("firstOversizedLeadField reports field, limit and received length"': "oversized field test",
+        'task: "т".repeat(3001)': "task overflow fixture",
+    },
+    ".github/workflows/site-quality.yml": {
+        DENO_FIELD_TEST: "field limit unit test in pull request CI",
+    },
+    ".github/workflows/pages.yml": {
+        DENO_FIELD_TEST: "field limit unit test before deploy",
+    },
     EDGE_FUNCTION: {
+        'import { firstOversizedLeadField } from "./field-limits.ts";': "field limit validator import",
+        "const oversizedField = firstOversizedLeadField(body)": "server length validation call",
+        'reason: "field_too_long"': "field length audit reason",
+        'error: "field_too_long"': "field length response error",
+        "return json(req, 422": "unprocessable field length response",
         "cleanText(body.website": "backend website honeypot",
         "cleanText(body.company": "backend company honeypot",
         'reason: "honeypot_filled"': "honeypot audit reason",
@@ -116,10 +146,14 @@ def main() -> int:
             insert_position = text.find(".insert(lead)")
             notify_position = text.find("const notificationResults = await sendLeadNotifications(")
             success_position = text.rfind("return json(req, 200")
+            length_position = text.find("const oversizedField = firstOversizedLeadField(body)")
+            task_position = text.find("const task = cleanMultiline(body.task, 3000)")
             if min(insert_position, notify_position, success_position) == -1:
                 findings.append("Edge Function: cannot verify insert-notify-success order")
             elif not (insert_position < notify_position < success_position):
                 findings.append("Edge Function: lead must be stored before notification and success response")
+            if min(length_position, task_position) == -1 or length_position >= task_position:
+                findings.append("Edge Function: field length validation must run before truncating cleaners")
 
     if findings:
         print("Lead reliability findings:")
