@@ -4,6 +4,13 @@
   const LEAD_MAX_ATTEMPTS = 2;
   const RETRY_DELAY_MS = 650;
   const SUBMISSION_STATE_TIMEOUT_MS = (LEAD_TIMEOUT_MS * LEAD_MAX_ATTEMPTS) + RETRY_DELAY_MS + 5_000;
+  const LEAD_FIELD_LIMITS = Object.freeze({
+    'request-location': 160,
+    'request-area': 80,
+    'request-task': 3000,
+    'request-callback': 160,
+    'request-contact': 240
+  });
   const originalFetch = window.fetch.bind(window);
 
   const sleep = delay => new Promise(resolve => window.setTimeout(resolve, delay));
@@ -34,6 +41,39 @@
       wrapper.appendChild(input);
       form.prepend(wrapper);
     });
+  };
+
+  const setupLeadFieldLimits = form => {
+    Object.entries(LEAD_FIELD_LIMITS).forEach(([id, maxLength]) => {
+      const field = form.querySelector(`#${id}`);
+      if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
+      field.maxLength = maxLength;
+    });
+
+    const taskField = form.querySelector('#request-task');
+    if (!(taskField instanceof HTMLTextAreaElement)) return;
+
+    let counter = form.querySelector('[data-lead-character-counter="request-task"]');
+    if (!counter) {
+      counter = document.createElement('span');
+      counter.id = 'request-task-counter';
+      counter.className = 'form-help';
+      counter.dataset.leadCharacterCounter = 'request-task';
+      taskField.insertAdjacentElement('afterend', counter);
+    }
+
+    const describedBy = new Set((taskField.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean));
+    describedBy.add(counter.id);
+    taskField.setAttribute('aria-describedby', Array.from(describedBy).join(' '));
+
+    const updateCounter = () => {
+      const used = Array.from(taskField.value).length;
+      counter.textContent = `${used} / ${LEAD_FIELD_LIMITS['request-task']}`;
+      counter.setAttribute('aria-label', `Использовано ${used} из ${LEAD_FIELD_LIMITS['request-task']} символов`);
+    };
+
+    taskField.addEventListener('input', updateCounter);
+    updateCounter();
   };
 
   const setupLeadFormState = form => {
@@ -113,6 +153,7 @@
 
   document.querySelectorAll('#request-form').forEach(form => {
     addHoneypotFields(form);
+    setupLeadFieldLimits(form);
     setupLeadFormState(form);
   });
 
