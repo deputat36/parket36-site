@@ -31,10 +31,10 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       field.setCustomValidity(ERROR_MESSAGE);
-      field.setAttribute('aria-invalid', 'true');
-      if (status) status.textContent = ERROR_MESSAGE;
       field.focus();
       field.reportValidity();
+      field.setAttribute('aria-invalid', 'true');
+      if (status) status.textContent = ERROR_MESSAGE;
     }, true);
   });
 })();
