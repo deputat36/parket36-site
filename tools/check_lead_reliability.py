@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate public lead timeout, anti-spam, secrets, notifications and healthchecks."""
+"""Validate public lead timeout, anti-spam, form state, secrets, notifications and healthchecks."""
 
 from __future__ import annotations
 
@@ -13,12 +13,21 @@ FILES = {
     "js/lead-reliability.js": {
         "LEAD_TIMEOUT_MS = 12_000": "lead request timeout",
         "LEAD_MAX_ATTEMPTS = 2": "single retry limit",
+        "SUBMISSION_STATE_TIMEOUT_MS": "submission state safety timeout",
         "new AbortController()": "abortable lead request",
         "payload.website": "website honeypot payload",
         "payload.company": "company honeypot payload",
         "response.status < 500": "retry decision for server failures",
         "window.fetch = async": "lead fetch wrapper",
         "data-lead-honeypot": "hidden honeypot fields",
+        "setupLeadFormState": "lead form state initializer",
+        "submissionInFlight": "duplicate submission guard",
+        "event.stopImmediatePropagation()": "duplicate submit event stop",
+        "aria-busy": "form busy state",
+        "aria-live": "polite form status announcements",
+        "aria-atomic": "atomic form status announcements",
+        "aria-invalid": "invalid field state",
+        "MutationObserver": "submission completion observer",
     },
     "tools/build_pages.py": {
         'LEAD_RELIABILITY_SCRIPT = \'<script src="/js/lead-reliability.js" defer></script>\'': "build script tag",
