@@ -32,6 +32,9 @@
     });
 
     form.addEventListener('submit', event => {
+      const firstInvalid = form.querySelector('input:invalid, textarea:invalid, select:invalid');
+      if (firstInvalid && firstInvalid !== field) return;
+
       if (hasCallbackPhone(field.value)) {
         field.setCustomValidity('');
         return;
