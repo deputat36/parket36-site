@@ -137,6 +137,82 @@ test('лимиты полей совпадают с backend и счётчик о
   expect(submittedPayload.task.length).toBe(3000);
 });
 
+test('422 показывает конкретное поле без повторной отправки', async ({ page }) => {
+  let attempts = 0;
+  await page.route(leadEndpoint, async route => {
+    attempts += 1;
+    const payload = route.request().postDataJSON();
+    await route.fulfill({
+      status: 422,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: false,
+        error: 'field_too_long',
+        request_id: payload.request_id,
+        field: 'task',
+        limit: 3000,
+        received: 3001
+      })
+    });
+  });
+
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: async text => {
+          window.__parketCopiedText = text;
+        }
+      }
+    });
+  });
+
+  await page.goto('/zayavka/');
+  await fillMinimumRequest(page);
+  await page.getByRole('button', { name: 'Отправить заявку и скопировать текст' }).click();
+
+  const task = page.locator('#request-task');
+  const status = page.locator('#request-status');
+  await expect(status).toContainText('Поле «Описание задачи» слишком длинное');
+  await expect(status).toContainText('3000 символов');
+  await expect(task).toHaveAttribute('aria-invalid', 'true');
+  await expect(task).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.__parketCopiedText || '')).toContain('Здравствуйте, Иван!');
+  expect(attempts).toBe(1);
+});
+
+test('429 предлагает подождать без повторной отправки', async ({ page }) => {
+  let attempts = 0;
+  await page.route(leadEndpoint, async route => {
+    attempts += 1;
+    const payload = route.request().postDataJSON();
+    await route.fulfill({
+      status: 429,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: false, error: 'rate_limited', request_id: payload.request_id })
+    });
+  });
+
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: async text => {
+          window.__parketCopiedText = text;
+        }
+      }
+    });
+  });
+
+  await page.goto('/zayavka/');
+  await fillMinimumRequest(page);
+  await page.getByRole('button', { name: 'Отправить заявку и скопировать текст' }).click();
+
+  await expect(page.locator('#request-status')).toContainText('Подождите 15 минут');
+  await expect.poll(() => page.evaluate(() => window.__parketCopiedText || '')).toContain('Здравствуйте, Иван!');
+  expect(attempts).toBe(1);
+});
+
 test('форма сообщает об ошибках и блокирует повторную отправку', async ({ page }) => {
   let attempts = 0;
   let releaseResponse;
