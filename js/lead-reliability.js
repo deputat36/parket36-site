@@ -11,6 +11,32 @@
     'request-callback': 160,
     'request-contact': 240
   });
+  const LEAD_FIELD_LABELS = Object.freeze({
+    service: 'Услуга',
+    location: 'Район или населённый пункт',
+    area: 'Площадь или объём',
+    photos: 'Информация о фотографиях',
+    video: 'Информация о видео',
+    task: 'Описание задачи',
+    callback_time: 'Удобное время связи',
+    contact: 'Имя и телефон',
+    page: 'Адрес страницы',
+    utm_source: 'Источник перехода',
+    utm_medium: 'Канал перехода',
+    utm_campaign: 'Название кампании',
+    utm_content: 'Содержание кампании',
+    utm_term: 'Поисковый запрос'
+  });
+  const LEAD_FIELD_SELECTORS = Object.freeze({
+    service: '#request-service',
+    location: '#request-location',
+    area: '#request-area',
+    photos: '#request-photos',
+    video: '#request-video',
+    task: '#request-task',
+    callback_time: '#request-callback',
+    contact: '#request-contact'
+  });
   const originalFetch = window.fetch.bind(window);
 
   const sleep = delay => new Promise(resolve => window.setTimeout(resolve, delay));
@@ -22,6 +48,57 @@
   };
 
   const isLeadRequest = input => requestUrl(input).includes(LEAD_ENDPOINT_PATH);
+
+  const leadErrorMessage = detail => {
+    const code = detail?.code || 'lead_submit_failed';
+    if (code === 'field_too_long') {
+      const label = LEAD_FIELD_LABELS[detail?.field] || 'Одно из полей';
+      const limit = Number(detail?.limit) || 0;
+      return limit
+        ? `Поле «${label}» слишком длинное. Сократите его до ${limit} символов.`
+        : `Поле «${label}» слишком длинное. Сократите текст.`;
+    }
+    if (code === 'rate_limited') {
+      return 'Слишком много попыток отправки. Подождите 15 минут или позвоните Ивану.';
+    }
+    if (code === 'task_or_contact_required') {
+      return 'Проверьте описание задачи и контактные данные.';
+    }
+    if (code === 'origin_not_allowed') {
+      return 'Форма открыта с неподдерживаемого адреса. Перейдите на parket36.ru или позвоните Ивану.';
+    }
+    if (code === 'ip_hash_salt_required' || code === 'server_not_configured') {
+      return 'Сервис заявок временно не настроен. Позвоните Ивану или отправьте текст вручную.';
+    }
+    if (code === 'network_error') {
+      return 'Не удалось связаться с сервисом заявок.';
+    }
+    return 'Автоматически отправить заявку не удалось.';
+  };
+
+  const readLeadError = async response => {
+    let payload = {};
+    try {
+      payload = await response.clone().json();
+    } catch {
+      payload = {};
+    }
+
+    if (response.ok && payload?.ok !== false) return null;
+
+    return {
+      status: response.status,
+      code: String(payload?.error || `lead_submit_${response.status}`),
+      field: String(payload?.field || ''),
+      limit: Number(payload?.limit) || 0,
+      received: Number(payload?.received) || 0,
+      requestId: String(payload?.request_id || '')
+    };
+  };
+
+  const dispatchLeadError = detail => {
+    window.dispatchEvent(new CustomEvent('parket36:lead-error', { detail }));
+  };
 
   const addHoneypotFields = form => {
     ['website', 'company'].forEach(name => {
@@ -82,6 +159,7 @@
     let submissionInFlight = false;
     let submissionStateTimeout = 0;
     let invalidAnnouncementTimer = 0;
+    let lastLeadError = null;
 
     if (status) {
       status.setAttribute('role', 'status');
@@ -107,6 +185,36 @@
         ? 'Укажите имя и телефон, чтобы Иван мог связаться с вами.'
         : 'Заполните обязательное поле перед отправкой заявки.';
     };
+
+    window.addEventListener('parket36:lead-error', event => {
+      lastLeadError = event.detail || null;
+      if (lastLeadError?.code !== 'field_too_long') return;
+      const selector = LEAD_FIELD_SELECTORS[lastLeadError.field];
+      const field = selector ? form.querySelector(selector) : null;
+      if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement)) return;
+      field.setAttribute('aria-invalid', 'true');
+      field.focus();
+    });
+
+    if (status && typeof MutationObserver === 'function') {
+      const feedbackObserver = new MutationObserver(() => {
+        if (!lastLeadError) return;
+        const current = status.textContent || '';
+        let suffix = '';
+        if (current.startsWith('Автоматически отправить заявку не удалось.')) {
+          suffix = ' Текст скопирован: отправьте его Ивану вместе с фото или позвоните.';
+        } else if (current.startsWith('Скопируйте готовый текст ниже')) {
+          suffix = ' Скопируйте готовый текст ниже и отправьте его Ивану вместе с фотографиями пола.';
+        } else {
+          return;
+        }
+
+        const detail = lastLeadError;
+        lastLeadError = null;
+        status.textContent = `${leadErrorMessage(detail)}${suffix}`;
+      });
+      feedbackObserver.observe(status, { childList: true, characterData: true, subtree: true });
+    }
 
     form.addEventListener('invalid', event => {
       const field = event.target;
@@ -138,6 +246,7 @@
         return;
       }
 
+      lastLeadError = null;
       submissionInFlight = true;
       form.setAttribute('aria-busy', 'true');
       submissionStateTimeout = window.setTimeout(clearSubmissionState, SUBMISSION_STATE_TIMEOUT_MS);
@@ -208,7 +317,11 @@
     for (let attempt = 1; attempt <= LEAD_MAX_ATTEMPTS; attempt += 1) {
       try {
         const response = await fetchLeadAttempt(input, leadInit);
-        if (response.status < 500 || attempt === LEAD_MAX_ATTEMPTS) return response;
+        if (response.status < 500 || attempt === LEAD_MAX_ATTEMPTS) {
+          const detail = await readLeadError(response);
+          if (detail) dispatchLeadError(detail);
+          return response;
+        }
         lastError = new Error(`lead_submit_${response.status}`);
       } catch (error) {
         lastError = error instanceof Error ? error : new Error('lead_submit_failed');
@@ -218,6 +331,7 @@
       await sleep(RETRY_DELAY_MS);
     }
 
+    dispatchLeadError({ status: 0, code: 'network_error', field: '', limit: 0, received: 0, requestId: '' });
     throw lastError;
   };
 })();
