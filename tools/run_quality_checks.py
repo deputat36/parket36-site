@@ -32,6 +32,7 @@ CHECKS = [
     ("Validate commercial pages", ["tools/check_commercial_pages.py"]),
     ("Validate lead paths", ["tools/check_lead_paths.py"]),
     ("Validate lead reliability", ["tools/check_lead_reliability.py"]),
+    ("Validate lead payload shape", ["tools/check_payload_shape.py"]),
     ("Build public directory", ["tools/build_pages.py"]),
 ]
 
