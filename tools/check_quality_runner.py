@@ -33,6 +33,7 @@ EXPECTED_CHECKS = [
     ["tools/check_commercial_pages.py"],
     ["tools/check_lead_paths.py"],
     ["tools/check_lead_reliability.py"],
+    ["tools/check_payload_shape.py"],
     ["tools/build_pages.py"],
 ]
 
