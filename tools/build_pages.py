@@ -44,6 +44,7 @@ PUBLIC_FILES = {
     "CNAME",
     "robots.txt",
     "sitemap.xml",
+    "indexnow-key.txt",
     ".nojekyll",
     "manifest.webmanifest",
 }
