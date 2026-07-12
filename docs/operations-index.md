@@ -38,6 +38,7 @@
 - `docs/content-similarity-report.md` — воспроизводимый отчёт по тонким страницам, текстовому сходству и canonical-alias.
 - `docs/internal-link-map.md` — карта контекстных и общих внутренних ссылок, глубины страниц, хабов и слабых путей.
 - `docs/structured-data-validation.md` — проверка JSON-LD, canonical, дат, телефона, FAQ и запрет неподтверждённых рейтингов и офферов.
+- `docs/breadcrumb-structured-data.md` — генерация BreadcrumbList из видимых хлебных крошек в публичной сборке.
 
 ## Материалы для сайта
 
