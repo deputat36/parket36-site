@@ -32,6 +32,8 @@ jobs:
         run: deno test supabase/functions/parket-public-lead/field-limits_test.ts
       - name: Test Edge Function origin policy
         run: deno test supabase/functions/parket-public-lead/origin-policy_test.ts
+      - name: Test Edge Function payload shape
+        run: deno test supabase/functions/parket-public-lead/payload-shape_test.ts
       - name: Type-check Edge Function
         id: edge_typecheck
         continue-on-error: true
