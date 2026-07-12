@@ -10,6 +10,7 @@ import shutil
 import sys
 import xml.etree.ElementTree as ET
 
+from breadcrumb_schema import inject_breadcrumb_schemas
 from css_bundle import prepare_css_bundle
 from image_attributes import normalize_image_attributes
 from site_settings import load_config
@@ -251,6 +252,7 @@ def main() -> int:
     prepare_css_bundle(ROOT, DEST, errors)
     normalize_image_attributes(DEST, errors)
     inject_lead_reliability(errors)
+    inject_breadcrumb_schemas(DEST, DOMAIN, errors)
 
     required = ["index.html", "404.html", "CNAME", "robots.txt", "sitemap.xml"]
     missing = [name for name in required if not (DEST / name).exists()]
