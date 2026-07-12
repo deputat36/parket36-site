@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate public lead timeout, anti-spam, form state, secrets, notifications and healthchecks."""
+"""Validate public lead timeout, anti-spam, form state, limits, secrets, notifications and healthchecks."""
 
 from __future__ import annotations
 
@@ -14,6 +14,15 @@ FILES = {
         "LEAD_TIMEOUT_MS = 12_000": "lead request timeout",
         "LEAD_MAX_ATTEMPTS = 2": "single retry limit",
         "SUBMISSION_STATE_TIMEOUT_MS": "submission state safety timeout",
+        "LEAD_FIELD_LIMITS = Object.freeze": "client field limit map",
+        "'request-location': 160": "location length limit",
+        "'request-area': 80": "area length limit",
+        "'request-task': 3000": "task length limit",
+        "'request-callback': 160": "callback length limit",
+        "'request-contact': 240": "contact length limit",
+        "setupLeadFieldLimits": "lead field limit initializer",
+        "data-lead-character-counter": "task character counter",
+        "aria-describedby": "task counter relationship",
         "new AbortController()": "abortable lead request",
         "payload.website": "website honeypot payload",
         "payload.company": "company honeypot payload",
@@ -38,6 +47,11 @@ FILES = {
         "cleanText(body.website": "backend website honeypot",
         "cleanText(body.company": "backend company honeypot",
         'reason: "honeypot_filled"': "honeypot audit reason",
+        "cleanText(body.location, 160)": "backend location length limit",
+        "cleanText(body.area, 80)": "backend area length limit",
+        "cleanMultiline(body.task, 3000)": "backend task length limit",
+        "cleanText(body.callback_time, 160)": "backend callback length limit",
+        "cleanText(body.contact, 240)": "backend contact length limit",
         "RATE_LIMIT_MAX_ATTEMPTS = 30": "all-attempt rate limit",
         "RATE_LIMIT_MAX_ACCEPTED = 6": "accepted-lead rate limit",
         "recentAuditCount(": "shared audit rate counter",
