@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { evaluateOriginPolicy } from "./origin-policy.ts";
 import { firstOversizedLeadField } from "./field-limits.ts";
 
 const DEFAULT_ALLOWED_ORIGINS = [
@@ -42,12 +43,6 @@ function allowedOrigins() {
 
 function requestOrigin(req: Request) {
   return req.headers.get("origin") || "";
-}
-
-function isAllowedOrigin(req: Request) {
-  const origin = requestOrigin(req);
-  if (!origin) return true;
-  return allowedOrigins().includes(origin);
 }
 
 function corsHeadersFor(req: Request) {
@@ -113,6 +108,12 @@ function getIpHashSalt() {
 
 function getHealthcheckToken() {
   return envText("PARKET_HEALTHCHECK_TOKEN", 500);
+}
+
+function healthcheckTokenAuthorized(req: Request) {
+  const expectedToken = getHealthcheckToken();
+  const providedToken = cleanText(req.headers.get(HEALTHCHECK_HEADER), 500);
+  return Boolean(expectedToken && safeEqual(expectedToken, providedToken));
 }
 
 function emailRecipients() {
@@ -451,7 +452,14 @@ async function sendLeadNotifications(
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeadersFor(req) });
   if (req.method !== "POST") return json(req, 405, { ok: false, error: "method_not_allowed" });
-  if (!isAllowedOrigin(req)) return json(req, 403, { ok: false, error: "origin_not_allowed" });
+  const originDecision = evaluateOriginPolicy(
+    requestOrigin(req),
+    allowedOrigins(),
+    healthcheckTokenAuthorized(req),
+  );
+  if (!originDecision.allowed) {
+    return json(req, 403, { ok: false, error: originDecision.error });
+  }
 
   const contentType = req.headers.get("content-type") || "";
   if (!contentType.toLowerCase().includes("application/json")) {
