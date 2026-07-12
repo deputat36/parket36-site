@@ -87,6 +87,56 @@ test('шаблон формы заполняет задачу, а успешны
   await expect.poll(() => page.evaluate(() => window.__parketCopiedText || '')).toContain('Здравствуйте, Иван!');
 });
 
+test('лимиты полей совпадают с backend и счётчик отражает длину задачи', async ({ page }) => {
+  let submittedPayload;
+  await page.route(leadEndpoint, async route => {
+    submittedPayload = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 303 })
+    });
+  });
+
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async () => {} }
+    });
+  });
+
+  await page.goto('/zayavka/');
+
+  const expectedLimits = {
+    '#request-location': '160',
+    '#request-area': '80',
+    '#request-task': '3000',
+    '#request-callback': '160',
+    '#request-contact': '240'
+  };
+  for (const [selector, limit] of Object.entries(expectedLimits)) {
+    await expect(page.locator(selector)).toHaveAttribute('maxlength', limit);
+  }
+
+  const task = page.locator('#request-task');
+  const counter = page.locator('[data-lead-character-counter="request-task"]');
+  await expect(task).toHaveAttribute('aria-describedby', /request-task-counter/);
+  await expect(counter).toHaveText('0 / 3000');
+
+  await task.click();
+  await page.keyboard.insertText('а'.repeat(3005));
+  expect((await task.inputValue()).length).toBe(3000);
+  await expect(counter).toHaveText('3000 / 3000');
+
+  await page.locator('#request-location').fill('Воронеж');
+  await page.locator('#request-area').fill('18 м²');
+  await page.locator('#request-contact').fill('Алексей, +7 900 000-00-00');
+  await page.getByRole('button', { name: 'Отправить заявку и скопировать текст' }).click();
+
+  await expect(page.locator('#request-status')).toContainText('Заявка отправлена Ивану');
+  expect(submittedPayload.task.length).toBe(3000);
+});
+
 test('форма сообщает об ошибках и блокирует повторную отправку', async ({ page }) => {
   let attempts = 0;
   let releaseResponse;
