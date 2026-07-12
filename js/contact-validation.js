@@ -14,6 +14,7 @@
     const status = form.querySelector('#request-status');
     if (!(field instanceof HTMLInputElement)) return;
 
+    const firstInvalidField = () => form.querySelector('input:invalid, textarea:invalid, select:invalid');
     const showPhoneError = () => {
       field.setAttribute('aria-invalid', 'true');
       if (status) status.textContent = ERROR_MESSAGE;
@@ -28,11 +29,13 @@
     });
     field.addEventListener('invalid', () => {
       if (hasCallbackPhone(field.value)) return;
-      window.setTimeout(showPhoneError, 0);
+      window.setTimeout(() => {
+        if (firstInvalidField() === field) showPhoneError();
+      }, 0);
     });
 
     form.addEventListener('submit', event => {
-      const firstInvalid = form.querySelector('input:invalid, textarea:invalid, select:invalid');
+      const firstInvalid = firstInvalidField();
       if (firstInvalid && firstInvalid !== field) return;
 
       if (hasCallbackPhone(field.value)) {
