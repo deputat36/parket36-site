@@ -12,9 +12,22 @@
 - проверить Custom domain;
 - проверить DNS у регистратора;
 - включить HTTPS после проверки домена;
-- проверить успешный deploy.
+- проверить успешный deploy;
+- убедиться, что `/indexnow-key.txt` открывается и workflow `IndexNow` отправил sitemap URL.
 
 Подробный чек-лист: `docs/github-pages-switch-checklist.md`.
+
+## Поисковые кабинеты после запуска домена
+
+После подтверждения HTTPS и актуальной главной страницы нужно вручную:
+
+- добавить сайт в Яндекс Вебмастер и отправить sitemap;
+- добавить сайт в Google Search Console и отправить sitemap;
+- добавить сайт в Bing Webmaster Tools и проверить отчёт IndexNow;
+- заполнить `metrika_id` в `data/site.json` после создания счётчика;
+- проверить реальные цели звонка и заявки по `docs/analytics-events.md`.
+
+Порядок действий: `docs/search-discovery-launch.md`.
 
 ## Issue #4
 
