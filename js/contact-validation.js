@@ -14,12 +14,21 @@
     const status = form.querySelector('#request-status');
     if (!(field instanceof HTMLInputElement)) return;
 
+    const showPhoneError = () => {
+      field.setAttribute('aria-invalid', 'true');
+      if (status) status.textContent = ERROR_MESSAGE;
+    };
+
     field.setAttribute('autocomplete', 'tel');
     field.setAttribute('inputmode', 'tel');
     field.addEventListener('input', () => {
       if (!hasCallbackPhone(field.value)) return;
       field.setCustomValidity('');
       field.removeAttribute('aria-invalid');
+    });
+    field.addEventListener('invalid', () => {
+      if (hasCallbackPhone(field.value)) return;
+      window.setTimeout(showPhoneError, 0);
     });
 
     form.addEventListener('submit', event => {
@@ -32,9 +41,7 @@
       event.stopImmediatePropagation();
       field.setCustomValidity(ERROR_MESSAGE);
       field.focus();
-      field.reportValidity();
-      field.setAttribute('aria-invalid', 'true');
-      if (status) status.textContent = ERROR_MESSAGE;
+      showPhoneError();
     }, true);
   });
 })();
