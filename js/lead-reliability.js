@@ -67,7 +67,7 @@
     taskField.setAttribute('aria-describedby', Array.from(describedBy).join(' '));
 
     const updateCounter = () => {
-      const used = Array.from(taskField.value).length;
+      const used = taskField.value.length;
       counter.textContent = `${used} / ${LEAD_FIELD_LIMITS['request-task']}`;
       counter.setAttribute('aria-label', `Использовано ${used} из ${LEAD_FIELD_LIMITS['request-task']} символов`);
     };
