@@ -41,7 +41,7 @@
     const submitButton = form.querySelector('button[type="submit"]');
     let submissionInFlight = false;
     let submissionStateTimeout = 0;
-    let invalidCycleActive = false;
+    let invalidAnnouncementTimer = 0;
 
     if (status) {
       status.setAttribute('role', 'status');
@@ -59,19 +59,22 @@
       }
     };
 
+    const announceFirstInvalidField = () => {
+      invalidAnnouncementTimer = 0;
+      if (!status) return;
+      const firstInvalid = form.querySelector('input:invalid, textarea:invalid, select:invalid');
+      status.textContent = firstInvalid?.id === 'request-contact'
+        ? 'Укажите имя и телефон, чтобы Иван мог связаться с вами.'
+        : 'Заполните обязательное поле перед отправкой заявки.';
+    };
+
     form.addEventListener('invalid', event => {
       const field = event.target;
       if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement)) return;
 
       field.setAttribute('aria-invalid', 'true');
-      if (!invalidCycleActive && status) {
-        invalidCycleActive = true;
-        status.textContent = field.id === 'request-contact'
-          ? 'Укажите имя и телефон, чтобы Иван мог связаться с вами.'
-          : 'Заполните обязательное поле перед отправкой заявки.';
-        window.queueMicrotask(() => {
-          invalidCycleActive = false;
-        });
+      if (!invalidAnnouncementTimer) {
+        invalidAnnouncementTimer = window.setTimeout(announceFirstInvalidField, 0);
       }
     }, true);
 
