@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate public lead timeout, anti-spam, form state, limits, secrets, notifications and healthchecks."""
+"""Validate public lead timeout, anti-spam, form state, limits, origin policy, secrets, notifications and healthchecks."""
 
 from __future__ import annotations
 
@@ -10,7 +10,10 @@ ROOT = Path(__file__).resolve().parents[1]
 EDGE_FUNCTION = "supabase/functions/parket-public-lead/index.ts"
 FIELD_LIMITS = "supabase/functions/parket-public-lead/field-limits.ts"
 FIELD_LIMITS_TEST = "supabase/functions/parket-public-lead/field-limits_test.ts"
+ORIGIN_POLICY = "supabase/functions/parket-public-lead/origin-policy.ts"
+ORIGIN_POLICY_TEST = "supabase/functions/parket-public-lead/origin-policy_test.ts"
 DENO_FIELD_TEST = "deno test supabase/functions/parket-public-lead/field-limits_test.ts"
+DENO_ORIGIN_TEST = "deno test supabase/functions/parket-public-lead/origin-policy_test.ts"
 
 FILES = {
     "js/lead-reliability.js": {
@@ -80,13 +83,32 @@ FILES = {
         'Deno.test("firstOversizedLeadField reports field, limit and received length"': "oversized field test",
         'task: "т".repeat(3001)': "task overflow fixture",
     },
+    ORIGIN_POLICY: {
+        "evaluateOriginPolicy": "pure origin policy evaluator",
+        'error: "origin_required"': "missing origin decision",
+        'error: "origin_not_allowed"': "unknown origin decision",
+        'reason: "healthcheck_token"': "token-authorized healthcheck decision",
+        "allowedOrigins.includes(normalizedOrigin)": "configured origin allow-list",
+    },
+    ORIGIN_POLICY_TEST: {
+        'Deno.test("origin policy accepts configured browser origin"': "allowed origin test",
+        'Deno.test("origin policy rejects unknown browser origin"': "unknown origin test",
+        'Deno.test("origin policy rejects missing origin for normal requests"': "missing origin test",
+        'Deno.test("origin policy permits token-authorized healthcheck without origin"': "healthcheck exception test",
+    },
     ".github/workflows/site-quality.yml": {
         DENO_FIELD_TEST: "field limit unit test in pull request CI",
+        DENO_ORIGIN_TEST: "origin policy unit test in pull request CI",
     },
     ".github/workflows/pages.yml": {
         DENO_FIELD_TEST: "field limit unit test before deploy",
+        DENO_ORIGIN_TEST: "origin policy unit test before deploy",
     },
     EDGE_FUNCTION: {
+        'import { evaluateOriginPolicy } from "./origin-policy.ts";': "origin policy import",
+        "healthcheckTokenAuthorized(req)": "protected no-origin healthcheck exception",
+        "const originDecision = evaluateOriginPolicy(": "origin policy evaluation",
+        "error: originDecision.error": "specific origin rejection response",
         'import { firstOversizedLeadField } from "./field-limits.ts";': "field limit validator import",
         "const oversizedField = firstOversizedLeadField(body)": "server length validation call",
         'reason: "field_too_long"': "field length audit reason",
@@ -135,6 +157,8 @@ FILES = {
 
 FORBIDDEN_MARKERS = {
     EDGE_FUNCTION: {
+        'if (!origin) return true;': "allowing normal requests without Origin",
+        "function isAllowedOrigin": "legacy permissive origin helper",
         'const salt = Deno.env.get("PARKET_IP_HASH_SALT") || "";': "silent empty salt fallback",
         "PARKET_TELEGRAM_BOT_TOKEN =": "hard-coded Telegram token",
         "PARKET_RESEND_API_KEY =": "hard-coded email API key",
@@ -166,12 +190,16 @@ def main() -> int:
             success_position = text.rfind("return json(req, 200")
             length_position = text.find("const oversizedField = firstOversizedLeadField(body)")
             task_position = text.find("const task = cleanMultiline(body.task, 3000)")
+            origin_position = text.find("const originDecision = evaluateOriginPolicy(")
+            body_position = text.find("const bodyText = await req.text()")
             if min(insert_position, notify_position, success_position) == -1:
                 findings.append("Edge Function: cannot verify insert-notify-success order")
             elif not (insert_position < notify_position < success_position):
                 findings.append("Edge Function: lead must be stored before notification and success response")
             if min(length_position, task_position) == -1 or length_position >= task_position:
                 findings.append("Edge Function: field length validation must run before truncating cleaners")
+            if min(origin_position, body_position) == -1 or origin_position >= body_position:
+                findings.append("Edge Function: origin policy must run before reading the request body")
 
     if findings:
         print("Lead reliability findings:")
