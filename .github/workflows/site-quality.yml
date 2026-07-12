@@ -28,6 +28,8 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: lts
+      - name: Test Edge Function field limits
+        run: deno test supabase/functions/parket-public-lead/field-limits_test.ts
       - name: Type-check Edge Function
         id: edge_typecheck
         continue-on-error: true
