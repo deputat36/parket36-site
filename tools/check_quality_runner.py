@@ -34,6 +34,7 @@ EXPECTED_CHECKS = [
     ["tools/check_guardrails.py"],
     ["tools/check_conversion_paths.py"],
     ["tools/check_commercial_pages.py"],
+    ["tools/check_callback_topic_context.py"],
     ["tools/check_lead_paths.py"],
     ["tools/check_lead_reliability.py"],
     ["tools/check_payload_shape.py"],

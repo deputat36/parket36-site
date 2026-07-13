@@ -33,6 +33,7 @@ CHECKS = [
     ("Run extra guardrails", ["tools/check_guardrails.py"]),
     ("Validate conversion paths", ["tools/check_conversion_paths.py"]),
     ("Validate commercial pages", ["tools/check_commercial_pages.py"]),
+    ("Validate callback topic context", ["tools/check_callback_topic_context.py"]),
     ("Validate lead paths", ["tools/check_lead_paths.py"]),
     ("Validate lead reliability", ["tools/check_lead_reliability.py"]),
     ("Validate lead payload shape", ["tools/check_payload_shape.py"]),
