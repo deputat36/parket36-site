@@ -61,6 +61,7 @@ test('валидная callback-заявка сохраняет first-touch ка
   await expect.poll(() => page.evaluate(() => window.__parketCallbackOpen)).toMatchObject({
     type: 'callback-open',
     href: '#callback',
+    trigger: 'click',
     page: '/kontakty/',
     attribution: {
       source: 'yandex_business',
@@ -115,6 +116,7 @@ test('валидная callback-заявка сохраняет first-touch ка
   expect(dataLayerEvents[0]).toMatchObject({
     event: 'parket36_callback_open',
     page: '/kontakty/',
+    trigger: 'click',
     attribution: { source: 'yandex_business', medium: 'local' }
   });
   expect(dataLayerEvents[1]).toMatchObject({
@@ -123,4 +125,66 @@ test('валидная callback-заявка сохраняет first-touch ка
     service: 'Обратный звонок по паркетным работам',
     attribution: { source: 'yandex_business', medium: 'local' }
   });
+});
+
+test('переход со стоимости открывает callback один раз и сохраняет первую страницу', async ({ page }) => {
+  let submittedPayload;
+  let submittedHeaders;
+
+  await page.route(leadEndpoint, async route => {
+    submittedPayload = route.request().postDataJSON();
+    submittedHeaders = route.request().headers();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 802 })
+    });
+  });
+  await prepareBrowserSignals(page);
+
+  await page.goto('/ceny/?utm_source=vk&utm_medium=social&utm_campaign=voronezh_parquet_launch&utm_content=price_post');
+  await page.locator('a.btn[href="/kontakty/#callback"]').click();
+
+  await expect(page).toHaveURL(/\/kontakty\/#callback$/);
+  await expect(page.locator('#callback')).toBeInViewport();
+  await expect.poll(() => page.evaluate(() => window.__parketCallbackOpen)).toMatchObject({
+    type: 'callback-open',
+    href: '#callback',
+    trigger: 'hash-entry',
+    page: '/kontakty/',
+    attribution: {
+      source: 'vk',
+      medium: 'social',
+      campaign: 'voronezh_parquet_launch',
+      content: 'price_post',
+      landing: '/ceny/'
+    }
+  });
+
+  const openEvents = await page.evaluate(() => window.dataLayer.filter(item => item.event === 'parket36_callback_open'));
+  expect(openEvents).toHaveLength(1);
+  expect(openEvents[0]).toMatchObject({
+    event: 'parket36_callback_open',
+    page: '/kontakty/',
+    trigger: 'hash-entry',
+    attribution: { source: 'vk', landing: '/ceny/' }
+  });
+
+  await page.locator('#request-location').fill('Воронеж');
+  await page.locator('#request-callback').fill('После 19:00');
+  await page.locator('#request-contact').fill('Мария, +7 900 555-44-33');
+  await page.getByRole('button', { name: 'Заказать обратный звонок' }).click();
+  await expect(page.locator('#request-status')).toContainText('Заявка на обратный звонок отправлена');
+
+  expect(submittedPayload).toMatchObject({
+    service: 'Обратный звонок по паркетным работам',
+    page: '/kontakty/',
+    utm_source: 'vk',
+    utm_medium: 'social',
+    utm_campaign: 'voronezh_parquet_launch',
+    utm_content: 'price_post'
+  });
+  const firstTouchReferrer = new URL(submittedHeaders.referer);
+  expect(firstTouchReferrer.pathname).toBe('/ceny/');
+  expect(firstTouchReferrer.search).toBe('');
 });

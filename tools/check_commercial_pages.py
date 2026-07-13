@@ -35,6 +35,9 @@ PAGE_MARKERS = {
         "Что не включается молча": "no silent extras heading",
         "Новые задачи и скрытые дефекты нужно согласовывать отдельно": "separate approval heading",
         "не заменить осмотр": "estimate limitation wording",
+        'href="/kontakty/#callback">Неудобно звонить — заказать обратный звонок →</a>': "price hero callback path",
+        'href="/kontakty/#callback">Заказать обратный звонок</a>': "price phone-section callback path",
+        'href="/kontakty/#callback">Оставить номер для обратного звонка →</a>': "price budget callback path",
     },
     "kontakty/index.html": {
         "Циклёвка, реставрация и ремонт паркета в Воронеже и области": "local commercial H1",
