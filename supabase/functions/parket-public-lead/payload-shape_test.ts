@@ -48,6 +48,31 @@ Deno.test("validateLeadPayload rejects non-string lead fields", () => {
   assert(result.received === "object", "received type should be reported");
 });
 
+Deno.test("validateLeadPayload rejects contact without a usable phone", () => {
+  for (const contact of ["Позвоните мне", "Иван, 12345", "1234567890123456"]) {
+    const result = validateLeadPayload({
+      task: "Нужно оценить состояние пола",
+      contact,
+    });
+
+    assert(!result.ok, `invalid contact should be rejected: ${contact}`);
+    if (result.ok) continue;
+    assert(result.status === 422, "invalid phone should return 422");
+    assert(result.error === "contact_phone_invalid", "invalid phone should use contact_phone_invalid");
+    assert(result.field === "contact", "invalid phone should identify contact");
+    assert(result.expected === "10-15 digits", "phone contract should be reported");
+    assert(typeof result.received === "number", "received digit count should be numeric");
+  }
+});
+
+Deno.test("validateLeadPayload leaves empty contact to required-field validation", () => {
+  const result = validateLeadPayload({
+    task: "Нужно оценить состояние пола",
+    contact: "",
+  });
+  assert(result.ok, "empty string has a valid shape and is rejected later as a required field");
+});
+
 Deno.test("validateLeadPayload rejects non-boolean test mode", () => {
   const result = validateLeadPayload({ test_mode: "true" });
 

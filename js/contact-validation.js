@@ -14,6 +14,8 @@
     const status = form.querySelector('#request-status');
     if (!(field instanceof HTMLInputElement)) return;
 
+    let serverPhoneErrorPending = false;
+
     const firstInvalidField = () => form.querySelector('input:invalid, textarea:invalid, select:invalid');
     const showPhoneError = () => {
       field.setAttribute('aria-invalid', 'true');
@@ -23,6 +25,7 @@
     field.setAttribute('autocomplete', 'tel');
     field.setAttribute('inputmode', 'tel');
     field.addEventListener('input', () => {
+      serverPhoneErrorPending = false;
       if (!hasCallbackPhone(field.value)) return;
       field.setCustomValidity('');
       field.removeAttribute('aria-invalid');
@@ -33,6 +36,29 @@
         if (firstInvalidField() === field) showPhoneError();
       }, 0);
     });
+
+    window.addEventListener('parket36:lead-error', event => {
+      if (event.detail?.code !== 'contact_phone_invalid') return;
+      serverPhoneErrorPending = true;
+      field.setCustomValidity(ERROR_MESSAGE);
+      field.setAttribute('aria-invalid', 'true');
+      field.focus();
+      if (status) status.textContent = ERROR_MESSAGE;
+    });
+
+    if (status && typeof MutationObserver === 'function') {
+      const serverErrorObserver = new MutationObserver(() => {
+        if (!serverPhoneErrorPending) return;
+        const current = status.textContent || '';
+        if (current === ERROR_MESSAGE) return;
+        if (!current.startsWith('Автоматически отправить заявку не удалось.') &&
+            !current.startsWith('Скопируйте готовый текст ниже')) return;
+
+        serverPhoneErrorPending = false;
+        status.textContent = `${ERROR_MESSAGE} Проверьте номер и отправьте заявку ещё раз.`;
+      });
+      serverErrorObserver.observe(status, { childList: true, characterData: true, subtree: true });
+    }
 
     form.addEventListener('submit', event => {
       const firstInvalid = firstInvalidField();

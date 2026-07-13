@@ -36,6 +36,8 @@ jobs:
         run: deno test supabase/functions/parket-public-lead/origin-policy_test.ts
       - name: Test Edge Function payload shape
         run: deno test supabase/functions/parket-public-lead/payload-shape_test.ts
+      - name: Test Edge Function contact phone
+        run: deno test supabase/functions/parket-public-lead/contact-validation_test.ts
       - name: Type-check Edge Function
         run: deno check supabase/functions/parket-public-lead/index.ts
       - name: Run quality gate
