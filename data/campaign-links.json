@@ -18,6 +18,15 @@
       "purpose": "Пост или обсуждение конкретной услуги"
     },
     {
+      "name": "VK — обратный звонок",
+      "source": "vk",
+      "medium": "social",
+      "content": "callback_post",
+      "path": "/kontakty/",
+      "fragment": "callback",
+      "purpose": "Публикация с прямым переходом к короткой форме обратного звонка"
+    },
+    {
       "name": "Авито — циклёвка паркета",
       "source": "avito",
       "medium": "classified",

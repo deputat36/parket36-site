@@ -89,6 +89,10 @@
 
 Ссылка для поста о циклёвке: `https://parket36.ru/uslugi/ciklevka-parketa/?utm_source=vk&utm_medium=social&utm_campaign=voronezh_parquet_launch&utm_content=organic_post_cyclevka`.
 
+Ссылка для публикации с призывом оставить номер: `https://parket36.ru/kontakty/?utm_source=vk&utm_medium=social&utm_campaign=voronezh_parquet_launch&utm_content=callback_post#callback`.
+
+Прямая callback-ссылка открывает короткую форму сразу. Использовать её только в публикации, где действие сформулировано явно: `Оставьте номер — Иван перезвонит и уточнит задачу`.
+
 В закреплённой публикации показать простой путь: проблема с полом → фотографии → звонок Ивану → предварительный ориентир → осмотр при необходимости.
 
 ## Печатные материалы и QR

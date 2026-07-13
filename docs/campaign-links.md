@@ -11,6 +11,7 @@
 |---|---|---|---|
 | VK — главная страница | Общий пост о мастере и восстановлении паркета | `/` | `https://parket36.ru/?utm_source=vk&utm_medium=social&utm_campaign=voronezh_parquet_launch&utm_content=organic_post_home` |
 | VK — циклёвка паркета | Пост или обсуждение конкретной услуги | `/uslugi/ciklevka-parketa/` | `https://parket36.ru/uslugi/ciklevka-parketa/?utm_source=vk&utm_medium=social&utm_campaign=voronezh_parquet_launch&utm_content=organic_post_cyclevka` |
+| VK — обратный звонок | Публикация с прямым переходом к короткой форме обратного звонка | `/kontakty/#callback` | `https://parket36.ru/kontakty/?utm_source=vk&utm_medium=social&utm_campaign=voronezh_parquet_launch&utm_content=callback_post#callback` |
 | Авито — циклёвка паркета | Ссылка из объявления по циклёвке и шлифовке | `/uslugi/ciklevka-parketa/` | `https://parket36.ru/uslugi/ciklevka-parketa/?utm_source=avito&utm_medium=classified&utm_campaign=voronezh_parquet_launch&utm_content=service_listing_cyclevka` |
 | Яндекс Бизнес — контакты | Ссылка из локальной карточки после её подтверждения | `/kontakty/` | `https://parket36.ru/kontakty/?utm_source=yandex_business&utm_medium=local&utm_campaign=voronezh_parquet_launch&utm_content=business_profile` |
 | 2ГИС — контакты | Ссылка из локальной карточки после её подтверждения | `/kontakty/` | `https://parket36.ru/kontakty/?utm_source=2gis&utm_medium=local&utm_campaign=voronezh_parquet_launch&utm_content=business_profile` |
@@ -21,8 +22,13 @@
 - размещать готовую ссылку только в указанном канале, не заменяя её обычной ссылкой на домен;
 - для нового объявления или макета добавлять отдельный `content`, чтобы обращения не смешивались;
 - QR-код создавать именно из полной ссылки с UTM-параметрами;
+- для ссылки с якорем сохранять порядок `?utm_...#callback`: query перед fragment;
 - после восстановления домена сначала открыть каждую ссылку вручную и убедиться, что посадочная страница загружается по HTTPS;
 - не публиковать ссылки на ещё не созданные карточки: строки для Яндекс Бизнеса и 2ГИС подготовлены заранее, но используются только после подтверждения соответствующей карточки.
+
+## Прямая ссылка на обратный звонок
+
+Ссылка `VK — обратный звонок` открывает `/kontakty/#callback` сразу на короткой форме. Генератор проверяет, что целевая страница существует и содержит элемент `id="callback"`. UTM остаются в query-параметрах до `#callback`, поэтому first-touch атрибуция сохраняется до отправки заявки.
 
 ## Что уже измеряется
 

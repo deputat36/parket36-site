@@ -41,6 +41,17 @@ def validate_token(value: object, field: str, name: str) -> str:
     return value
 
 
+def validate_fragment(path: str, value: object, name: str) -> str:
+    if value is None:
+        return ""
+    fragment = validate_token(value, "fragment", name)
+    landing = landing_file(path)
+    text = landing.read_text(encoding="utf-8", errors="ignore")
+    if f'id="{fragment}"' not in text and f"id='{fragment}'" not in text:
+        raise ValueError(f"{name}: fragment target does not exist on {path}: #{fragment}")
+    return fragment
+
+
 def build_rows() -> tuple[str, list[dict[str, str]]]:
     site = load_config()
     domain = str(site["domain"]).rstrip("/")
@@ -83,6 +94,7 @@ def build_rows() -> tuple[str, list[dict[str, str]]]:
         source = validate_token(item.get("source"), "source", name)
         medium = validate_token(item.get("medium"), "medium", name)
         content = validate_token(item.get("content"), "content", name)
+        fragment = validate_fragment(path, item.get("fragment"), name)
         params = {
             "utm_source": source,
             "utm_medium": medium,
@@ -94,6 +106,10 @@ def build_rows() -> tuple[str, list[dict[str, str]]]:
             params["utm_term"] = validate_token(term, "term", name)
 
         url = f"{domain}{path}?{urlencode(params)}"
+        landing = path
+        if fragment:
+            url = f"{url}#{fragment}"
+            landing = f"{path}#{fragment}"
         if url in urls:
             raise ValueError(f"duplicate generated URL: {url}")
         urls.add(url)
@@ -101,9 +117,10 @@ def build_rows() -> tuple[str, list[dict[str, str]]]:
             {
                 "name": name.strip(),
                 "purpose": purpose.strip(),
-                "path": path,
+                "path": landing,
                 "url": url,
                 "content": content,
+                "fragment": fragment,
             }
         )
 
@@ -147,8 +164,13 @@ def render_markdown() -> str:
             "- размещать готовую ссылку только в указанном канале, не заменяя её обычной ссылкой на домен;",
             "- для нового объявления или макета добавлять отдельный `content`, чтобы обращения не смешивались;",
             "- QR-код создавать именно из полной ссылки с UTM-параметрами;",
+            "- для ссылки с якорем сохранять порядок `?utm_...#callback`: query перед fragment;",
             "- после восстановления домена сначала открыть каждую ссылку вручную и убедиться, что посадочная страница загружается по HTTPS;",
             "- не публиковать ссылки на ещё не созданные карточки: строки для Яндекс Бизнеса и 2ГИС подготовлены заранее, но используются только после подтверждения соответствующей карточки.",
+            "",
+            "## Прямая ссылка на обратный звонок",
+            "",
+            "Ссылка `VK — обратный звонок` открывает `/kontakty/#callback` сразу на короткой форме. Генератор проверяет, что целевая страница существует и содержит элемент `id=\"callback\"`. UTM остаются в query-параметрах до `#callback`, поэтому first-touch атрибуция сохраняется до отправки заявки.",
             "",
             "## Что уже измеряется",
             "",
