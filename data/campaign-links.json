@@ -1,0 +1,53 @@
+{
+  "campaign": "voronezh_parquet_launch",
+  "links": [
+    {
+      "name": "VK — главная страница",
+      "source": "vk",
+      "medium": "social",
+      "content": "organic_post_home",
+      "path": "/",
+      "purpose": "Общий пост о мастере и восстановлении паркета"
+    },
+    {
+      "name": "VK — циклёвка паркета",
+      "source": "vk",
+      "medium": "social",
+      "content": "organic_post_cyclevka",
+      "path": "/uslugi/ciklevka-parketa/",
+      "purpose": "Пост или обсуждение конкретной услуги"
+    },
+    {
+      "name": "Авито — циклёвка паркета",
+      "source": "avito",
+      "medium": "classified",
+      "content": "service_listing_cyclevka",
+      "path": "/uslugi/ciklevka-parketa/",
+      "purpose": "Ссылка из объявления по циклёвке и шлифовке"
+    },
+    {
+      "name": "Яндекс Бизнес — контакты",
+      "source": "yandex_business",
+      "medium": "local",
+      "content": "business_profile",
+      "path": "/kontakty/",
+      "purpose": "Ссылка из локальной карточки после её подтверждения"
+    },
+    {
+      "name": "2ГИС — контакты",
+      "source": "2gis",
+      "medium": "local",
+      "content": "business_profile",
+      "path": "/kontakty/",
+      "purpose": "Ссылка из локальной карточки после её подтверждения"
+    },
+    {
+      "name": "QR на листовке — оценка по фото",
+      "source": "offline",
+      "medium": "qr",
+      "content": "flyer_photo_estimate",
+      "path": "/zayavka/",
+      "purpose": "QR-код на листовке, визитке или печатном объявлении"
+    }
+  ]
+}

@@ -16,6 +16,7 @@ EXPECTED_CHECKS = [
     ["tools/check_workflows.py"],
     ["tools/check_quality_runner.py"],
     ["tools/check_docs.py"],
+    ["tools/build_campaign_links.py", "--check"],
     ["tools/check_content_inventory.py"],
     ["tools/check_content_similarity.py"],
     ["tools/check_internal_link_map.py"],
