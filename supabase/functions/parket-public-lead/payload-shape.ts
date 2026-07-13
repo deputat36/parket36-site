@@ -1,3 +1,5 @@
+import { validateContactPhone } from "./contact-validation.ts";
+
 export const LEAD_STRING_FIELDS = Object.freeze([
   "request_id",
   "service",
@@ -25,10 +27,10 @@ export type PayloadShapeResult =
   | {
       ok: false;
       status: 400 | 422;
-      error: "invalid_payload" | "invalid_field_type";
+      error: "invalid_payload" | "invalid_field_type" | "contact_phone_invalid";
       field: string;
-      expected: "object" | "string" | "boolean";
-      received: string;
+      expected: "object" | "string" | "boolean" | "10-15 digits";
+      received: string | number;
     };
 
 function valueType(value: unknown) {
@@ -61,6 +63,20 @@ export function validateLeadPayload(value: unknown): PayloadShapeResult {
         field,
         expected: "string",
         received: valueType(body[field]),
+      };
+    }
+  }
+
+  if (typeof body.contact === "string" && body.contact.trim()) {
+    const phone = validateContactPhone(body.contact);
+    if (!phone.ok) {
+      return {
+        ok: false,
+        status: 422,
+        error: "contact_phone_invalid",
+        field: "contact",
+        expected: "10-15 digits",
+        received: phone.digits,
       };
     }
   }
