@@ -7,9 +7,9 @@
 
 - индексируемых страниц: 94;
 - уникальных внутренних связей во всём HTML: 1409;
-- уникальных контекстных связей внутри `<main>`: 821;
+- уникальных контекстных связей внутри `<main>`: 822;
 - страниц без контекстных входящих ссылок: 0;
-- страниц с 0–1 контекстной входящей ссылкой: 16;
+- страниц с 0–1 контекстной входящей ссылкой: 15;
 - страниц, зависящих только от общих элементов: 0;
 - страниц, недостижимых от главной по контекстным ссылкам: 0;
 - страниц, недостижимых от главной по любым внутренним ссылкам: 0.
@@ -33,7 +33,6 @@
 | https://parket36.ru/uslugi/terrasy-i-derevyannye-poly/ | uslugi | 1 | 1 | 2 | нет |
 | https://parket36.ru/kak-rabotaem/ | kak-rabotaem | 1 | 3 | 1 | нет |
 | https://parket36.ru/voprosy-i-otvety/ | voprosy-i-otvety | 1 | 3 | 2 | нет |
-| https://parket36.ru/kontakty/ | kontakty | 1 | 93 | 2 | нет |
 | https://parket36.ru/o-mastere/ | o-mastere | 1 | 93 | 2 | нет |
 | https://parket36.ru/portfolio/ | portfolio | 1 | 93 | 4 | нет |
 
@@ -63,7 +62,7 @@
 |---|---:|---:|
 | https://parket36.ru/sovety/ | 75 | 81 |
 | https://parket36.ru/uslugi/parket-i-poly/ | 14 | 18 |
-| https://parket36.ru/ | 12 | 17 |
+| https://parket36.ru/ | 13 | 17 |
 | https://parket36.ru/uslugi/ | 11 | 17 |
 | https://parket36.ru/resheniya/ | 11 | 16 |
 | https://parket36.ru/sovety/kak-ponyat-chto-parket-mozhno-lakirovat/ | 10 | 17 |
@@ -82,7 +81,7 @@
 | Из раздела \ В раздел | ceny | home | kak-rabotaem | kontakty | o-mastere | portfolio | resheniya | sovety | uslugi | voprosy-i-otvety | zayavka |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | ceny | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 1 |
-| home | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 3 | 7 | 0 | 0 |
+| home | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 3 | 7 | 0 | 0 |
 | kak-rabotaem | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 4 | 1 | 0 | 1 |
 | kontakty | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 2 | 0 | 1 |
 | o-mastere | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 5 | 2 | 0 | 1 |
