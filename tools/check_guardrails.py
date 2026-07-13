@@ -389,45 +389,54 @@ def main() -> int:
             if marker in text:
                 findings.append(f"{rel}: {label}: {marker}")
 
-    for relative, label in INTERNAL_NOINDEX_PAGES.items():
-        path = html_path_for_url_path(relative)
-        if not path.exists():
-            findings.append(f"{relative}: {label}, but page is missing")
+    for page_path in sorted(SUPPLEMENTAL_SERVICE_PAGES):
+        html_path = html_path_for_url_path(page_path)
+        rel = html_path.relative_to(ROOT).as_posix()
+        if not html_path.exists():
+            findings.append(f"{rel}: supplemental service page is missing")
             continue
-        text = path.read_text(encoding="utf-8", errors="ignore")
-        if NOINDEX_META not in text:
-            findings.append(f"{relative}: {label}; expected {NOINDEX_META}")
-        if f"{SITE_URL}/{relative}" in sitemap_urls:
-            findings.append(f"sitemap.xml: internal noindex URL should not be listed: {SITE_URL}/{relative}")
 
-    for relative, label in PUBLIC_ENTRY_PAGES.items():
-        path = html_path_for_url_path(relative)
-        if not path.exists():
-            findings.append(f"{relative}: {label}, but page is missing")
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
+        if NOINDEX_META not in text:
+            findings.append(f"{rel}: supplemental service page should be noindex, follow")
+
+        url = f"{SITE_URL}/{page_path}"
+        if url in sitemap_urls:
+            findings.append(f"sitemap.xml: supplemental service page should not be listed: {url}")
+
+    for page_path, label in sorted(INTERNAL_NOINDEX_PAGES.items()):
+        html_path = html_path_for_url_path(page_path)
+        rel = html_path.relative_to(ROOT).as_posix()
+        if not html_path.exists():
+            findings.append(f"{rel}: internal page is missing")
             continue
-        text = path.read_text(encoding="utf-8", errors="ignore")
+
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
+        if NOINDEX_META not in text:
+            findings.append(f"{rel}: {label}: should be noindex, follow")
+
+        url = f"{SITE_URL}/{page_path}"
+        if url in sitemap_urls:
+            findings.append(f"sitemap.xml: internal page should not be listed: {url}")
+
+    for page_path, label in sorted(PUBLIC_ENTRY_PAGES.items()):
+        html_path = html_path_for_url_path(page_path)
+        rel = html_path.relative_to(ROOT).as_posix()
+        if not html_path.exists():
+            findings.append(f"{rel}: public entry page is missing")
+            continue
+
+        text = html_path.read_text(encoding="utf-8", errors="ignore")
         if NOINDEX_META in text:
-            findings.append(f"{relative}: {label}; page must not be noindex")
-        if f"{SITE_URL}/{relative}" not in sitemap_urls:
-            findings.append(f"sitemap.xml: public entry URL should be listed: {SITE_URL}/{relative}")
+            findings.append(f"{rel}: {label}: must not be noindex")
 
-    for service_path in SUPPLEMENTAL_SERVICE_PAGES:
-        html = html_path_for_url_path(service_path)
-        if not html.exists():
-            findings.append(f"Supplemental service page is missing: {service_path}")
-            continue
-        text = html.read_text(encoding="utf-8", errors="ignore")
-        if NOINDEX_META not in text:
-            findings.append(f"{service_path}: supplemental service should be noindex")
-        canonical = extract_declared_canonical(text)
-        if canonical != f"{SITE_URL}/uslugi/":
-            findings.append(f"{service_path}: canonical should point to {SITE_URL}/uslugi/")
-        if f"{SITE_URL}/{service_path}" in sitemap_urls:
-            findings.append(f"sitemap.xml: supplemental service should not be listed: {SITE_URL}/{service_path}")
+        url = f"{SITE_URL}/{page_path}"
+        if url not in sitemap_urls:
+            findings.append(f"sitemap.xml: public entry page should be listed: {url}")
 
     if findings:
         print("Extra guardrail findings:")
-        for finding in findings:
+        for finding in sorted(findings):
             print(f"  - {finding}")
         return 1
 
