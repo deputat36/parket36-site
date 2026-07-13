@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 const commercialPages = [
+  ['/uslugi/', 'Услуги по паркету и деревянным полам'],
+  ['/uslugi/parket-i-poly/', 'Паркетные работы и деревянные полы в Воронеже'],
   ['/uslugi/ciklevka-parketa/', 'Циклёвка и шлифовка паркета в Воронеже'],
   ['/uslugi/restavraciya-parketa/', 'Реставрация и ремонт паркета в Воронеже'],
   ['/sovety/parket-posle-vody/', 'Паркет после воды: что делать и когда можно спасти пол'],
