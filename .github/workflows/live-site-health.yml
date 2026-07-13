@@ -4,19 +4,29 @@ on:
   schedule:
     - cron: "23 4 * * *"
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Deploy GitHub Pages"]
+    types: [completed]
 
 permissions:
   contents: read
   actions: read
   issues: write
 
+concurrency:
+  group: live-site-health
+  cancel-in-progress: false
+
 jobs:
   health:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -28,7 +38,17 @@ jobs:
       - name: Check deployment source
         id: deployment_source
         continue-on-error: true
-        run: python tools/check_live_deployment.py --report live-health-report.md
+        env:
+          EXPECTED_DEPLOY_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}
+          EXPECTED_DEPLOY_RUN_ID: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || '' }}
+          DEPLOY_ATTEMPTS: ${{ github.event_name == 'workflow_run' && '6' || '1' }}
+        run: >-
+          python tools/check_live_deployment.py
+          --report live-health-report.md
+          --expected-sha "$EXPECTED_DEPLOY_SHA"
+          --expected-run-id "$EXPECTED_DEPLOY_RUN_ID"
+          --attempts "$DEPLOY_ATTEMPTS"
+          --retry-delay 10
       - name: Upload live health report
         if: always()
         uses: actions/upload-artifact@v7
