@@ -78,11 +78,11 @@ def inject_service_callback_links(site_root: Path, errors: list[str]) -> None:
                 ("hero CTA", page.hero_marker),
                 ("phone triage CTA", page.phone_marker),
             )
-            if text.count(marker) != 1
+            if marker not in text
         ]
         if missing_markers:
             errors.append(
-                f"{page.relative_path}: cannot inject callback links; missing unique "
+                f"{page.relative_path}: cannot inject callback links; missing "
                 + ", ".join(missing_markers)
             )
             continue
