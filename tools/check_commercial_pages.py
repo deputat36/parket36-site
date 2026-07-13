@@ -33,6 +33,15 @@ PAGE_MARKERS = {
         "Новые задачи и скрытые дефекты нужно согласовывать отдельно": "separate approval heading",
         "не заменить осмотр": "estimate limitation wording",
     },
+    "kontakty/index.html": {
+        "Циклёвка, реставрация и ремонт паркета в Воронеже и области": "local commercial H1",
+        "Что сообщить при первом звонке": "first-call guidance",
+        "Как получить предварительный ориентир по объекту в Воронеже или области": "local assessment process",
+        "Что важно уточнить для объекта за пределами Воронежа": "regional visit guidance",
+        "Предварительный разговор не заменяет осмотр": "remote estimate limitation",
+        'href="tel:+79009267929">Позвонить Ивану</a>': "local phone CTA",
+        'href="/zayavka/">Получить оценку по фото</a>': "local assessment CTA",
+    },
 }
 
 FORBIDDEN_PROMISES = {
