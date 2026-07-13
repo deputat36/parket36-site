@@ -22,6 +22,7 @@ DOMAIN = str(SITE_CONFIG["domain"])
 DEFAULT_REQUEST_DIR = str(SITE_CONFIG["default_request_path"]).strip("/").split("/", 1)[0]
 CONTACT_VALIDATION_SCRIPT = '<script src="/js/contact-validation.js" defer></script>'
 LEAD_RELIABILITY_SCRIPT = '<script src="/js/lead-reliability.js" defer></script>'
+FIRST_TOUCH_REFERRER_SCRIPT = '<script src="/js/first-touch-referrer.js" defer></script>'
 MAIN_SCRIPT = '<script src="/js/main.js" defer></script>'
 
 PUBLIC_DIRS = {
@@ -99,6 +100,7 @@ def inject_lead_reliability(errors: list[str]) -> None:
     required_scripts = {
         "contact validation": (DEST / "js" / "contact-validation.js", CONTACT_VALIDATION_SCRIPT),
         "lead reliability": (DEST / "js" / "lead-reliability.js", LEAD_RELIABILITY_SCRIPT),
+        "first-touch referrer": (DEST / "js" / "first-touch-referrer.js", FIRST_TOUCH_REFERRER_SCRIPT),
     }
     missing_scripts = [label for label, (path, _) in required_scripts.items() if not path.exists()]
     if missing_scripts:
