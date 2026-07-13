@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate public lead timeout, anti-spam, form state, limits, origin policy, secrets, notifications and healthchecks."""
+"""Validate public lead timeout, anti-spam, form state, limits, attribution, origin policy, secrets, notifications and healthchecks."""
 
 from __future__ import annotations
 
@@ -55,6 +55,15 @@ FILES = {
         "aria-invalid": "invalid field state",
         "MutationObserver": "submission completion observer",
     },
+    "js/first-touch-referrer.js": {
+        "LEAD_ENDPOINT_PATH = '/functions/v1/parket-public-lead'": "lead-only referrer wrapper",
+        "window.parket36Attribution?.landing": "first-touch landing source",
+        "url.origin !== location.origin": "same-origin landing guard",
+        "url.search = ''": "query stripping before referrer delivery",
+        "url.hash = ''": "fragment stripping before referrer delivery",
+        "referrerPolicy: 'unsafe-url'": "full sanitized landing path delivery",
+        "previousFetch(input, init)": "non-lead fetch passthrough",
+    },
     "tests/e2e/site-smoke.spec.mjs": {
         "422 показывает конкретное поле без повторной отправки": "oversized field browser scenario",
         "429 предлагает подождать без повторной отправки": "rate limit browser scenario",
@@ -62,8 +71,18 @@ FILES = {
         "error: 'rate_limited'": "rate limit response fixture",
         "expect(attempts).toBe(1)": "non-retry assertion for client errors",
     },
+    "tests/e2e/attribution.spec.mjs": {
+        "UTM сохраняются после навигации": "cross-page campaign attribution scenario",
+        "первая посадочная передаётся в referrer заявки": "first-touch referrer scenario",
+        "первая кампания не перезаписывается": "first-touch campaign persistence scenario",
+        "submittedHeaders.referer": "submitted referrer assertion",
+        "firstTouchReferrer.search": "query stripping assertion",
+        "window.__parketPhoneLead?.attribution": "phone attribution assertion",
+    },
     "tools/build_pages.py": {
-        'LEAD_RELIABILITY_SCRIPT = \'<script src="/js/lead-reliability.js" defer></script>\'': "build script tag",
+        'LEAD_RELIABILITY_SCRIPT = \'<script src="/js/lead-reliability.js" defer></script>\'': "build reliability script tag",
+        'FIRST_TOUCH_REFERRER_SCRIPT = \'<script src="/js/first-touch-referrer.js" defer></script>\'': "build first-touch script tag",
+        '"first-touch referrer": (DEST / "js" / "first-touch-referrer.js", FIRST_TOUCH_REFERRER_SCRIPT)': "first-touch script requirement",
         "inject_lead_reliability(errors)": "build injection call",
         'if \'id="request-form"\' not in text': "form-only injection guard",
     },
@@ -122,6 +141,7 @@ FILES = {
         "cleanMultiline(body.task, 3000)": "backend task length limit",
         "cleanText(body.callback_time, 160)": "backend callback length limit",
         "cleanText(body.contact, 240)": "backend contact length limit",
+        "cleanText(req.headers.get(\"referer\"), 1000)": "stored request referrer",
         "RATE_LIMIT_MAX_ATTEMPTS = 30": "all-attempt rate limit",
         "RATE_LIMIT_MAX_ACCEPTED = 6": "accepted-lead rate limit",
         "recentAuditCount(": "shared audit rate counter",
@@ -162,6 +182,10 @@ FORBIDDEN_MARKERS = {
         'const salt = Deno.env.get("PARKET_IP_HASH_SALT") || "";': "silent empty salt fallback",
         "PARKET_TELEGRAM_BOT_TOKEN =": "hard-coded Telegram token",
         "PARKET_RESEND_API_KEY =": "hard-coded email API key",
+    },
+    "js/first-touch-referrer.js": {
+        "location.href": "query-bearing current URL as lead referrer",
+        "document.referrer": "unvalidated external referrer forwarding",
     },
 }
 
