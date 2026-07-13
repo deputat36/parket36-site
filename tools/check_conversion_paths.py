@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Block regressions in the main phone and photo-assessment lead paths."""
+"""Block regressions in the main phone, callback and photo-assessment lead paths."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from site_settings import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
 FORM_POLICY_NOTICE = 'Нажимая кнопку, вы соглашаетесь с <a href="/politika/">обработкой контактных данных</a>.'
+CONTACT_MOBILE_CALLBACK_LINK = 'href="#callback">Обратный звонок</a>'
 
 CORE_CONVERSION_PAGES = {
     "ceny/index.html",
@@ -122,7 +123,11 @@ def main() -> int:
         text = read_page(rel, findings)
         if not text:
             continue
-        check_markers(rel, text, core_required_markers, findings)
+        page_markers = dict(core_required_markers)
+        if rel == "kontakty/index.html":
+            page_markers.pop(mobile_assessment_link, None)
+            page_markers[CONTACT_MOBILE_CALLBACK_LINK] = "mobile callback CTA"
+        check_markers(rel, text, page_markers, findings)
         if rel in PHONE_TRIAGE_PAGES:
             check_markers(rel, text, PHONE_TRIAGE_REQUIRED_MARKERS, findings)
         if rel == "ceny/index.html":
