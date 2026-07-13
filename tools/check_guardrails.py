@@ -23,6 +23,9 @@ DEFAULT_REQUEST_PATH = str(SITE_CONFIG["default_request_path"])
 DEFAULT_REQUEST_PAGE = DEFAULT_REQUEST_PATH.strip("/") + "/"
 PHONE_LINK = f'href="tel:{SITE_CONFIG["phone_e164"]}"'
 DIRECT_PHOTO_ASSESSMENT_LINK = f'href="{DEFAULT_REQUEST_PATH}">Оценить по фото</a>'
+CONTACT_CALLBACK_PAGE = "kontakty/index.html"
+CONTACT_MOBILE_CALLBACK_LINK = 'href="#callback">Обратный звонок</a>'
+CONTACT_CALLBACK_SECTION = 'id="callback"'
 
 SUPPLEMENTAL_SERVICE_PAGES = {
     "uslugi/master-na-chas/",
@@ -312,8 +315,16 @@ def main() -> int:
             for marker, label in MOBILE_CTA_REQUIRED_MARKERS.items():
                 if marker not in text:
                     findings.append(f"{rel}: missing {label}: {marker}")
-            if not any(marker in text for marker in MOBILE_CTA_PHOTO_LINK_MARKERS):
+
+            is_contact_callback_mobile = rel == CONTACT_CALLBACK_PAGE and CONTACT_MOBILE_CALLBACK_LINK in text
+            if is_contact_callback_mobile:
+                if CONTACT_CALLBACK_SECTION not in text:
+                    findings.append(f"{rel}: mobile callback link points to a missing #callback section")
+                if text.count(f'href="{DEFAULT_REQUEST_PATH}"') < 2:
+                    findings.append(f"{rel}: callback mobile CTA must keep at least two photo assessment links")
+            elif not any(marker in text for marker in MOBILE_CTA_PHOTO_LINK_MARKERS):
                 findings.append(f"{rel}: missing mobile CTA photo assessment link")
+
             if 'href="#request">Оценка по фото</a>' in text and 'id="request"' not in text:
                 findings.append(f"{rel}: mobile CTA local request link points to a missing #request section")
             if f'href="{DEFAULT_REQUEST_PATH}">Заявка</a>' in text:
@@ -378,54 +389,45 @@ def main() -> int:
             if marker in text:
                 findings.append(f"{rel}: {label}: {marker}")
 
-    for page_path in sorted(SUPPLEMENTAL_SERVICE_PAGES):
-        html_path = html_path_for_url_path(page_path)
-        rel = html_path.relative_to(ROOT).as_posix()
-        if not html_path.exists():
-            findings.append(f"{rel}: supplemental service page is missing")
+    for relative, label in INTERNAL_NOINDEX_PAGES.items():
+        path = html_path_for_url_path(relative)
+        if not path.exists():
+            findings.append(f"{relative}: {label}, but page is missing")
             continue
-
-        text = html_path.read_text(encoding="utf-8", errors="ignore")
+        text = path.read_text(encoding="utf-8", errors="ignore")
         if NOINDEX_META not in text:
-            findings.append(f"{rel}: supplemental service page should be noindex, follow")
+            findings.append(f"{relative}: {label}; expected {NOINDEX_META}")
+        if f"{SITE_URL}/{relative}" in sitemap_urls:
+            findings.append(f"sitemap.xml: internal noindex URL should not be listed: {SITE_URL}/{relative}")
 
-        url = f"{SITE_URL}/{page_path}"
-        if url in sitemap_urls:
-            findings.append(f"sitemap.xml: supplemental service page should not be listed: {url}")
-
-    for page_path, label in sorted(INTERNAL_NOINDEX_PAGES.items()):
-        html_path = html_path_for_url_path(page_path)
-        rel = html_path.relative_to(ROOT).as_posix()
-        if not html_path.exists():
-            findings.append(f"{rel}: internal page is missing")
+    for relative, label in PUBLIC_ENTRY_PAGES.items():
+        path = html_path_for_url_path(relative)
+        if not path.exists():
+            findings.append(f"{relative}: {label}, but page is missing")
             continue
-
-        text = html_path.read_text(encoding="utf-8", errors="ignore")
-        if NOINDEX_META not in text:
-            findings.append(f"{rel}: {label}: should be noindex, follow")
-
-        url = f"{SITE_URL}/{page_path}"
-        if url in sitemap_urls:
-            findings.append(f"sitemap.xml: internal page should not be listed: {url}")
-
-    for page_path, label in sorted(PUBLIC_ENTRY_PAGES.items()):
-        html_path = html_path_for_url_path(page_path)
-        rel = html_path.relative_to(ROOT).as_posix()
-        if not html_path.exists():
-            findings.append(f"{rel}: public entry page is missing")
-            continue
-
-        text = html_path.read_text(encoding="utf-8", errors="ignore")
+        text = path.read_text(encoding="utf-8", errors="ignore")
         if NOINDEX_META in text:
-            findings.append(f"{rel}: {label}: must not be noindex")
+            findings.append(f"{relative}: {label}; page must not be noindex")
+        if f"{SITE_URL}/{relative}" not in sitemap_urls:
+            findings.append(f"sitemap.xml: public entry URL should be listed: {SITE_URL}/{relative}")
 
-        url = f"{SITE_URL}/{page_path}"
-        if url not in sitemap_urls:
-            findings.append(f"sitemap.xml: public entry page should be listed: {url}")
+    for service_path in SUPPLEMENTAL_SERVICE_PAGES:
+        html = html_path_for_url_path(service_path)
+        if not html.exists():
+            findings.append(f"Supplemental service page is missing: {service_path}")
+            continue
+        text = html.read_text(encoding="utf-8", errors="ignore")
+        if NOINDEX_META not in text:
+            findings.append(f"{service_path}: supplemental service should be noindex")
+        canonical = extract_declared_canonical(text)
+        if canonical != f"{SITE_URL}/uslugi/":
+            findings.append(f"{service_path}: canonical should point to {SITE_URL}/uslugi/")
+        if f"{SITE_URL}/{service_path}" in sitemap_urls:
+            findings.append(f"sitemap.xml: supplemental service should not be listed: {SITE_URL}/{service_path}")
 
     if findings:
         print("Extra guardrail findings:")
-        for finding in sorted(findings):
+        for finding in findings:
             print(f"  - {finding}")
         return 1
 
