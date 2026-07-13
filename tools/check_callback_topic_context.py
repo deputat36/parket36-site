@@ -29,11 +29,15 @@ JS_MARKERS = {
 
 TEST_MARKERS = {
     "прямой вход на контакты сохраняет общую тему": "generic direct-entry scenario",
+    "first-touch восстанавливает тему без внутреннего referrer": "first-touch fallback scenario",
     "переход со стоимости показывает тему бюджета": "price topic scenario",
     "переход с циклёвки отправляет конкретную задачу Ивану": "service submit scenario",
     "topic: 'general'": "generic topic assertion",
+    "topicSource: 'first-touch'": "first-touch source assertion",
+    "topicSource: 'referrer'": "referrer source assertion",
     "callback_topic: 'stoimost'": "price analytics assertion",
     "callback_topic: 'cyclevka'": "service analytics assertion",
+    "callback_topic_source: 'referrer'": "analytics source assertion",
     "landing: '/uslugi/ciklevka-parketa/'": "service first-touch assertion",
 }
 
