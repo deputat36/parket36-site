@@ -2,6 +2,27 @@ import { expect, test } from '@playwright/test';
 
 const leadEndpoint = '**/functions/v1/parket-public-lead';
 
+const problemTopics = [
+  {
+    path: '/sovety/parket-posle-vody/',
+    key: 'posle-vody',
+    label: 'паркет после воды или протечки',
+    task: 'Интересует состояние паркета после воды или протечки. Прошу перезвонить, уточнить, что делать сейчас, и подсказать, какие фотографии или видео подготовить.'
+  },
+  {
+    path: '/sovety/pochemu-skripit-parket/',
+    key: 'skrip',
+    label: 'скрип паркета или деревянного пола',
+    task: 'Интересует скрип паркета или деревянного пола. Прошу перезвонить, уточнить масштаб и подсказать, какое видео и фотографии подготовить для диагностики.'
+  },
+  {
+    path: '/sovety/shcheli-v-parkete/',
+    key: 'shcheli',
+    label: 'щели и подвижность паркета',
+    task: 'Интересуют щели или подвижность паркета. Прошу перезвонить, уточнить состояние пола и подсказать, какие фотографии или видео подготовить.'
+  }
+];
+
 async function captureCallbackSignals(page) {
   await page.addInitScript(() => {
     window.dataLayer = [];
@@ -132,3 +153,34 @@ test('переход с циклёвки отправляет конкретну
     callback_topic_source: 'referrer'
   });
 });
+
+for (const topic of problemTopics) {
+  test(`${topic.path} передаёт конкретную тему обратного звонка`, async ({ page }) => {
+    await captureCallbackSignals(page);
+    await page.goto(`${topic.path}?utm_source=organic&utm_medium=seo&utm_campaign=problem_pages&utm_content=${topic.key}`);
+    await page.locator('a[href="/kontakty/#callback"]').first().click();
+
+    await expect(page).toHaveURL(/\/kontakty\/#callback$/);
+    await expect(page.locator('#request-form')).toHaveAttribute('data-callback-topic', topic.key);
+    await expect(page.locator('#request-form')).toHaveAttribute('data-callback-topic-source', 'referrer');
+    await expect(page.locator('#callback-topic-context')).toHaveText(`Тема обращения: ${topic.label}.`);
+    await expect(page.locator('#request-task')).toHaveValue(topic.task);
+    await expect.poll(() => page.evaluate(() => window.__callbackOpen)).toMatchObject({
+      topic: topic.key,
+      topicSource: 'referrer',
+      attribution: {
+        source: 'organic',
+        medium: 'seo',
+        campaign: 'problem_pages',
+        content: topic.key,
+        landing: topic.path
+      }
+    });
+
+    const openEvent = await page.evaluate(() => window.dataLayer.find(item => item.event === 'parket36_callback_open'));
+    expect(openEvent).toMatchObject({
+      callback_topic: topic.key,
+      callback_topic_source: 'referrer'
+    });
+  });
+}

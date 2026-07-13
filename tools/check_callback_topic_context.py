@@ -9,12 +9,19 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 CALLBACK_JS = ROOT / "js" / "callback-form.js"
 E2E_TEST = ROOT / "tests" / "e2e" / "callback-topic-context.spec.mjs"
+SERVICE_LINK_TEST = ROOT / "tests" / "e2e" / "service-callback-links.spec.mjs"
 
 JS_MARKERS = {
     "const TOPICS_BY_PATH = Object.freeze({": "allowlisted topic map",
     "'/ceny/'": "price landing topic",
     "'/uslugi/ciklevka-parketa/'": "cycle sanding landing topic",
     "'/uslugi/restavraciya-parketa/'": "restoration landing topic",
+    "'/sovety/parket-posle-vody/'": "water damage topic",
+    "'/sovety/pochemu-skripit-parket/'": "squeak topic",
+    "'/sovety/shcheli-v-parkete/'": "gap topic",
+    "key: 'posle-vody'": "water topic key",
+    "key: 'skrip'": "squeak topic key",
+    "key: 'shcheli'": "gap topic key",
     "sessionStorage.getItem(ATTRIBUTION_KEY)": "first-touch storage fallback",
     "const getEventAttribution = () => {": "early event attribution fallback",
     "source: 'direct'": "direct source fallback",
@@ -35,6 +42,12 @@ TEST_MARKERS = {
     "first-touch восстанавливает тему без внутреннего referrer": "first-touch fallback scenario",
     "переход со стоимости показывает тему бюджета": "price topic scenario",
     "переход с циклёвки отправляет конкретную задачу Ивану": "service submit scenario",
+    "'/sovety/parket-posle-vody/'": "water problem scenario",
+    "'/sovety/pochemu-skripit-parket/'": "squeak problem scenario",
+    "'/sovety/shcheli-v-parkete/'": "gap problem scenario",
+    "key: 'posle-vody'": "water topic assertion",
+    "key: 'skrip'": "squeak topic assertion",
+    "key: 'shcheli'": "gap topic assertion",
     "attribution: { source: 'direct', landing: '/kontakty/' }": "direct attribution assertion",
     "topic: 'general'": "generic topic assertion",
     "topicSource: 'first-touch'": "first-touch source assertion",
@@ -43,6 +56,13 @@ TEST_MARKERS = {
     "callback_topic: 'cyclevka'": "service analytics assertion",
     "callback_topic_source: 'referrer'": "analytics source assertion",
     "landing: '/uslugi/ciklevka-parketa/'": "service first-touch assertion",
+}
+
+SERVICE_TEST_MARKERS = {
+    "'/sovety/parket-posle-vody/'": "water static callback page",
+    "'/sovety/pochemu-skripit-parket/'": "squeak static callback page",
+    "'/sovety/shcheli-v-parkete/'": "gap static callback page",
+    "toHaveCount(2)": "two-link count assertion",
 }
 
 
@@ -61,6 +81,12 @@ def main() -> int:
     else:
         test_text = E2E_TEST.read_text(encoding="utf-8")
 
+    if not SERVICE_LINK_TEST.is_file():
+        findings.append("tests/e2e/service-callback-links.spec.mjs is missing")
+        service_test_text = ""
+    else:
+        service_test_text = SERVICE_LINK_TEST.read_text(encoding="utf-8")
+
     for marker, label in JS_MARKERS.items():
         if marker not in js_text:
             findings.append(f"js/callback-form.js: missing {label}: {marker}")
@@ -68,6 +94,10 @@ def main() -> int:
     for marker, label in TEST_MARKERS.items():
         if marker not in test_text:
             findings.append(f"callback topic E2E: missing {label}: {marker}")
+
+    for marker, label in SERVICE_TEST_MARKERS.items():
+        if marker not in service_test_text:
+            findings.append(f"service callback E2E: missing {label}: {marker}")
 
     if "params.get('topic')" in js_text or 'params.get("topic")' in js_text:
         findings.append("callback topic must not accept arbitrary URL topic values")

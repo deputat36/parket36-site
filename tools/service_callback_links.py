@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inject static callback paths into the two highest-intent service pages."""
+"""Inject static callback paths into high-intent service and problem pages."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ HERO_CALLBACK = (
     '<p><a class="text-link" href="/kontakty/#callback">'
     'Неудобно звонить — заказать обратный звонок →</a></p>'
 )
-PHONE_CALLBACK = (
+SECONDARY_CALLBACK = (
     '<p><a class="text-link" href="/kontakty/#callback">'
     'Оставить номер для обратного звонка →</a></p>'
 )
@@ -21,7 +21,7 @@ PHONE_CALLBACK = (
 class CallbackPage:
     relative_path: str
     hero_marker: str
-    phone_marker: str
+    secondary_marker: str
 
 
 TARGET_PAGES = (
@@ -32,7 +32,7 @@ TARGET_PAGES = (
             'Позвонить Ивану</a><a class="btn btn--ghost" href="/zayavka/">'
             'Получить оценку по фото</a></div>'
         ),
-        phone_marker=(
+        secondary_marker=(
             '<div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">'
             'Позвонить по циклёвке</a><a class="btn btn--ghost" href="/pozvonit-ivanu/">'
             'Что сказать по телефону</a></div>'
@@ -45,17 +45,56 @@ TARGET_PAGES = (
             'Позвонить Ивану</a><a class="btn btn--ghost" href="/zayavka/">'
             'Получить оценку по фото</a></div>'
         ),
-        phone_marker=(
+        secondary_marker=(
             '<div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">'
             'Позвонить по реставрации</a><a class="btn btn--ghost" href="/pozvonit-ivanu/">'
             'Что сказать по телефону</a></div>'
+        ),
+    ),
+    CallbackPage(
+        relative_path="sovety/parket-posle-vody/index.html",
+        hero_marker=(
+            '<div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">'
+            'Обсудить паркет после воды</a><a class="btn btn--ghost" href="/zayavka/">'
+            'Оценить по фото</a></div>'
+        ),
+        secondary_marker=(
+            '<div class="hero__actions"><a class="btn btn--primary" href="/zayavka/">'
+            'Оценить по фото</a><a class="btn btn--ghost" href="/uslugi/restavraciya-parketa/">'
+            'Реставрация паркета</a></div>'
+        ),
+    ),
+    CallbackPage(
+        relative_path="sovety/pochemu-skripit-parket/index.html",
+        hero_marker=(
+            '<div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">'
+            'Обсудить скрип пола</a><a class="btn btn--ghost" href="/zayavka/">'
+            'Оценить по фото</a></div>'
+        ),
+        secondary_marker=(
+            '<div class="hero__actions"><a class="btn btn--primary" href="/zayavka/">'
+            'Оценить по фото</a><a class="btn btn--ghost" href="/uslugi/restavraciya-parketa/">'
+            'Реставрация паркета</a></div>'
+        ),
+    ),
+    CallbackPage(
+        relative_path="sovety/shcheli-v-parkete/index.html",
+        hero_marker=(
+            '<div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">'
+            'Обсудить щели</a><a class="btn btn--ghost" href="/zayavka/">'
+            'Оценить по фото</a></div>'
+        ),
+        secondary_marker=(
+            '<div class="hero__actions"><a class="btn btn--primary" href="/zayavka/">'
+            'Оценить по фото</a><a class="btn btn--ghost" href="/uslugi/restavraciya-parketa/">'
+            'Реставрация паркета</a></div>'
         ),
     ),
 )
 
 
 def inject_service_callback_links(site_root: Path, errors: list[str]) -> None:
-    """Add two static callback links to each configured built service page."""
+    """Add two static callback links to each configured built commercial page."""
 
     for page in TARGET_PAGES:
         path = site_root / page.relative_path
@@ -76,7 +115,7 @@ def inject_service_callback_links(site_root: Path, errors: list[str]) -> None:
             label
             for label, marker in (
                 ("hero CTA", page.hero_marker),
-                ("phone triage CTA", page.phone_marker),
+                ("secondary CTA", page.secondary_marker),
             )
             if marker not in text
         ]
@@ -88,7 +127,7 @@ def inject_service_callback_links(site_root: Path, errors: list[str]) -> None:
             continue
 
         text = text.replace(page.hero_marker, page.hero_marker + HERO_CALLBACK, 1)
-        text = text.replace(page.phone_marker, page.phone_marker + PHONE_CALLBACK, 1)
+        text = text.replace(page.secondary_marker, page.secondary_marker + SECONDARY_CALLBACK, 1)
         path.write_text(text, encoding="utf-8")
 
         if text.count(CALLBACK_URL) != 2:

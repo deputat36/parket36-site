@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
 
-const servicePages = [
+const commercialPages = [
   ['/uslugi/ciklevka-parketa/', 'Циклёвка и шлифовка паркета в Воронеже'],
-  ['/uslugi/restavraciya-parketa/', 'Реставрация и ремонт паркета в Воронеже']
+  ['/uslugi/restavraciya-parketa/', 'Реставрация и ремонт паркета в Воронеже'],
+  ['/sovety/parket-posle-vody/', 'Паркет после воды: что делать и когда можно спасти пол'],
+  ['/sovety/pochemu-skripit-parket/', 'Почему скрипит паркет и деревянный пол'],
+  ['/sovety/shcheli-v-parkete/', 'Щели в паркете: что делать и когда нужен ремонт']
 ];
 
 async function prepareCallbackSignal(page) {
@@ -15,7 +18,7 @@ async function prepareCallbackSignal(page) {
   });
 }
 
-for (const [path, heading] of servicePages) {
+for (const [path, heading] of commercialPages) {
   test(`${path} содержит два статических пути к обратному звонку`, async ({ page }) => {
     await page.goto(path);
 
