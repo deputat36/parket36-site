@@ -5,8 +5,8 @@ Workflow: `.github/workflows/live-site-health.yml`.
 Скрипты:
 
 - `tools/check_live_site.py` — проверка DNS, GitHub Pages и публичного сайта с созданием отчёта;
-- `tools/deployment_manifest.py` — создание маркера публикации внутри `_site`;
-- `tools/check_live_deployment.py` — проверка, что домен отдаёт именно Actions artifact, а не `main / root`;
+- `tools/check_live_deployment.py` — проверка источника и точной версии опубликованного Pages artifact;
+- `tools/deployment_manifest.py` — создание `_site/deployment.json` внутри Pages workflow;
 - `tools/manage_live_health_issue.py` — управление одним issue при повторяющемся сбое.
 
 ## Что проверяется
@@ -25,26 +25,6 @@ Workflow: `.github/workflows/live-site-health.yml`.
 
 Проверка `www` подтверждает фактическую маршрутизацию на инфраструктуру GitHub Pages. Она не извлекает саму CNAME-запись, поэтому правильное значение `www → deputat36.github.io` дополнительно проверяется в панели DNS при настройке issue #5.
 
-### Источник публикации
-
-Workflow `Deploy GitHub Pages` после успешного quality gate создаёт файл `_site/deployment.json` и только затем загружает Pages artifact.
-
-Manifest содержит:
-
-- `publisher: github-actions`;
-- `artifact: _site`;
-- SHA опубликованного коммита;
-- ID workflow run.
-
-`tools/check_live_deployment.py` запрашивает `https://parket36.ru/deployment.json` и дописывает результат в общий `live-health-report.md`.
-
-Это позволяет различать два внешне похожих случая:
-
-1. правильная публикация Actions artifact — manifest существует и проходит проверку;
-2. ошибочная публикация `main / root`, старого хостинга или другой сборки — manifest отсутствует либо содержит неправильные поля.
-
-Файл намеренно не хранится в корне репозитория и появляется только внутри загружаемого `_site`. Поэтому он является маркером фактического источника публикации, а не просто наличия сайта.
-
 ### Публичный сайт
 
 - доступность сайта по HTTPS с проверкой сертификата;
@@ -56,9 +36,37 @@ Manifest содержит:
 - доступность и корректность XML в `sitemap.xml`;
 - минимальное количество URL и единый домен в sitemap.
 
-## Расписание
+### Источник и версия публикации
 
-Проверка запускается ежедневно через GitHub Actions и может быть запущена вручную через `workflow_dispatch`.
+Workflow `Deploy GitHub Pages` после успешного quality gate создаёт `_site/deployment.json` непосредственно перед загрузкой Pages artifact.
+
+Manifest содержит:
+
+- `publisher: github-actions`;
+- `artifact: _site`;
+- SHA опубликованного коммита;
+- ID запуска workflow публикации.
+
+Файл не хранится в корне репозитория. Поэтому:
+
+- HTTP 200 и правильные поля подтверждают публикацию Actions artifact `_site`;
+- HTTP 404 означает публикацию из `main / root`, старый хостинг или незавершённый deploy;
+- неправильный publisher или artifact означает неверный источник;
+- несовпадающий SHA или run ID означает, что домен ещё отдаёт предыдущую сборку.
+
+После события `workflow_run` monitoring получает SHA и ID завершившегося `Deploy GitHub Pages` и требует точного совпадения с live manifest. Проверка выполняет до шести попыток с интервалом 10 секунд, чтобы краткая задержка GitHub Pages CDN не создавала ложный сбой.
+
+## Когда запускается
+
+Проверка запускается:
+
+1. сразу после каждого успешно завершённого workflow `Deploy GitHub Pages`;
+2. ежедневно по расписанию;
+3. вручную через `workflow_dispatch`.
+
+После deploy workflow checkout выполняется на `head_sha` опубликованной сборки. Проверка после неуспешного Pages workflow не запускается: красный deploy уже является отдельным сигналом ошибки.
+
+Ежедневный и ручной запуск проверяют корректность manifest без требования конкретного SHA. Post-deploy запуск дополнительно требует точного SHA и run ID.
 
 ## Диагностический отчёт
 
@@ -72,8 +80,11 @@ Manifest содержит:
 - результат разрешения `www`;
 - конечный адрес HTTPS-перехода с `www`;
 - состояние главной, robots и sitemap;
-- наличие manifest GitHub Actions artifact;
-- SHA и workflow run опубликованной сборки.
+- наличие `/deployment.json`;
+- publisher и artifact;
+- опубликованный SHA и workflow run ID;
+- ожидаемый SHA/run ID post-deploy проверки;
+- количество попыток при задержке распространения.
 
 Если хотя бы одна проверка не прошла, отчёт всё равно загружается, после чего workflow завершается с ошибкой. Так диагностика не теряется даже при недоступном домене.
 
@@ -94,13 +105,13 @@ Manifest содержит:
 
 Workflow использует минимально необходимые разрешения:
 
-- `contents: read` — чтение репозитория;
+- `contents: read` — чтение репозитория и checkout точного опубликованного SHA;
 - `actions: read` — проверка результата предыдущего workflow run;
 - `issues: write` — создание, обновление и закрытие monitoring issue.
 
 `permissions: write-all` запрещён проверкой конфигурации.
 
-Ошибки GitHub API при управлении issue не подменяют результат проверки сайта: шаг issue-manager имеет `continue-on-error`, а итоговый workflow всё равно завершается согласно результатам основной health-проверки и проверки источника публикации.
+Ошибки GitHub API при управлении issue не подменяют результат проверки сайта: шаг issue-manager имеет `continue-on-error`, а итоговый workflow всё равно завершается согласно результату live health check.
 
 ## Ручной запуск скриптов
 
@@ -110,28 +121,30 @@ Workflow использует минимально необходимые раз
 python tools/check_live_site.py --report live-health-report.md
 ```
 
-Проверка источника публикации с добавлением результата в тот же отчёт:
+Проверка опубликованного Actions artifact без требования версии:
 
 ```bash
 python tools/check_live_deployment.py --report live-health-report.md
 ```
 
-Офлайн self-test DNS-оценки и отчёта:
+Проверка конкретного deploy:
 
 ```bash
-python tools/check_live_site.py --self-test
+python tools/check_live_deployment.py \
+  --report live-health-report.md \
+  --expected-sha COMMIT_SHA \
+  --expected-run-id WORKFLOW_RUN_ID \
+  --attempts 6 \
+  --retry-delay 10
 ```
 
-Офлайн self-test manifest и проверки источника:
+Офлайн self-tests:
 
 ```bash
 python tools/deployment_manifest.py --self-test
 python tools/check_live_deployment.py --self-test
-```
-
-Офлайн self-test issue-manager:
-
-```bash
+python tools/check_post_deploy_verification.py
+python tools/check_live_site.py --self-test
 python tools/manage_live_health_issue.py --self-test
 ```
 
@@ -139,6 +152,6 @@ python tools/manage_live_health_issue.py --self-test
 
 ## Ограничения
 
-Проверка не меняет DNS, Pages settings или сертификат. Она фиксирует фактическое состояние публичного сайта и источник отданной сборки. Настройка DNS, Custom domain и Enforce HTTPS остаётся ручным действием по issue #5.
+Проверка не меняет DNS, Pages settings или сертификат. Она фиксирует фактическое состояние публичного сайта и точную опубликованную версию. Настройка DNS, Custom domain и Enforce HTTPS остаётся ручным действием по issue #5.
 
 Issue создаётся только после двух последовательных неуспешных запусков. Если GitHub API временно недоступен, artifact и красный статус workflow сохраняются, но issue может быть создан только при следующем сбое.

@@ -20,6 +20,7 @@ CHECKS = [
     ("Validate direct callback campaign", ["tools/check_direct_callback_campaign.py"]),
     ("Validate deployment manifest", ["tools/deployment_manifest.py", "--self-test"]),
     ("Validate live deployment source", ["tools/check_live_deployment.py", "--self-test"]),
+    ("Validate post-deploy verification", ["tools/check_post_deploy_verification.py"]),
     ("Validate content inventory", ["tools/check_content_inventory.py"]),
     ("Validate content similarity", ["tools/check_content_similarity.py"]),
     ("Validate internal link map", ["tools/check_internal_link_map.py"]),

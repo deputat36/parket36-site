@@ -6,6 +6,13 @@
   if (!status) return;
 
   const ATTRIBUTION_KEY = 'parket36_attribution';
+  const UTM_KEYS = Object.freeze([
+    'utm_source',
+    'utm_medium',
+    'utm_campaign',
+    'utm_content',
+    'utm_term'
+  ]);
   const TOPICS_BY_PATH = Object.freeze({
     '/ceny/': {
       key: 'stoimost',
@@ -62,9 +69,36 @@
     }
   };
 
+  const readCurrentUrlAttribution = () => {
+    const params = new URLSearchParams(location.search);
+    if (!UTM_KEYS.some(key => params.has(key))) return null;
+
+    let referrerHost = '';
+    if (document.referrer) {
+      try {
+        referrerHost = new URL(document.referrer).hostname;
+      } catch {
+        referrerHost = '';
+      }
+    }
+
+    return {
+      source: params.get('utm_source') || referrerHost || 'direct',
+      medium: params.get('utm_medium') || '',
+      campaign: params.get('utm_campaign') || '',
+      content: params.get('utm_content') || '',
+      term: params.get('utm_term') || '',
+      landing: location.pathname,
+      firstSeen: new Date().toISOString()
+    };
+  };
+
   const getEventAttribution = () => {
     const attribution = readAttribution();
     if (attribution && Object.keys(attribution).length) return attribution;
+
+    const currentUrlAttribution = readCurrentUrlAttribution();
+    if (currentUrlAttribution) return currentUrlAttribution;
 
     return {
       source: 'direct',

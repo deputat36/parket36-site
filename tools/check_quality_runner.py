@@ -21,6 +21,7 @@ EXPECTED_CHECKS = [
     ["tools/check_direct_callback_campaign.py"],
     ["tools/deployment_manifest.py", "--self-test"],
     ["tools/check_live_deployment.py", "--self-test"],
+    ["tools/check_post_deploy_verification.py"],
     ["tools/check_content_inventory.py"],
     ["tools/check_content_similarity.py"],
     ["tools/check_internal_link_map.py"],

@@ -52,6 +52,20 @@
 
 На один просмотр страницы отправляется не более одного события открытия, даже если обычный клик одновременно вызывает `hashchange`.
 
+### Ранний вход по рекламной ссылке
+
+При прямом входе на URL вида `/kontakty/?utm_...#callback` событие `hash-entry` может возникнуть раньше, чем `main.js` создаст first-touch запись в `sessionStorage`.
+
+Чтобы не потерять рекламный источник, callback-скрипт использует безопасный fallback только для пяти параметров:
+
+- `utm_source`;
+- `utm_medium`;
+- `utm_campaign`;
+- `utm_content`;
+- `utm_term`.
+
+Landing берётся из `location.pathname`. После инициализации `main.js` обычная first-touch запись остаётся источником данных для заявки. Произвольные query-параметры, включая тему обращения, callback-скрипт не принимает.
+
 ```js
 window.addEventListener('parket36:callback-open', event => {
   console.log(event.detail.trigger, event.detail.attribution);
@@ -130,7 +144,7 @@ callback-request
 
 ## Проверка
 
-`tests/e2e/callback-form.spec.mjs` и `tests/e2e/home-callback-path.spec.mjs` проверяют:
+`tests/e2e/callback-form.spec.mjs`, `tests/e2e/home-callback-path.spec.mjs` и `tests/e2e/direct-callback-campaign.spec.mjs` проверяют:
 
 1. короткий номер не вызывает endpoint;
 2. валидный номер отправляет preset услуги и задачи;
@@ -141,7 +155,8 @@ callback-request
 7. создаётся ровно одно событие `parket36:callback-open` и `parket36_callback_open`;
 8. создаётся ровно одно событие `parket36:callback-request` и `parket36_callback_request`;
 9. переход `/ceny/` → `/kontakty/#callback` создаёт `hash-entry`, не дублирует open-событие и сохраняет landing `/ceny/` до отправки заявки;
-10. готовая главная содержит ровно две статические callback-ссылки, сохраняет landing `/` и отправляет общую заявку с исходными UTM.
+10. готовая главная содержит ровно две статические callback-ссылки, сохраняет landing `/` и отправляет общую заявку с исходными UTM;
+11. прямой UTM-вход на `/kontakty/#callback` сохраняет кампанию уже в раннем `callback-open`, а затем передаёт те же UTM в payload заявки.
 
 ## Ограничения
 

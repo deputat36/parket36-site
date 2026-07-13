@@ -13,6 +13,7 @@ GENERATOR = ROOT / "tools" / "build_campaign_links.py"
 CAMPAIGN_DOC = ROOT / "docs" / "campaign-links.md"
 PROFILE_GENERATOR = ROOT / "tools" / "build_local_profile_kit.py"
 PROFILE_DOC = ROOT / "docs" / "local-profile-launch-kit.md"
+CALLBACK_SCRIPT = ROOT / "js" / "callback-form.js"
 E2E = ROOT / "tests" / "e2e" / "direct-callback-campaign.spec.mjs"
 
 EXPECTED_NAME = "VK — обратный звонок"
@@ -57,7 +58,7 @@ def main() -> int:
         GENERATOR: {
             "def validate_fragment(": "fragment validator",
             "fragment target does not exist": "missing-anchor failure",
-            "id=\\\"callback\\\"": "callback anchor documentation",
+            'fragment = validate_fragment(path, item.get("fragment"), name)': "fragment validation call",
             "?utm_...#callback": "query-before-fragment guidance",
         },
         CAMPAIGN_DOC: {
@@ -73,6 +74,18 @@ def main() -> int:
         PROFILE_DOC: {
             EXPECTED_URL: "profile-kit callback URL",
             "Прямая callback-ссылка открывает короткую форму сразу": "usage explanation",
+        },
+        CALLBACK_SCRIPT: {
+            "const UTM_KEYS = Object.freeze([": "allowed UTM key list",
+            "const readCurrentUrlAttribution = () => {": "early URL attribution fallback",
+            "if (!UTM_KEYS.some(key => params.has(key))) return null;": "UTM-only activation",
+            "params.get('utm_source')": "UTM source read",
+            "params.get('utm_medium')": "UTM medium read",
+            "params.get('utm_campaign')": "UTM campaign read",
+            "params.get('utm_content')": "UTM content read",
+            "params.get('utm_term')": "UTM term read",
+            "const currentUrlAttribution = readCurrentUrlAttribution();": "URL fallback usage",
+            "if (currentUrlAttribution) return currentUrlAttribution;": "URL fallback priority",
         },
         E2E: {
             "прямая VK-ссылка открывает callback и сохраняет кампанию в заявке": "browser scenario",
@@ -91,6 +104,11 @@ def main() -> int:
         for marker, label in markers.items():
             if marker not in text:
                 findings.append(f"{path.relative_to(ROOT)}: missing {label}: {marker}")
+
+    if CALLBACK_SCRIPT.is_file():
+        callback_text = CALLBACK_SCRIPT.read_text(encoding="utf-8", errors="ignore")
+        if "params.get('topic')" in callback_text or 'params.get("topic")' in callback_text:
+            findings.append("js/callback-form.js must not accept callback topic from URL parameters")
 
     if findings:
         print("Direct callback campaign findings:")
