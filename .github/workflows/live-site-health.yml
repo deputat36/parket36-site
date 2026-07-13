@@ -25,6 +25,10 @@ jobs:
         id: live_health
         continue-on-error: true
         run: python tools/check_live_site.py --report live-health-report.md
+      - name: Check deployment source
+        id: deployment_source
+        continue-on-error: true
+        run: python tools/check_live_deployment.py --report live-health-report.md
       - name: Upload live health report
         if: always()
         uses: actions/upload-artifact@v7
@@ -34,17 +38,17 @@ jobs:
           if-no-files-found: error
           retention-days: 30
       - name: Update repeated failure issue
-        if: steps.live_health.outcome == 'failure'
+        if: steps.live_health.outcome == 'failure' || steps.deployment_source.outcome == 'failure'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python tools/manage_live_health_issue.py failure --report live-health-report.md
       - name: Close recovered issue
-        if: steps.live_health.outcome == 'success'
+        if: steps.live_health.outcome == 'success' && steps.deployment_source.outcome == 'success'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python tools/manage_live_health_issue.py success
       - name: Fail on live health errors
-        if: steps.live_health.outcome == 'failure'
+        if: steps.live_health.outcome == 'failure' || steps.deployment_source.outcome == 'failure'
         run: exit 1
