@@ -44,6 +44,12 @@ PAGE_MARKERS = {
         "Предварительный разговор не заменяет осмотр": "remote estimate limitation",
         'href="tel:+79009267929">Позвонить Ивану</a>': "local phone CTA",
         'href="/zayavka/">Получить оценку по фото</a>': "local assessment CTA",
+        'id="callback"': "callback section",
+        'id="request-form" data-form-kind="callback"': "callback form kind",
+        'id="request-service" value="Обратный звонок по паркетным работам"': "callback service preset",
+        'id="request-task" value="Прошу перезвонить и проконсультировать': "callback task preset",
+        '>Заказать обратный звонок</button>': "callback submit action",
+        'src="/js/callback-form.js"': "callback status script",
     },
     "portfolio/index.html": {
         "Типовые задачи по паркету и деревянным полам": "customer-facing typical task H1",

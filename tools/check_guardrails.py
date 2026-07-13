@@ -23,6 +23,9 @@ DEFAULT_REQUEST_PATH = str(SITE_CONFIG["default_request_path"])
 DEFAULT_REQUEST_PAGE = DEFAULT_REQUEST_PATH.strip("/") + "/"
 PHONE_LINK = f'href="tel:{SITE_CONFIG["phone_e164"]}"'
 DIRECT_PHOTO_ASSESSMENT_LINK = f'href="{DEFAULT_REQUEST_PATH}">Оценить по фото</a>'
+CONTACT_CALLBACK_PAGE = "kontakty/index.html"
+CONTACT_MOBILE_CALLBACK_LINK = 'href="#callback">Обратный звонок</a>'
+CONTACT_CALLBACK_SECTION = 'id="callback"'
 
 SUPPLEMENTAL_SERVICE_PAGES = {
     "uslugi/master-na-chas/",
@@ -312,8 +315,16 @@ def main() -> int:
             for marker, label in MOBILE_CTA_REQUIRED_MARKERS.items():
                 if marker not in text:
                     findings.append(f"{rel}: missing {label}: {marker}")
-            if not any(marker in text for marker in MOBILE_CTA_PHOTO_LINK_MARKERS):
+
+            is_contact_callback_mobile = rel == CONTACT_CALLBACK_PAGE and CONTACT_MOBILE_CALLBACK_LINK in text
+            if is_contact_callback_mobile:
+                if CONTACT_CALLBACK_SECTION not in text:
+                    findings.append(f"{rel}: mobile callback link points to a missing #callback section")
+                if text.count(f'href="{DEFAULT_REQUEST_PATH}"') < 2:
+                    findings.append(f"{rel}: callback mobile CTA must keep at least two photo assessment links")
+            elif not any(marker in text for marker in MOBILE_CTA_PHOTO_LINK_MARKERS):
                 findings.append(f"{rel}: missing mobile CTA photo assessment link")
+
             if 'href="#request">Оценка по фото</a>' in text and 'id="request"' not in text:
                 findings.append(f"{rel}: mobile CTA local request link points to a missing #request section")
             if f'href="{DEFAULT_REQUEST_PATH}">Заявка</a>' in text:
