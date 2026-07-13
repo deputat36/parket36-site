@@ -6,7 +6,7 @@
   if (!status) return;
 
   const ATTRIBUTION_KEY = 'parket36_attribution';
-  const TOPICS_BY_LANDING = Object.freeze({
+  const TOPICS_BY_PATH = Object.freeze({
     '/ceny/': {
       key: 'stoimost',
       label: 'стоимость паркетных работ',
@@ -37,15 +37,40 @@
     }
   };
 
+  const readInternalReferrerPath = () => {
+    if (!document.referrer) return '';
+    try {
+      const referrer = new URL(document.referrer);
+      return referrer.origin === location.origin ? referrer.pathname : '';
+    } catch {
+      return '';
+    }
+  };
+
+  const resolveTopic = () => {
+    const referrerPath = readInternalReferrerPath();
+    if (TOPICS_BY_PATH[referrerPath]) {
+      return { ...TOPICS_BY_PATH[referrerPath], source: 'referrer' };
+    }
+
+    const attribution = readAttribution();
+    const landing = attribution?.landing || '';
+    if (TOPICS_BY_PATH[landing]) {
+      return { ...TOPICS_BY_PATH[landing], source: 'first-touch' };
+    }
+
+    return null;
+  };
+
   const applyTopicContext = () => {
     if (activeTopic) return activeTopic;
 
-    const attribution = readAttribution();
-    const topic = TOPICS_BY_LANDING[attribution?.landing || ''];
+    const topic = resolveTopic();
     if (!topic) return null;
 
     activeTopic = topic;
     form.dataset.callbackTopic = topic.key;
+    form.dataset.callbackTopicSource = topic.source;
 
     const taskField = form.querySelector('#request-task');
     if (taskField instanceof HTMLInputElement) taskField.value = topic.task;
@@ -82,6 +107,7 @@
       href,
       trigger,
       topic: topic?.key || 'general',
+      topicSource: topic?.source || 'general',
       page: location.pathname,
       attribution: { ...(window.parket36Attribution || readAttribution()) }
     };
@@ -93,6 +119,7 @@
         page: detail.page,
         trigger: detail.trigger,
         callback_topic: detail.topic,
+        callback_topic_source: detail.topicSource,
         attribution: detail.attribution
       });
     }
@@ -105,7 +132,8 @@
     const detail = {
       ...leadDetail,
       type: 'callback-request',
-      topic: topic?.key || 'general'
+      topic: topic?.key || 'general',
+      topicSource: topic?.source || 'general'
     };
     window.dispatchEvent(new CustomEvent('parket36:callback-request', { detail }));
 
@@ -115,6 +143,7 @@
         page: detail.page || location.pathname,
         service: detail.service || 'Обратный звонок по паркетным работам',
         callback_topic: detail.topic,
+        callback_topic_source: detail.topicSource,
         attribution: detail.attribution || window.parket36Attribution || readAttribution()
       });
     }
