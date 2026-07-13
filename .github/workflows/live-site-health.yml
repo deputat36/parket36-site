@@ -69,6 +69,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python tools/manage_live_health_issue.py success
+      - name: Complete Pages switch issue
+        if: >-
+          github.event_name == 'workflow_run' &&
+          steps.live_health.outcome == 'success' &&
+          steps.deployment_source.outcome == 'success'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PAGES_DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
+          PAGES_DEPLOY_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: python tools/complete_pages_switch_issue.py
       - name: Fail on live health errors
         if: steps.live_health.outcome == 'failure' || steps.deployment_source.outcome == 'failure'
         run: exit 1
