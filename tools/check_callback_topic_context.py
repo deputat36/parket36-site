@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate allowlisted callback topics derived from first-touch landing pages."""
+"""Validate allowlisted callback topics derived from safe internal context."""
 
 from __future__ import annotations
 
@@ -11,14 +11,19 @@ CALLBACK_JS = ROOT / "js" / "callback-form.js"
 E2E_TEST = ROOT / "tests" / "e2e" / "callback-topic-context.spec.mjs"
 
 JS_MARKERS = {
-    "const TOPICS_BY_LANDING = Object.freeze({": "allowlisted topic map",
+    "const TOPICS_BY_PATH = Object.freeze({": "allowlisted topic map",
     "'/ceny/'": "price landing topic",
     "'/uslugi/ciklevka-parketa/'": "cycle sanding landing topic",
     "'/uslugi/restavraciya-parketa/'": "restoration landing topic",
     "sessionStorage.getItem(ATTRIBUTION_KEY)": "first-touch storage fallback",
+    "referrer.origin === location.origin": "same-origin referrer restriction",
+    "source: 'referrer'": "current commercial page priority",
+    "source: 'first-touch'": "first-touch fallback",
     "form.dataset.callbackTopic = topic.key": "visible form topic state",
+    "form.dataset.callbackTopicSource = topic.source": "visible topic source state",
     "context.id = 'callback-topic-context'": "visible topic explanation",
     "callback_topic: detail.topic": "dataLayer callback topic",
+    "callback_topic_source: detail.topicSource": "dataLayer topic source",
     "topic: topic?.key || 'general'": "safe generic fallback",
 }
 
