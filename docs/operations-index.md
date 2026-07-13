@@ -32,6 +32,7 @@
 - `docs/lead-retention.md` — preview и ручная очистка старых audit-данных и завершённых заявок без автоматического расписания.
 - `docs/lead-notifications.md` — Telegram и email-уведомления о новых заявках через secrets Edge Function.
 - `docs/callback-phone-validation.md` — проверка пригодного номера для обратного звонка до отправки формы.
+- `docs/callback-form.md` — короткая форма обратного звонка на локальной странице и отдельная аналитическая цель.
 
 ## Аналитика и SEO
 
