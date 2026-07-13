@@ -12,13 +12,14 @@ import sys
 import time
 from tempfile import TemporaryDirectory
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from deployment_manifest import render_manifest, validate_manifest_text
 from site_settings import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
-USER_AGENT = "Parket36-Deployment-Source/1.1"
+USER_AGENT = "Parket36-Deployment-Source/1.2"
 TIMEOUT_SECONDS = 20
 MAX_RESPONSE_BYTES = 100_000
 DEFAULT_RETRY_DELAY_SECONDS = 10
@@ -31,8 +32,33 @@ class DeploymentResult:
     detail: str
 
 
+def manifest_request_url(
+    canonical_url: str,
+    *,
+    expected_sha: str | None,
+    expected_run_id: str | None,
+    attempt: int,
+) -> str:
+    if not expected_sha and not expected_run_id:
+        return canonical_url
+
+    params = {
+        "verify_commit": expected_sha or "",
+        "verify_run": expected_run_id or "",
+        "attempt": str(attempt),
+    }
+    return canonical_url + "?" + urlencode(params)
+
+
 def fetch_manifest(url: str) -> str:
-    request = Request(url, headers={"User-Agent": USER_AGENT})
+    request = Request(
+        url,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Cache-Control": "no-cache, no-store, max-age=0",
+            "Pragma": "no-cache",
+        },
+    )
     context = ssl.create_default_context()
     with urlopen(request, timeout=TIMEOUT_SECONDS, context=context) as response:
         body = response.read(MAX_RESPONSE_BYTES + 1)
@@ -77,7 +103,7 @@ def evaluate_manifest(
 
 
 def check_manifest_with_retry(
-    url: str,
+    canonical_url: str,
     *,
     expected_sha: str | None,
     expected_run_id: str | None,
@@ -87,9 +113,15 @@ def check_manifest_with_retry(
     last_result = DeploymentResult(False, "deployment manifest was not checked")
 
     for attempt in range(1, attempts + 1):
+        request_url = manifest_request_url(
+            canonical_url,
+            expected_sha=expected_sha,
+            expected_run_id=expected_run_id,
+            attempt=attempt,
+        )
         try:
             last_result = evaluate_manifest(
-                fetch_manifest(url),
+                fetch_manifest(request_url),
                 expected_sha=expected_sha,
                 expected_run_id=expected_run_id,
             )
@@ -99,6 +131,8 @@ def check_manifest_with_retry(
             last_result = DeploymentResult(False, str(exc))
 
         if last_result.ok:
+            if expected_sha or expected_run_id:
+                last_result.detail += f"; cache_bust_attempt={attempt}"
             if attempt > 1:
                 last_result.detail += f"; matched after attempt {attempt}/{attempts}"
             return last_result
@@ -145,6 +179,30 @@ def self_test() -> int:
         "commit": "abc123",
         "run_id": "456",
     })
+
+    plain_url = manifest_request_url(
+        "https://example.test/deployment.json",
+        expected_sha=None,
+        expected_run_id=None,
+        attempt=1,
+    )
+    if plain_url != "https://example.test/deployment.json":
+        findings.append("daily/manual manifest URL must remain canonical")
+
+    cache_busted = manifest_request_url(
+        "https://example.test/deployment.json",
+        expected_sha="abc123",
+        expected_run_id="456",
+        attempt=2,
+    )
+    for marker in (
+        "https://example.test/deployment.json?",
+        "verify_commit=abc123",
+        "verify_run=456",
+        "attempt=2",
+    ):
+        if marker not in cache_busted:
+            findings.append(f"cache-busted manifest URL missing marker: {marker}")
 
     passing = evaluate_manifest(valid_text)
     if not passing.ok or "commit=abc123" not in passing.detail:
@@ -224,11 +282,11 @@ def main() -> int:
     expected_sha = (args.expected_sha or "").strip() or None
     expected_run_id = (args.expected_run_id or "").strip() or None
     domain = (args.domain or str(load_config()["domain"])).rstrip("/")
-    url = domain + "/deployment.json"
+    canonical_url = domain + "/deployment.json"
     attempts = args.attempts if expected_sha or expected_run_id else 1
 
     result = check_manifest_with_retry(
-        url,
+        canonical_url,
         expected_sha=expected_sha,
         expected_run_id=expected_run_id,
         attempts=attempts,
