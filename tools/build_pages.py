@@ -25,6 +25,49 @@ LEAD_RELIABILITY_SCRIPT = '<script src="/js/lead-reliability.js" defer></script>
 FIRST_TOUCH_REFERRER_SCRIPT = '<script src="/js/first-touch-referrer.js" defer></script>'
 MAIN_SCRIPT = '<script src="/js/main.js" defer></script>'
 
+PUBLIC_COPY_REPLACEMENTS = (
+    (
+        'aria-label="Места под будущие реальные фотографии работ"',
+        'aria-label="Как подготовить фотографии пола для предварительной оценки"',
+    ),
+    (
+        '<span class="photo-slot__mark">Фото вместо иллюстрации</span>',
+        '<span class="photo-slot__mark">Оценка по фото</span>',
+    ),
+    (
+        '<span class="photo-slot__label">Иван или процесс шлифовки</span>',
+        '<span class="photo-slot__label">Общий вид комнаты</span>',
+    ),
+    (
+        '<p class="photo-slot__note">Сюда нужен реальный кадр: Иван на объекте, инструмент, шлифмашина или аккуратный процесс работы.</p>',
+        '<p class="photo-slot__note">Снимите комнату целиком, чтобы было видно покрытие, мебель, проходные зоны и общий износ.</p>',
+    ),
+    (
+        '<span class="photo-slot__mark">До</span><span class="photo-slot__label">Старый пол до работ</span><p class="photo-slot__note">Общий вид комнаты, старый лак, щели или потёртости.</p>',
+        '<span class="photo-slot__mark">Дефект крупно</span><span class="photo-slot__label">Проблемное место</span><p class="photo-slot__note">Покажите щели, старый лак, пятна, царапины или подвижные планки крупным планом.</p>',
+    ),
+    (
+        '<span class="photo-slot__mark">После</span><span class="photo-slot__label">Результат после покрытия</span><p class="photo-slot__note">Такой же ракурс после шлифовки, реставрации и финиша.</p>',
+        '<span class="photo-slot__mark">Короткое видео</span><span class="photo-slot__label">Скрип или движение</span><p class="photo-slot__note">Запишите 10–15 секунд при наступании на участок, если пол скрипит, прогибается или двигается.</p>',
+    ),
+    ("Фото нужно снять на объекте", "Для оценки подготовьте фото объекта"),
+    ("Место для фото Ивана", "Мастер Иван — связь и предварительная оценка"),
+    ("Место под реальное фото", "Схема задачи и первого шага"),
+    ("Место под фото", "Схема задачи и первого шага"),
+    ("Место для фото", "Схема задачи и первого шага"),
+    ("снять на объекте", "уточнить по фото и телефону"),
+)
+
+FORBIDDEN_PUBLIC_PLACEHOLDER_MARKERS = (
+    "Фото вместо иллюстрации",
+    "Место под реальное фото",
+    "Место под фото",
+    "Место для фото",
+    "Сюда нужен реальный кадр",
+    "Места под будущие реальные фотографии",
+    "будущие кейсы",
+)
+
 PUBLIC_DIRS = {
     "js",
     "img",
@@ -94,6 +137,24 @@ def remove_internal_working_paths() -> None:
             shutil.rmtree(target)
         elif target.exists():
             target.unlink()
+
+
+def normalize_public_copy(errors: list[str]) -> None:
+    public_text_files = sorted([*DEST.rglob("*.html"), *DEST.rglob("*.svg")])
+
+    for path in public_text_files:
+        text = path.read_text(encoding="utf-8")
+        normalized = text
+        for source, replacement in PUBLIC_COPY_REPLACEMENTS:
+            normalized = normalized.replace(source, replacement)
+
+        if normalized != text:
+            path.write_text(normalized, encoding="utf-8")
+
+        relative = path.relative_to(DEST).as_posix()
+        for marker in FORBIDDEN_PUBLIC_PLACEHOLDER_MARKERS:
+            if marker in normalized:
+                errors.append(f"{relative}: public placeholder copy remains: {marker}")
 
 
 def inject_lead_reliability(errors: list[str]) -> None:
@@ -263,6 +324,7 @@ def main() -> int:
     remove_internal_working_paths()
 
     errors: list[str] = []
+    normalize_public_copy(errors)
     prepare_css_bundle(ROOT, DEST, errors)
     normalize_image_attributes(DEST, errors)
     inject_lead_reliability(errors)
