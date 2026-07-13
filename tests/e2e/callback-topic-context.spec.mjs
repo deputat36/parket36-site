@@ -35,7 +35,7 @@ test('прямой вход на контакты сохраняет общую 
     trigger: 'hash-entry',
     topic: 'general',
     topicSource: 'general',
-    attribution: { landing: '/kontakty/' }
+    attribution: { source: 'direct', landing: '/kontakty/' }
   });
 });
 
