@@ -7,7 +7,8 @@ Workflow: `.github/workflows/live-site-health.yml`.
 - `tools/check_live_site.py` — проверка DNS, GitHub Pages и публичного сайта с созданием отчёта;
 - `tools/check_live_deployment.py` — проверка источника и точной версии опубликованного Pages artifact;
 - `tools/deployment_manifest.py` — создание `_site/deployment.json` внутри Pages workflow;
-- `tools/manage_live_health_issue.py` — управление одним issue при повторяющемся сбое.
+- `tools/manage_live_health_issue.py` — управление одним issue при повторяющемся сбое;
+- `tools/complete_pages_switch_issue.py` — закрытие issue #5 после подтверждённого post-deploy успеха.
 
 ## Что проверяется
 
@@ -68,6 +69,22 @@ Manifest содержит:
 
 Ежедневный и ручной запуск проверяют корректность manifest без требования конкретного SHA. Post-deploy запуск дополнительно требует точного SHA и run ID.
 
+## Автоматическое завершение issue #5
+
+Issue `#5 Переключить parket36.ru на GitHub Pages` закрывается автоматически только когда одновременно выполнены все условия:
+
+1. workflow запущен событием `workflow_run` после успешного `Deploy GitHub Pages`;
+2. DNS, HTTPS, главная, `robots.txt` и `sitemap.xml` прошли live-проверку;
+3. `/deployment.json` подтверждает Actions artifact `_site`;
+4. live `commit` совпадает с `workflow_run.head_sha`;
+5. live `run_id` совпадает с ID завершившегося Pages deploy.
+
+Плановый и ручной monitoring не закрывают issue #5, даже если сайт работает. Это защищает задачу от завершения без привязки к конкретному опубликованному deploy.
+
+Перед закрытием скрипт проверяет номер и точный заголовок issue. Затем добавляет комментарий с опубликованным SHA, ссылкой на Pages deploy и ссылкой на live verification и закрывает задачу со статусом `completed`.
+
+Если issue уже закрыт, шаг завершается без изменений. Ошибка GitHub API не делает сам live-health запуск красным: автозавершение является служебным действием с `continue-on-error`, а доказательством публикации остаётся artifact-отчёт.
+
 ## Диагностический отчёт
 
 После каждого запуска создаётся artifact `live-health-report` с файлом `live-health-report.md`. Artifact хранится 30 дней.
@@ -97,7 +114,9 @@ Manifest содержит:
 1. Первый неуспешный запуск сохраняет artifact и завершается с ошибкой.
 2. Если следующий завершённый запуск этого же workflow тоже был неуспешным, создаётся одно issue с заголовком `[monitoring] parket36.ru live health failure`.
 3. Следующие неуспешные запуски добавляют комментарий в уже открытое issue вместо создания новых задач.
-4. Первый успешный запуск после восстановления добавляет комментарий и закрывает issue.
+4. Первый успешный запуск после восстановления добавляет комментарий и закрывает monitoring issue.
+
+Monitoring issue и issue #5 имеют разные роли: первое отражает повторный технический сбой, второе — одноразовую задачу переключения домена на правильную публикацию.
 
 В issue попадают ссылка на workflow run и содержимое диагностического отчёта. Secrets и персональные данные туда не передаются.
 
@@ -107,11 +126,11 @@ Workflow использует минимально необходимые раз
 
 - `contents: read` — чтение репозитория и checkout точного опубликованного SHA;
 - `actions: read` — проверка результата предыдущего workflow run;
-- `issues: write` — создание, обновление и закрытие monitoring issue.
+- `issues: write` — создание, обновление и закрытие monitoring issue и issue #5.
 
 `permissions: write-all` запрещён проверкой конфигурации.
 
-Ошибки GitHub API при управлении issue не подменяют результат проверки сайта: шаг issue-manager имеет `continue-on-error`, а итоговый workflow всё равно завершается согласно результату live health check.
+Ошибки GitHub API при управлении issue не подменяют результат проверки сайта: issue-шаги имеют `continue-on-error`, а итоговый workflow всё равно завершается согласно результату live health check.
 
 ## Ручной запуск скриптов
 
@@ -144,14 +163,15 @@ python tools/check_live_deployment.py \
 python tools/deployment_manifest.py --self-test
 python tools/check_live_deployment.py --self-test
 python tools/check_post_deploy_verification.py
+python tools/complete_pages_switch_issue.py --self-test
 python tools/check_live_site.py --self-test
 python tools/manage_live_health_issue.py --self-test
 ```
 
-Боевой запуск issue-manager предназначен только для GitHub Actions, потому что требует `GITHUB_TOKEN`, `GITHUB_REPOSITORY` и `GITHUB_RUN_ID`.
+Боевые issue-manager скрипты предназначены только для GitHub Actions, потому что требуют `GITHUB_TOKEN`, `GITHUB_REPOSITORY`, `GITHUB_RUN_ID` и контекст конкретного workflow.
 
 ## Ограничения
 
-Проверка не меняет DNS, Pages settings или сертификат. Она фиксирует фактическое состояние публичного сайта и точную опубликованную версию. Настройка DNS, Custom domain и Enforce HTTPS остаётся ручным действием по issue #5.
+Проверка не меняет DNS, Pages settings или сертификат. Она фиксирует фактическое состояние публичного сайта и точную опубликованную версию. Настройка DNS, Custom domain и Enforce HTTPS остаётся ручным действием до первого успешного post-deploy подтверждения.
 
-Issue создаётся только после двух последовательных неуспешных запусков. Если GitHub API временно недоступен, artifact и красный статус workflow сохраняются, но issue может быть создан только при следующем сбое.
+Issue создаётся только после двух последовательных неуспешных запусков. Если GitHub API временно недоступен, artifact и красный статус workflow сохраняются, но issue может быть создан или закрыт только при следующем подходящем запуске.
