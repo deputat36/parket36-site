@@ -9,6 +9,9 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 
 PAGE_MARKERS = {
+    "index.html": {
+        'href="/kontakty/">Работы в Воронеже и области: география и контакты →</a>': "homepage local commercial link",
+    },
     "uslugi/index.html": {
         "Что будет согласовано до старта": "scope agreement heading",
         "Состав работ": "scope card",
