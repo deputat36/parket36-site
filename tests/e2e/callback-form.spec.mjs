@@ -2,8 +2,13 @@ import { expect, test } from '@playwright/test';
 
 const leadEndpoint = '**/functions/v1/parket-public-lead';
 
-async function allowClipboard(page) {
+async function prepareBrowserSignals(page) {
   await page.addInitScript(() => {
+    window.dataLayer = [];
+    window.__parketCallbackRequest = null;
+    window.addEventListener('parket36:callback-request', event => {
+      window.__parketCallbackRequest = event.detail;
+    });
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
       value: { writeText: async () => {} }
@@ -30,7 +35,7 @@ test('короткая форма блокирует непригодный но
   expect(attempts).toBe(0);
 });
 
-test('валидная callback-заявка сохраняет first-touch канал и специальное подтверждение', async ({ page }) => {
+test('валидная callback-заявка сохраняет first-touch канал и отдельное событие', async ({ page }) => {
   let submittedPayload;
   let submittedHeaders;
 
@@ -43,7 +48,7 @@ test('валидная callback-заявка сохраняет first-touch ка
       body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 801 })
     });
   });
-  await allowClipboard(page);
+  await prepareBrowserSignals(page);
 
   await page.goto('/kontakty/?utm_source=yandex_business&utm_medium=local&utm_campaign=voronezh_parquet_launch&utm_content=business_profile');
   await page.locator('#request-location').fill('Воронеж, Северный район');
@@ -70,4 +75,27 @@ test('валидная callback-заявка сохраняет first-touch ка
   const referrer = new URL(submittedHeaders.referer);
   expect(referrer.pathname).toBe('/kontakty/');
   expect(referrer.search).toBe('');
+
+  await expect.poll(() => page.evaluate(() => window.__parketCallbackRequest)).toMatchObject({
+    type: 'callback-request',
+    service: 'Обратный звонок по паркетным работам',
+    page: '/kontakty/',
+    backend: 'supabase',
+    attribution: {
+      source: 'yandex_business',
+      medium: 'local',
+      campaign: 'voronezh_parquet_launch',
+      content: 'business_profile',
+      landing: '/kontakty/'
+    }
+  });
+
+  const dataLayerEvents = await page.evaluate(() => window.dataLayer.filter(item => item.event === 'parket36_callback_request'));
+  expect(dataLayerEvents).toHaveLength(1);
+  expect(dataLayerEvents[0]).toMatchObject({
+    event: 'parket36_callback_request',
+    page: '/kontakty/',
+    service: 'Обратный звонок по паркетным работам',
+    attribution: { source: 'yandex_business', medium: 'local' }
+  });
 });
