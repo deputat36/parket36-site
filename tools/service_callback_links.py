@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Inject static callback paths into high-intent service and problem pages."""
+"""Inject static callback paths into the homepage and high-intent service and problem pages."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+
+from home_callback_links import inject_home_callback_links
 
 CALLBACK_URL = "/kontakty/#callback"
 HERO_CALLBACK = (
@@ -94,7 +96,9 @@ TARGET_PAGES = (
 
 
 def inject_service_callback_links(site_root: Path, errors: list[str]) -> None:
-    """Add two static callback links to each configured built commercial page."""
+    """Add static callback links to the homepage and each configured commercial page."""
+
+    inject_home_callback_links(site_root, errors)
 
     for page in TARGET_PAGES:
         path = site_root / page.relative_path
