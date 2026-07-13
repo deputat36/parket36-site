@@ -45,6 +45,17 @@ PAGE_MARKERS = {
         'href="tel:+79009267929">Позвонить Ивану</a>': "local phone CTA",
         'href="/zayavka/">Получить оценку по фото</a>': "local assessment CTA",
     },
+    "portfolio/index.html": {
+        "Типовые задачи по паркету и деревянным полам": "customer-facing typical task H1",
+        "Что именно показать Ивану": "photo guidance section",
+        "Изношенный лак и потёртости": "worn finish task",
+        "Щели между планками": "gap task",
+        "Скрип или движение пола": "squeak task",
+        "Следы воды": "water damage task",
+        "страница не выдаёт схемы за выполненные объекты": "honest evidence disclosure",
+        'href="/zayavka/">Оценить похожую задачу</a>': "portfolio assessment CTA",
+        'href="tel:+79009267929">Позвонить Ивану</a>': "portfolio phone CTA",
+    },
 }
 
 FORBIDDEN_PROMISES = {
@@ -52,6 +63,15 @@ FORBIDDEN_PROMISES = {
     "цена не изменится": "unsupported fixed price promise",
     "гарантированно без доплат": "unsupported no-extras promise",
     "любой паркет как новый": "unsupported restoration promise",
+}
+
+PAGE_FORBIDDEN_COPY = {
+    "portfolio/index.html": {
+        "будущие кейсы": "internal future-case wording",
+        "места под реальные фото": "internal photo placeholder heading",
+        "сюда нужно подставлять": "internal editor instruction",
+        "фото-план": "internal photo planning label",
+    },
 }
 
 
@@ -69,6 +89,9 @@ def main() -> int:
                 findings.append(f"{relative}: missing {label}: {marker}")
         lowered = text.lower()
         for phrase, label in FORBIDDEN_PROMISES.items():
+            if phrase in lowered:
+                findings.append(f"{relative}: contains {label}: {phrase}")
+        for phrase, label in PAGE_FORBIDDEN_COPY.get(relative, {}).items():
             if phrase in lowered:
                 findings.append(f"{relative}: contains {label}: {phrase}")
 
