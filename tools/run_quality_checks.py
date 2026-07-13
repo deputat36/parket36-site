@@ -16,6 +16,7 @@ CHECKS = [
     ("Validate quality runner", ["tools/check_quality_runner.py"]),
     ("Validate operational docs", ["tools/check_docs.py"]),
     ("Validate campaign links", ["tools/build_campaign_links.py", "--check"]),
+    ("Validate local profile kit", ["tools/build_local_profile_kit.py", "--check"]),
     ("Validate content inventory", ["tools/check_content_inventory.py"]),
     ("Validate content similarity", ["tools/check_content_similarity.py"]),
     ("Validate internal link map", ["tools/check_internal_link_map.py"]),
