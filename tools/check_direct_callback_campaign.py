@@ -58,7 +58,7 @@ def main() -> int:
         GENERATOR: {
             "def validate_fragment(": "fragment validator",
             "fragment target does not exist": "missing-anchor failure",
-            "id=\"callback\"": "callback anchor documentation",
+            'fragment = validate_fragment(path, item.get("fragment"), name)': "fragment validation call",
             "?utm_...#callback": "query-before-fragment guidance",
         },
         CAMPAIGN_DOC: {
