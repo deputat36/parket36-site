@@ -33,8 +33,8 @@
 - `docs/lead-notifications.md` — Telegram и email-уведомления о новых заявках через secrets Edge Function.
 - `docs/callback-phone-validation.md` — проверка пригодного номера для обратного звонка до отправки формы.
 - `docs/callback-form.md` — короткая форма обратного звонка на локальной странице и отдельная аналитическая цель.
-- `docs/service-callback-paths.md` — статические callback-ссылки на страницах циклёвки и реставрации.
-- `docs/callback-topic-context.md` — безопасная тема обратного звонка по первой коммерческой странице.
+- `docs/service-callback-paths.md` — статические callback-ссылки на главных услугах и проблемных страницах воды, скрипа и щелей.
+- `docs/callback-topic-context.md` — безопасная тема обратного звонка по внутренней коммерческой или проблемной странице.
 
 ## Аналитика и SEO
 
