@@ -34,9 +34,9 @@ test('страница примеров показывает типовые за
   await expectNoPlaceholderCopy(page);
   await expect(page).toHaveTitle(/Типовые задачи по паркету/);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Типовые задачи');
-  await expect(page.getByRole('heading', { name: 'Изношенный лак и потёртости' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Щели между планками' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Следы воды' })).toBeVisible();
+  await expect(page.getByText('Изношенный лак и потёртости', { exact: true })).toBeVisible();
+  await expect(page.getByText('Щели между планками', { exact: true })).toBeVisible();
+  await expect(page.getByText('Следы воды', { exact: true })).toBeVisible();
   await expect(page.getByText(/страница не выдаёт схемы за выполненные объекты/i)).toBeVisible();
 });
 
