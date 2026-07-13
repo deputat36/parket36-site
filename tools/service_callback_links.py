@@ -28,6 +28,32 @@ class CallbackPage:
 
 TARGET_PAGES = (
     CallbackPage(
+        relative_path="uslugi/index.html",
+        hero_marker=(
+            '<div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">'
+            'Позвонить Ивану</a><a class="btn btn--ghost" href="/zayavka/">'
+            'Оценить по фото</a></div>'
+        ),
+        secondary_marker=(
+            '<div class="hero__actions"><a class="btn btn--primary" href="/zayavka/">'
+            'Получить предварительный ориентир</a><a class="btn btn--ghost" href="tel:+79009267929">'
+            'Обсудить задачу по телефону</a></div>'
+        ),
+    ),
+    CallbackPage(
+        relative_path="uslugi/parket-i-poly/index.html",
+        hero_marker=(
+            '<div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">'
+            'Позвонить Ивану</a><a class="btn btn--ghost" href="/zayavka/">'
+            'Получить оценку по фото</a></div>'
+        ),
+        secondary_marker=(
+            '<div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">'
+            'Позвонить и выбрать решение</a><a class="btn btn--ghost" href="/pozvonit-ivanu/">'
+            'Что сказать по телефону</a></div>'
+        ),
+    ),
+    CallbackPage(
         relative_path="uslugi/ciklevka-parketa/index.html",
         hero_marker=(
             '<div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">'

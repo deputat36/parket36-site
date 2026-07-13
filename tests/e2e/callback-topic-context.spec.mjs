@@ -2,6 +2,21 @@ import { expect, test } from '@playwright/test';
 
 const leadEndpoint = '**/functions/v1/parket-public-lead';
 
+const hubTopics = [
+  {
+    path: '/uslugi/',
+    key: 'podbor-uslugi',
+    label: 'подбор подходящей работы по полу',
+    task: 'Не знаю, какая работа нужна для паркета или деревянного пола. Прошу перезвонить, уточнить симптомы и подсказать, с чего начать и какие фотографии или видео подготовить.'
+  },
+  {
+    path: '/uslugi/parket-i-poly/',
+    key: 'diagnostika',
+    label: 'диагностика паркета и деревянного пола',
+    task: 'Нужна предварительная диагностика паркета или деревянного пола. Прошу перезвонить, уточнить состояние покрытия, скрип, щели или другие дефекты и подсказать необходимые фотографии или видео.'
+  }
+];
+
 const problemTopics = [
   {
     path: '/sovety/parket-posle-vody/',
@@ -151,6 +166,69 @@ test('переход с циклёвки отправляет конкретну
   expect(requestEvent).toMatchObject({
     callback_topic: 'cyclevka',
     callback_topic_source: 'referrer'
+  });
+});
+
+for (const topic of hubTopics) {
+  test(`${topic.path} передаёт тему сервисного хаба`, async ({ page }) => {
+    await captureCallbackSignals(page);
+    await page.goto(`${topic.path}?utm_source=organic&utm_medium=seo&utm_campaign=service_hubs&utm_content=${topic.key}`);
+    await page.locator('a[href="/kontakty/#callback"]').first().click();
+
+    await expect(page).toHaveURL(/\/kontakty\/#callback$/);
+    await expect(page.locator('#request-form')).toHaveAttribute('data-callback-topic', topic.key);
+    await expect(page.locator('#request-form')).toHaveAttribute('data-callback-topic-source', 'referrer');
+    await expect(page.locator('#callback-topic-context')).toHaveText(`Тема обращения: ${topic.label}.`);
+    await expect(page.locator('#request-task')).toHaveValue(topic.task);
+    await expect.poll(() => page.evaluate(() => window.__callbackOpen)).toMatchObject({
+      topic: topic.key,
+      topicSource: 'referrer',
+      attribution: {
+        source: 'organic',
+        medium: 'seo',
+        campaign: 'service_hubs',
+        content: topic.key,
+        landing: topic.path
+      }
+    });
+  });
+}
+
+test('диагностика пола отправляет конкретную задачу в payload', async ({ page }) => {
+  let payload;
+  await page.route(leadEndpoint, async route => {
+    payload = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, request_id: payload.request_id, lead_id: 805 })
+    });
+  });
+  await captureCallbackSignals(page);
+
+  await page.goto('/uslugi/parket-i-poly/?utm_source=vk&utm_medium=social&utm_campaign=service_hubs&utm_content=diagnostika');
+  await page.locator('a[href="/kontakty/#callback"]').first().click();
+  await page.locator('#request-location').fill('Воронеж');
+  await page.locator('#request-callback').fill('Вечером');
+  await page.locator('#request-contact').fill('Андрей, +7 900 444-55-66');
+  await page.getByRole('button', { name: 'Заказать обратный звонок' }).click();
+
+  expect(payload).toMatchObject({
+    service: 'Обратный звонок по паркетным работам',
+    task: 'Нужна предварительная диагностика паркета или деревянного пола. Прошу перезвонить, уточнить состояние покрытия, скрип, щели или другие дефекты и подсказать необходимые фотографии или видео.',
+    location: 'Воронеж',
+    callback_time: 'Вечером',
+    contact: 'Андрей, +7 900 444-55-66',
+    page: '/kontakty/',
+    utm_source: 'vk',
+    utm_medium: 'social',
+    utm_campaign: 'service_hubs',
+    utm_content: 'diagnostika'
+  });
+  await expect.poll(() => page.evaluate(() => window.__callbackRequest)).toMatchObject({
+    topic: 'diagnostika',
+    topicSource: 'referrer',
+    attribution: { landing: '/uslugi/parket-i-poly/' }
   });
 });
 
