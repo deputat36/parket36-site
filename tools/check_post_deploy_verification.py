@@ -11,6 +11,7 @@ PAGES_WORKFLOW = ROOT / ".github" / "workflows" / "pages.yml"
 LIVE_WORKFLOW = ROOT / ".github" / "workflows" / "live-site-health.yml"
 DEPLOYMENT_CHECKER = ROOT / "tools" / "check_live_deployment.py"
 DEPLOYMENT_MANIFEST = ROOT / "tools" / "deployment_manifest.py"
+PAGES_ISSUE_COMPLETER = ROOT / "tools" / "complete_pages_switch_issue.py"
 ROOT_MANIFEST = ROOT / "deployment.json"
 
 REQUIRED_MARKERS = {
@@ -33,6 +34,13 @@ REQUIRED_MARKERS = {
         '--expected-run-id "$EXPECTED_DEPLOY_RUN_ID"': "expected run ID argument",
         '--attempts "$DEPLOY_ATTEMPTS"': "retry attempts argument",
         "--retry-delay 10": "propagation retry delay",
+        "- name: Complete Pages switch issue": "Pages issue completion step",
+        "github.event_name == 'workflow_run' &&": "post-deploy-only issue completion",
+        "steps.live_health.outcome == 'success' &&": "live-health success requirement",
+        "steps.deployment_source.outcome == 'success'": "deployment source success requirement",
+        "PAGES_DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}": "completed deploy SHA for issue comment",
+        "PAGES_DEPLOY_RUN_ID: ${{ github.event.workflow_run.id }}": "completed deploy run ID for issue comment",
+        "run: python tools/complete_pages_switch_issue.py": "Pages issue completer invocation",
     },
     DEPLOYMENT_CHECKER: {
         "def check_manifest_with_retry(": "retry helper",
@@ -52,6 +60,14 @@ REQUIRED_MARKERS = {
         '"artifact": "_site"': "artifact identity",
         'os.environ.get("GITHUB_SHA", "local")': "commit provenance",
         'os.environ.get("GITHUB_RUN_ID", "local")': "workflow provenance",
+    },
+    PAGES_ISSUE_COMPLETER: {
+        "ISSUE_NUMBER = 5": "fixed Pages switch issue",
+        'EXPECTED_TITLE = "Переключить parket36.ru на GitHub Pages"': "issue title guard",
+        'if event_name != "workflow_run"': "workflow_run safety guard",
+        '"state": "closed", "state_reason": "completed"': "completed issue closure",
+        "SHA и run ID live-сборки совпали": "exact deployment completion evidence",
+        "Pages switch issue completer self-test passed": "self-test",
     },
 }
 
