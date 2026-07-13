@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the public Parket36 domain, HTTPS, robots and sitemap."""
+"""Check Parket36 DNS, GitHub Pages routing, HTTPS, robots and sitemap."""
 
 from __future__ import annotations
 
@@ -23,6 +23,23 @@ USER_AGENT = "Parket36-Live-Health/1.0"
 TIMEOUT_SECONDS = 20
 MAX_RESPONSE_BYTES = 2_000_000
 MIN_SITEMAP_URLS = 20
+GITHUB_PAGES_IPV4 = frozenset(
+    {
+        "185.199.108.153",
+        "185.199.109.153",
+        "185.199.110.153",
+        "185.199.111.153",
+    }
+)
+GITHUB_PAGES_IPV6 = frozenset(
+    {
+        "2606:50c0:8000::153",
+        "2606:50c0:8001::153",
+        "2606:50c0:8002::153",
+        "2606:50c0:8003::153",
+    }
+)
+GITHUB_PAGES_ADDRESSES = GITHUB_PAGES_IPV4 | GITHUB_PAGES_IPV6
 
 
 @dataclass
@@ -42,16 +59,47 @@ def fetch_text(url: str) -> tuple[int, str, str]:
         return response.status, response.geturl(), body.decode("utf-8", errors="replace")
 
 
-def dns_check(host: str) -> CheckResult:
-    try:
-        records = socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)
-    except socket.gaierror as exc:
-        return CheckResult("DNS", False, str(exc))
+def normalize_address(value: str) -> str:
+    return value.split("%", 1)[0].lower()
 
-    addresses = sorted({record[4][0] for record in records})
-    if not addresses:
-        return CheckResult("DNS", False, "no addresses returned")
-    return CheckResult("DNS", True, ", ".join(addresses))
+
+def evaluate_github_pages_dns(
+    name: str,
+    addresses: set[str],
+    *,
+    require_all_ipv4: bool,
+) -> CheckResult:
+    normalized = {normalize_address(address) for address in addresses if address}
+    if not normalized:
+        return CheckResult(name, False, "no addresses returned")
+
+    unexpected = normalized - GITHUB_PAGES_ADDRESSES
+    known = normalized & GITHUB_PAGES_ADDRESSES
+    missing_ipv4 = GITHUB_PAGES_IPV4 - normalized if require_all_ipv4 else set()
+
+    findings: list[str] = ["resolved: " + ", ".join(sorted(normalized))]
+    if missing_ipv4:
+        findings.append("missing GitHub Pages IPv4: " + ", ".join(sorted(missing_ipv4)))
+    if unexpected:
+        findings.append("unexpected addresses: " + ", ".join(sorted(unexpected)))
+    if not known:
+        findings.append("no GitHub Pages address found")
+
+    ok = bool(known) and not missing_ipv4 and not unexpected
+    return CheckResult(name, ok, "; ".join(findings))
+
+
+def resolve_addresses(host: str) -> set[str]:
+    records = socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)
+    return {record[4][0] for record in records}
+
+
+def dns_check(name: str, host: str, *, require_all_ipv4: bool) -> CheckResult:
+    try:
+        addresses = resolve_addresses(host)
+    except socket.gaierror as exc:
+        return CheckResult(name, False, str(exc))
+    return evaluate_github_pages_dns(name, addresses, require_all_ipv4=require_all_ipv4)
 
 
 def http_check(name: str, url: str) -> tuple[CheckResult, str]:
@@ -65,6 +113,27 @@ def http_check(name: str, url: str) -> tuple[CheckResult, str]:
     if status != 200:
         return CheckResult(name, False, f"HTTP {status}, final URL: {final_url}"), text
     return CheckResult(name, True, f"HTTP 200, final URL: {final_url}"), text
+
+
+def www_redirect_check(www_url: str, expected_domain: str) -> CheckResult:
+    try:
+        status, final_url, _ = fetch_text(www_url)
+    except HTTPError as exc:
+        return CheckResult("www HTTPS redirect", False, f"HTTP {exc.code}: {exc.reason}")
+    except (URLError, TimeoutError, ssl.SSLError, ValueError) as exc:
+        return CheckResult("www HTTPS redirect", False, str(exc))
+
+    final = urlsplit(final_url)
+    expected = urlsplit(expected_domain)
+    correct_origin = final.scheme == "https" and final.hostname == expected.hostname
+    correct_path = (final.path or "/") == "/"
+    ok = status == 200 and correct_origin and correct_path
+    detail = f"HTTP {status}, final URL: {final_url}"
+    if not correct_origin:
+        detail += f"; expected HTTPS host {expected.hostname}"
+    if not correct_path:
+        detail += "; expected root path /"
+    return CheckResult("www HTTPS redirect", ok, detail)
 
 
 def write_report(path: Path, domain: str, results: list[CheckResult]) -> None:
@@ -88,10 +157,38 @@ def write_report(path: Path, domain: str, results: list[CheckResult]) -> None:
 
 
 def self_test() -> int:
-    results = [
-        CheckResult("Passing check", True, "ok"),
-        CheckResult("Failing check", False, "line one|line two\nline three"),
-    ]
+    passing_apex = evaluate_github_pages_dns(
+        "DNS apex GitHub Pages",
+        set(GITHUB_PAGES_IPV4) | {"2606:50c0:8000::153"},
+        require_all_ipv4=True,
+    )
+    passing_www = evaluate_github_pages_dns(
+        "DNS www GitHub Pages",
+        {"185.199.108.153"},
+        require_all_ipv4=False,
+    )
+    missing_apex = evaluate_github_pages_dns(
+        "Missing apex record",
+        set(GITHUB_PAGES_IPV4) - {"185.199.111.153"},
+        require_all_ipv4=True,
+    )
+    wrong_host = evaluate_github_pages_dns(
+        "Old hosting",
+        {"203.0.113.10"},
+        require_all_ipv4=False,
+    )
+    escaped = CheckResult("Escaping", False, "line one|line two\nline three")
+    results = [passing_apex, passing_www, missing_apex, wrong_host, escaped]
+
+    findings: list[str] = []
+    if not passing_apex.ok:
+        findings.append("complete GitHub Pages apex records must pass")
+    if not passing_www.ok:
+        findings.append("a www host resolving to GitHub Pages must pass")
+    if missing_apex.ok or "missing GitHub Pages IPv4" not in missing_apex.detail:
+        findings.append("an incomplete apex record set must fail with missing-address detail")
+    if wrong_host.ok or "unexpected addresses" not in wrong_host.detail:
+        findings.append("an old-hosting address must fail with unexpected-address detail")
 
     with TemporaryDirectory() as temporary:
         report = Path(temporary) / "report.md"
@@ -101,14 +198,18 @@ def self_test() -> int:
     required = [
         "# Parket36 live health report",
         "Domain: `https://example.test`",
-        "| Passing check | PASS | ok |",
-        "| Failing check | FAIL | line one\\|line two line three |",
+        "| DNS apex GitHub Pages | PASS |",
+        "| DNS www GitHub Pages | PASS |",
+        "| Missing apex record | FAIL |",
+        "| Old hosting | FAIL |",
+        "| Escaping | FAIL | line one\\|line two line three |",
     ]
-    missing = [marker for marker in required if marker not in text]
-    if missing:
+    findings.extend(f"missing report marker: {marker}" for marker in required if marker not in text)
+
+    if findings:
         print("Live health self-test failed:")
-        for marker in missing:
-            print(f"  - missing report marker: {marker}")
+        for finding in findings:
+            print(f"  - {finding}")
         return 1
 
     print("Live health self-test passed")
@@ -136,7 +237,9 @@ def main() -> int:
         write_report(ROOT / args.report, domain, results)
         return 1
 
-    results.append(dns_check(host))
+    www_host = f"www.{host}"
+    results.append(dns_check("DNS apex GitHub Pages", host, require_all_ipv4=True))
+    results.append(dns_check("DNS www GitHub Pages", www_host, require_all_ipv4=False))
 
     home_result, home = http_check("Homepage HTTPS", domain + "/")
     results.append(home_result)
@@ -158,6 +261,8 @@ def main() -> int:
                 "not present" if not forbidden else "found: " + ", ".join(forbidden),
             )
         )
+
+    results.append(www_redirect_check(f"https://{www_host}/", domain))
 
     robots_url = domain + "/robots.txt"
     robots_result, robots = http_check("robots.txt", robots_url)
