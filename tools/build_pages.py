@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 from breadcrumb_schema import inject_breadcrumb_schemas
 from css_bundle import prepare_css_bundle
 from image_attributes import normalize_image_attributes
+from service_callback_links import inject_service_callback_links
 from site_settings import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -325,6 +326,7 @@ def main() -> int:
 
     errors: list[str] = []
     normalize_public_copy(errors)
+    inject_service_callback_links(DEST, errors)
     prepare_css_bundle(ROOT, DEST, errors)
     normalize_image_attributes(DEST, errors)
     inject_lead_reliability(errors)
