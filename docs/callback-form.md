@@ -45,11 +45,16 @@
 
 Общий `js/main.js` продолжает отправлять событие `parket36:lead` с типом `request-submit` или `request-copy`.
 
-При клике по любой ссылке `#callback` `js/callback-form.js` отправляет:
+`js/callback-form.js` отправляет `callback-open` двумя способами:
+
+- `trigger: click` — посетитель нажал ссылку `#callback` уже на странице контактов;
+- `trigger: hash-entry` — посетитель пришёл с другой страницы по ссылке вида `/kontakty/#callback`.
+
+На один просмотр страницы отправляется не более одного события открытия, даже если обычный клик одновременно вызывает `hashchange`.
 
 ```js
 window.addEventListener('parket36:callback-open', event => {
-  console.log(event.detail);
+  console.log(event.detail.trigger, event.detail.attribution);
 });
 ```
 
@@ -59,7 +64,8 @@ window.addEventListener('parket36:callback-open', event => {
 {
   event: 'parket36_callback_open',
   page: '/kontakty/',
-  attribution: { /* first-touch UTM */ }
+  trigger: 'click' | 'hash-entry',
+  attribution: { /* first-touch UTM и landing */ }
 }
 ```
 
@@ -91,6 +97,24 @@ callback-request
 
 `callback-open` показывает интерес к короткой форме. `callback-request` срабатывает только для `request-submit`. Clipboard fallback `request-copy` не считается успешной заявкой на обратный звонок.
 
+## Путь со страницы стоимости
+
+На `/ceny/` добавлены три контекстных перехода к `/kontakty/#callback`:
+
+- под первым экраном;
+- рядом с кнопкой звонка в разделе предварительного бюджета;
+- в итоговом блоке «Хотите понять примерный бюджет?».
+
+При таком переходе:
+
+1. first-touch UTM и страница `/ceny/` остаются в session attribution;
+2. страница контактов автоматически прокручивается к форме;
+3. отправляется одно событие `callback-open` с `trigger: hash-entry`;
+4. успешная заявка сохраняется с `page: /kontakty/`;
+5. очищенный Referer заявки указывает первую посадочную `/ceny/`.
+
+Основной мобильный CTA страницы стоимости не меняется: посетителю по-прежнему доступны звонок и подробная оценка по фото.
+
 ## Проверка
 
 `tests/e2e/callback-form.spec.mjs` проверяет:
@@ -102,7 +126,8 @@ callback-request
 5. выводится специальное подтверждение;
 6. кнопка снова становится активной;
 7. создаётся ровно одно событие `parket36:callback-open` и `parket36_callback_open`;
-8. создаётся ровно одно событие `parket36:callback-request` и `parket36_callback_request`.
+8. создаётся ровно одно событие `parket36:callback-request` и `parket36_callback_request`;
+9. переход `/ceny/` → `/kontakty/#callback` создаёт `hash-entry`, не дублирует open-событие и сохраняет landing `/ceny/` до отправки заявки.
 
 ## Ограничения
 
