@@ -45,7 +45,25 @@
 
 Общий `js/main.js` продолжает отправлять событие `parket36:lead` с типом `request-submit` или `request-copy`.
 
-После успешного сохранения `js/callback-form.js` дополнительно отправляет:
+При клике по любой ссылке `#callback` `js/callback-form.js` отправляет:
+
+```js
+window.addEventListener('parket36:callback-open', event => {
+  console.log(event.detail);
+});
+```
+
+Для `dataLayer` добавляется событие:
+
+```js
+{
+  event: 'parket36_callback_open',
+  page: '/kontakty/',
+  attribution: { /* first-touch UTM */ }
+}
+```
+
+После успешного сохранения дополнительно отправляется:
 
 ```js
 window.addEventListener('parket36:callback-request', event => {
@@ -53,7 +71,7 @@ window.addEventListener('parket36:callback-request', event => {
 });
 ```
 
-Для `dataLayer` добавляется:
+Для `dataLayer`:
 
 ```js
 {
@@ -64,13 +82,14 @@ window.addEventListener('parket36:callback-request', event => {
 }
 ```
 
-Если подключена Яндекс Метрика и задан `window.parket36MetrikaId`, отправляется цель:
+Если подключена Яндекс Метрика и задан `window.parket36MetrikaId`, используются цели:
 
 ```text
+callback-open
 callback-request
 ```
 
-Цель срабатывает только для `request-submit`. Clipboard fallback `request-copy` не считается успешной заявкой на обратный звонок.
+`callback-open` показывает интерес к короткой форме. `callback-request` срабатывает только для `request-submit`. Clipboard fallback `request-copy` не считается успешной заявкой на обратный звонок.
 
 ## Проверка
 
@@ -82,7 +101,8 @@ callback-request
 4. first-touch referer не содержит query-параметров;
 5. выводится специальное подтверждение;
 6. кнопка снова становится активной;
-7. создаётся ровно одно событие `parket36:callback-request` и одно событие `parket36_callback_request` в `dataLayer`.
+7. создаётся ровно одно событие `parket36:callback-open` и `parket36_callback_open`;
+8. создаётся ровно одно событие `parket36:callback-request` и `parket36_callback_request`.
 
 ## Ограничения
 
