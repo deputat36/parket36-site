@@ -16,6 +16,8 @@ VERIFIER = ROOT / "supabase" / "functions" / "parket-lead-verify" / "index.ts"
 REQUEST_ID = ROOT / "supabase" / "functions" / "parket-lead-verify" / "request-id.ts"
 REQUEST_ID_TEST = ROOT / "supabase" / "functions" / "parket-lead-verify" / "request-id_test.ts"
 DEPLOY_WORKFLOW = ROOT / ".github" / "workflows" / "deploy-lead-function.yml"
+SITE_QUALITY = ROOT / ".github" / "workflows" / "site-quality.yml"
+PAGES = ROOT / ".github" / "workflows" / "pages.yml"
 
 REQUIRED_MARKERS = {
     WORKFLOW: (
@@ -70,6 +72,7 @@ REQUIRED_MARKERS = {
         "не закрывает его",
     ),
     CONFIG: (
+        "[functions.parket-public-lead]",
         "[functions.parket-lead-verify]",
         "verify_jwt = false",
     ),
@@ -103,6 +106,16 @@ REQUIRED_MARKERS = {
         "Deploy controlled lead verifier",
         "supabase functions deploy parket-lead-verify",
         "--no-verify-jwt",
+    ),
+    SITE_QUALITY: (
+        "Test controlled lead verifier request ID",
+        "deno test supabase/functions/parket-lead-verify/request-id_test.ts",
+        "deno check supabase/functions/parket-lead-verify/index.ts",
+    ),
+    PAGES: (
+        "Test controlled lead verifier request ID",
+        "deno test supabase/functions/parket-lead-verify/request-id_test.ts",
+        "deno check supabase/functions/parket-lead-verify/index.ts",
     ),
 }
 
@@ -163,6 +176,10 @@ def main() -> int:
         findings.append("controlled smoke workflow must reference PARKET_HEALTHCHECK_TOKEN exactly once")
     if "PARKET_SMOKE_CONTACT" in workflow.split("inputs:", 1)[-1].split("permissions:", 1)[0]:
         findings.append("PARKET_SMOKE_CONTACT must never be accepted as a workflow input")
+
+    config = texts.get(CONFIG, "")
+    if config.count("verify_jwt = false") != 2:
+        findings.append("supabase/config.toml must explicitly disable JWT for exactly two protected functions")
 
     script = texts.get(SCRIPT, "")
     for marker in FORBIDDEN_SCRIPT_MARKERS:
