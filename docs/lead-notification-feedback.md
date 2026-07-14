@@ -22,6 +22,15 @@ notificationConfirmed: true
 
 ### `disabled`, `partial_failure`, `unknown`
 
+Примеры неподтверждённой доставки:
+
+```text
+notification: disabled
+notification: partial_failure
+notification: unknown
+notificationConfirmed: false
+```
+
 Посетитель видит, что заявка или номер сохранены, но автоматическое уведомление Ивану не подтверждено. Форма предлагает сразу позвонить по номеру `8 (900) 926-79-29`, чтобы клиент не ожидал обратного звонка вслепую.
 
 Подробная форма дополнительно напоминает приложить фотографии к скопированному тексту.
