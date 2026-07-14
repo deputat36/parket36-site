@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Check or update shared Parket36 contact and analytics settings.
+"""Check or update shared Parket36 contact, endpoint and analytics settings.
 
 Usage:
     python tools/site_settings.py --check
     python tools/site_settings.py --write
 
-The script intentionally touches only predictable shared values inside HTML
-pages: phone links, display phone, approved MAX links and the optional
+The script intentionally touches only predictable shared values: phone links,
+display phone, approved MAX links, the public lead endpoint and the optional
 Yandex Metrika snippet generated from data/site.json.
 """
 
@@ -20,6 +20,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "data" / "site.json"
+MAIN_JS_PATH = ROOT / "js" / "main.js"
+LEAD_ENDPOINT_DOCS = (
+    ROOT / "docs" / "supabase-parket-leads.md",
+    ROOT / "docs" / "lead-endpoint-test-mode.md",
+)
 IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
 
 TEL_RE = re.compile(r"tel:\+7\d{10}")
@@ -28,6 +33,12 @@ MAX_HREF_RE = re.compile(r'href="https://max\.ru[^\"]*"')
 METRIKA_BLOCK_RE = re.compile(
     r"\n?\s*<!-- Parket36 Metrika start -->.*?<!-- Parket36 Metrika end -->\n?",
     re.DOTALL,
+)
+LEAD_ENDPOINT_RE = re.compile(
+    r"https://[a-z0-9-]+\.supabase\.co/functions/v1/parket-public-lead"
+)
+LEAD_ENDPOINT_CONST_RE = re.compile(
+    r"const\s+PARKET_LEAD_ENDPOINT\s*=\s*['\"][^'\"]+['\"]\s*;"
 )
 
 
@@ -41,9 +52,21 @@ def iter_html_files() -> list[Path]:
     return sorted(result)
 
 
+def shared_endpoint_files() -> tuple[Path, ...]:
+    return (MAIN_JS_PATH, *LEAD_ENDPOINT_DOCS)
+
+
 def load_config() -> dict[str, object]:
     data = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
-    required = {"phone_display", "phone_e164", "domain", "max_url", "metrika_id", "default_request_path"}
+    required = {
+        "phone_display",
+        "phone_e164",
+        "domain",
+        "lead_endpoint",
+        "max_url",
+        "metrika_id",
+        "default_request_path",
+    }
     missing = sorted(required - data.keys())
     if missing:
         raise ValueError(f"Missing settings: {', '.join(missing)}")
@@ -61,6 +84,14 @@ def load_config() -> dict[str, object]:
     if not re.fullmatch(r"https://[a-z0-9.-]+", domain):
         raise ValueError("domain must use https and must not contain a trailing slash")
     data["domain"] = domain
+
+    lead_endpoint = str(data["lead_endpoint"]).strip()
+    if not LEAD_ENDPOINT_RE.fullmatch(lead_endpoint):
+        raise ValueError(
+            "lead_endpoint must use an HTTPS Supabase functions URL ending in "
+            "/functions/v1/parket-public-lead"
+        )
+    data["lead_endpoint"] = lead_endpoint
 
     max_url = str(data.get("max_url", "")).strip()
     if max_url and not re.fullmatch(r"https://max\.ru/[^\s\"'<>]+", max_url):
@@ -92,7 +123,7 @@ def render_metrika_block(counter_id: str) -> str:
   <!-- Parket36 Metrika end -->"""
 
 
-def update_text(text: str, config: dict[str, object]) -> str:
+def update_html_text(text: str, config: dict[str, object]) -> str:
     phone_e164 = str(config["phone_e164"])
     phone_display = str(config["phone_display"])
     max_url = str(config.get("max_url", "")).strip()
@@ -111,6 +142,22 @@ def update_text(text: str, config: dict[str, object]) -> str:
     return text
 
 
+def update_endpoint_text(path: Path, text: str, config: dict[str, object]) -> str:
+    endpoint = str(config["lead_endpoint"])
+    if path == MAIN_JS_PATH:
+        if not LEAD_ENDPOINT_CONST_RE.search(text):
+            raise ValueError("js/main.js is missing the PARKET_LEAD_ENDPOINT constant")
+        return LEAD_ENDPOINT_CONST_RE.sub(
+            f"const PARKET_LEAD_ENDPOINT = '{endpoint}';",
+            text,
+            count=1,
+        )
+
+    if not LEAD_ENDPOINT_RE.search(text):
+        raise ValueError(f"{path.relative_to(ROOT)} is missing the public lead endpoint URL")
+    return LEAD_ENDPOINT_RE.sub(endpoint, text)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -124,16 +171,35 @@ def main() -> int:
         print(f"Configuration error: {exc}")
         return 1
 
+    missing_shared = [path.relative_to(ROOT).as_posix() for path in shared_endpoint_files() if not path.is_file()]
+    if missing_shared:
+        print("Configuration error: missing shared files: " + ", ".join(missing_shared))
+        return 1
+
     changed: list[str] = []
-    for path in iter_html_files():
-        original = path.read_text(encoding="utf-8")
-        updated = update_text(original, config)
-        if original == updated:
-            continue
-        rel = path.relative_to(ROOT).as_posix()
-        changed.append(rel)
-        if args.write:
-            path.write_text(updated, encoding="utf-8")
+    try:
+        for path in iter_html_files():
+            original = path.read_text(encoding="utf-8")
+            updated = update_html_text(original, config)
+            if original == updated:
+                continue
+            rel = path.relative_to(ROOT).as_posix()
+            changed.append(rel)
+            if args.write:
+                path.write_text(updated, encoding="utf-8")
+
+        for path in shared_endpoint_files():
+            original = path.read_text(encoding="utf-8")
+            updated = update_endpoint_text(path, original, config)
+            if original == updated:
+                continue
+            rel = path.relative_to(ROOT).as_posix()
+            changed.append(rel)
+            if args.write:
+                path.write_text(updated, encoding="utf-8")
+    except (OSError, ValueError) as exc:
+        print(f"Configuration error: {exc}")
+        return 1
 
     if args.check and changed:
         print("Shared settings are not synchronized:")
