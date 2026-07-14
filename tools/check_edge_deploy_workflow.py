@@ -17,16 +17,31 @@ REQUIRED_MARKERS = {
     WORKFLOW: (
         "name: Deploy production lead function",
         "workflow_dispatch:",
+        "operation:",
+        'description: "Validate readiness only or deploy after validation"',
+        "default: validate-only",
+        "- validate-only",
+        "- deploy",
+        'description: "For deploy only: type DEPLOY_PARKET_PUBLIC_LEAD"',
+        "required: false",
+        'default: ""',
         "DEPLOY_PARKET_PUBLIC_LEAD",
         "notification_policy:",
         "require-configured",
         "allow-disabled",
         "issues: write",
+        "validate production readiness",
+        "deploy and verify production functions",
+        "needs: validate",
+        "if: inputs.operation == 'deploy'",
         "environment: production",
         "SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}",
         "SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}",
         "PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}",
+        "OPERATION: ${{ inputs.operation }}",
         'if [ "$GITHUB_REF" != "refs/heads/main" ]',
+        'if [ "$OPERATION" = "deploy" ]',
+        "Revalidate deploy confirmation and GitHub secrets",
         "uses: actions/checkout@v7",
         "persist-credentials: false",
         "uses: actions/setup-python@v6",
@@ -43,6 +58,11 @@ REQUIRED_MARKERS = {
         "--notification-policy",
         "rm -f remote-secret-names.json",
         "name: edge-deploy-readiness",
+        "Finish validate-only readiness",
+        "inputs.operation == 'validate-only'",
+        "No Edge Function was deployed because operation was validate-only.",
+        "Revalidate deployment readiness after approval",
+        "edge-deploy-final-readiness",
         "Deploy controlled lead verifier",
         "supabase functions deploy parket-lead-verify",
         "Deploy parket-public-lead",
@@ -85,6 +105,13 @@ REQUIRED_MARKERS = {
     ),
     DOC: (
         "Deploy production lead function",
+        "validate-only",
+        "режим по умолчанию",
+        "ничего не развёртывает",
+        "operation",
+        "readiness-job",
+        "deploy-job",
+        "required reviewer",
         "parket-public-lead",
         "parket-lead-verify",
         "SUPABASE_ACCESS_TOKEN",
@@ -99,6 +126,7 @@ REQUIRED_MARKERS = {
         "--use-api",
         "--no-verify-jwt",
         "edge-deploy-readiness",
+        "edge-deploy-final-readiness",
         "edge-deploy-post-checks",
         "контролируемая реальная заявка",
     ),
@@ -108,6 +136,7 @@ FORBIDDEN_WORKFLOW_MARKERS = (
     "  push:",
     "  pull_request:",
     "  schedule:",
+    "default: deploy",
     "permissions: write-all",
     "set -x",
     'echo "$SUPABASE_ACCESS_TOKEN"',
@@ -137,22 +166,74 @@ def main() -> int:
         if marker in workflow:
             findings.append(f"deploy workflow contains forbidden marker: {marker}")
 
-    if workflow.count("secrets.SUPABASE_ACCESS_TOKEN") != 1:
-        findings.append("deploy workflow must reference SUPABASE_ACCESS_TOKEN exactly once through secrets")
-    if workflow.count("secrets.SUPABASE_PROJECT_ID") != 1:
-        findings.append("deploy workflow must reference SUPABASE_PROJECT_ID exactly once through secrets")
-    if workflow.count("secrets.PARKET_HEALTHCHECK_TOKEN") != 1:
-        findings.append("deploy workflow must reference PARKET_HEALTHCHECK_TOKEN exactly once through secrets")
+    if workflow.count("secrets.SUPABASE_ACCESS_TOKEN") != 2:
+        findings.append("both readiness and deploy jobs must reference SUPABASE_ACCESS_TOKEN through secrets")
+    if workflow.count("secrets.SUPABASE_PROJECT_ID") != 2:
+        findings.append("both readiness and deploy jobs must reference SUPABASE_PROJECT_ID through secrets")
+    if workflow.count("secrets.PARKET_HEALTHCHECK_TOKEN") != 2:
+        findings.append("both readiness and deploy jobs must reference PARKET_HEALTHCHECK_TOKEN through secrets")
+
+    inputs_block_start = workflow.find("workflow_dispatch:")
+    inputs_block_end = workflow.find("\npermissions:")
+    inputs_block = workflow[inputs_block_start:inputs_block_end]
+    operation_position = inputs_block.find("operation:")
+    confirm_position = inputs_block.find("confirm:")
+    notification_position = inputs_block.find("notification_policy:")
+    if min(operation_position, confirm_position, notification_position) < 0:
+        findings.append("workflow inputs must include operation, confirm and notification_policy")
+    elif not (operation_position < confirm_position < notification_position):
+        findings.append("workflow inputs must keep operation before confirm and notification_policy")
+
+    confirm_block = inputs_block[confirm_position:notification_position] if confirm_position >= 0 else ""
+    if "required: false" not in confirm_block:
+        findings.append("deploy confirmation must be optional for validate-only runs")
+
+    validate_start = workflow.find("\n  validate:\n")
+    deploy_start = workflow.find("\n  deploy:\n")
+    if validate_start < 0 or deploy_start < 0 or validate_start > deploy_start:
+        findings.append("workflow must keep readiness job before deploy job")
+        validate_block = ""
+        deploy_block = ""
+    else:
+        validate_block = workflow[validate_start:deploy_start]
+        deploy_block = workflow[deploy_start:]
+
+    if "environment: production" in validate_block:
+        findings.append("validate-only readiness job must not require the production environment")
+    if "supabase functions deploy" in validate_block:
+        findings.append("validate-only readiness job must not contain deployment commands")
+    if "Finish validate-only readiness" not in validate_block:
+        findings.append("validate job must include an explicit validate-only completion step")
+
+    if "if: inputs.operation == 'deploy'" not in deploy_block:
+        findings.append("deploy job must be guarded by operation == deploy")
+    if "needs: validate" not in deploy_block:
+        findings.append("deploy job must depend on successful readiness validation")
+    if "environment: production" not in deploy_block:
+        findings.append("deploy job must use the protected production environment")
+    if "Revalidate deploy confirmation and GitHub secrets" not in deploy_block:
+        findings.append("deploy job must revalidate confirmation and secrets after environment approval")
+    if "Revalidate deployment readiness after approval" not in deploy_block:
+        findings.append("deploy job must repeat remote readiness checks after approval")
 
     readiness_position = workflow.find("Validate deployment readiness")
+    validate_only_position = workflow.find("Finish validate-only readiness")
+    final_readiness_position = workflow.find("Revalidate deployment readiness after approval")
     verifier_position = workflow.find("Deploy controlled lead verifier")
     public_position = workflow.find("Deploy parket-public-lead")
     preflight_position = workflow.find("Run public endpoint preflight")
     protected_position = workflow.find("Run protected production healthcheck")
-    if min(readiness_position, verifier_position, public_position, preflight_position, protected_position) < 0:
-        findings.append("deploy workflow is missing one or more required deployment stages")
-    elif not (readiness_position < verifier_position < public_position < preflight_position):
-        findings.append("deployment order must be readiness, verifier, public lead, public preflight")
+    if min(readiness_position, validate_only_position, final_readiness_position, verifier_position, public_position, preflight_position, protected_position) < 0:
+        findings.append("deploy workflow is missing one or more required readiness or deployment stages")
+    elif not (
+        readiness_position
+        < validate_only_position
+        < final_readiness_position
+        < verifier_position
+        < public_position
+        < preflight_position
+    ):
+        findings.append("workflow order must be readiness, validate-only finish, final readiness, verifier, public lead, preflight")
     if protected_position < public_position:
         findings.append("protected healthcheck must run after both deployments")
 
