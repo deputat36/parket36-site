@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "deploy-lead-function.yml"
 SUPABASE_CONFIG = ROOT / "supabase" / "config.toml"
 READINESS = ROOT / "tools" / "check_edge_deploy_readiness.py"
+GITHUB_SECRETS = ROOT / "tools" / "check_edge_github_secrets.py"
 DOC = ROOT / "docs" / "production-edge-deploy.md"
 
 REQUIRED_MARKERS = {
@@ -38,10 +39,22 @@ REQUIRED_MARKERS = {
         "SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}",
         "SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}",
         "PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}",
+        "HAS_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}",
+        "HAS_SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID != '' }}",
+        "HAS_PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN != '' }}",
         "OPERATION: ${{ inputs.operation }}",
         'if [ "$GITHUB_REF" != "refs/heads/main" ]',
         'if [ "$OPERATION" = "deploy" ]',
-        "Revalidate deploy confirmation and GitHub secrets",
+        "Validate operation and confirmation",
+        "Revalidate deploy confirmation",
+        "Check GitHub secret readiness",
+        "Recheck GitHub secret readiness after approval",
+        "python tools/check_edge_github_secrets.py",
+        "--has-supabase-access-token",
+        "--has-supabase-project-id",
+        "--has-healthcheck-token",
+        "edge-github-secret-readiness",
+        "edge-deploy-final-github-secrets",
         "uses: actions/checkout@v7",
         "persist-credentials: false",
         "uses: actions/setup-python@v6",
@@ -103,6 +116,17 @@ REQUIRED_MARKERS = {
         "This report contains secret names only",
         "--self-test",
     ),
+    GITHUB_SECRETS: (
+        "SUPABASE_ACCESS_TOKEN",
+        "SUPABASE_PROJECT_ID",
+        "PARKET_HEALTHCHECK_TOKEN",
+        "configured/missing booleans only",
+        "never reads, prints, hashes or stores secret values",
+        "--has-supabase-access-token",
+        "--has-supabase-project-id",
+        "--has-healthcheck-token",
+        "--self-test",
+    ),
     DOC: (
         "Deploy production lead function",
         "validate-only",
@@ -112,6 +136,9 @@ REQUIRED_MARKERS = {
         "readiness-job",
         "deploy-job",
         "required reviewer",
+        "edge-github-secret-readiness",
+        "edge-deploy-final-github-secrets",
+        "configured/missing",
         "parket-public-lead",
         "parket-lead-verify",
         "SUPABASE_ACCESS_TOKEN",
@@ -146,6 +173,19 @@ FORBIDDEN_WORKFLOW_MARKERS = (
 )
 
 
+def run_self_test(path: Path) -> str | None:
+    completed = subprocess.run(
+        [sys.executable, str(path), "--self-test"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode == 0:
+        return None
+    return (completed.stdout + completed.stderr).strip() or "unknown self-test error"
+
+
 def main() -> int:
     findings: list[str] = []
     texts: dict[Path, str] = {}
@@ -166,12 +206,17 @@ def main() -> int:
         if marker in workflow:
             findings.append(f"deploy workflow contains forbidden marker: {marker}")
 
-    if workflow.count("secrets.SUPABASE_ACCESS_TOKEN") != 2:
-        findings.append("both readiness and deploy jobs must reference SUPABASE_ACCESS_TOKEN through secrets")
-    if workflow.count("secrets.SUPABASE_PROJECT_ID") != 2:
-        findings.append("both readiness and deploy jobs must reference SUPABASE_PROJECT_ID through secrets")
-    if workflow.count("secrets.PARKET_HEALTHCHECK_TOKEN") != 2:
-        findings.append("both readiness and deploy jobs must reference PARKET_HEALTHCHECK_TOKEN through secrets")
+    exact_secret_lines = (
+        "SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}",
+        "SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}",
+        "PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}",
+        "HAS_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}",
+        "HAS_SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID != '' }}",
+        "HAS_PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN != '' }}",
+    )
+    for line in exact_secret_lines:
+        if workflow.count(line) != 2:
+            findings.append(f"readiness and deploy jobs must each contain exact secret marker: {line}")
 
     inputs_block_start = workflow.find("workflow_dispatch:")
     inputs_block_end = workflow.find("\npermissions:")
@@ -204,6 +249,17 @@ def main() -> int:
         findings.append("validate-only readiness job must not contain deployment commands")
     if "Finish validate-only readiness" not in validate_block:
         findings.append("validate job must include an explicit validate-only completion step")
+    if "edge-github-secret-readiness" not in validate_block:
+        findings.append("validate job must upload GitHub secret readiness before Supabase checks")
+
+    github_check_position = validate_block.find("Check GitHub secret readiness")
+    github_upload_position = validate_block.find("Upload GitHub secret readiness report")
+    github_stop_position = validate_block.find("Stop when GitHub secret readiness failed")
+    cli_position = validate_block.find("Set up Supabase CLI")
+    if min(github_check_position, github_upload_position, github_stop_position, cli_position) < 0:
+        findings.append("validate job is missing GitHub secret readiness stages")
+    elif not (github_check_position < github_upload_position < github_stop_position < cli_position):
+        findings.append("GitHub secret report must be uploaded and enforced before Supabase CLI")
 
     if "if: inputs.operation == 'deploy'" not in deploy_block:
         findings.append("deploy job must be guarded by operation == deploy")
@@ -211,10 +267,21 @@ def main() -> int:
         findings.append("deploy job must depend on successful readiness validation")
     if "environment: production" not in deploy_block:
         findings.append("deploy job must use the protected production environment")
-    if "Revalidate deploy confirmation and GitHub secrets" not in deploy_block:
-        findings.append("deploy job must revalidate confirmation and secrets after environment approval")
+    if "Revalidate deploy confirmation" not in deploy_block:
+        findings.append("deploy job must revalidate confirmation after environment approval")
+    if "Recheck GitHub secret readiness after approval" not in deploy_block:
+        findings.append("deploy job must recheck GitHub secret presence after environment approval")
     if "Revalidate deployment readiness after approval" not in deploy_block:
         findings.append("deploy job must repeat remote readiness checks after approval")
+
+    final_github_check = deploy_block.find("Recheck GitHub secret readiness after approval")
+    final_github_upload = deploy_block.find("Upload final GitHub secret readiness report")
+    final_github_stop = deploy_block.find("Stop before deploy when final GitHub secret readiness failed")
+    final_cli = deploy_block.find("Set up Supabase CLI")
+    if min(final_github_check, final_github_upload, final_github_stop, final_cli) < 0:
+        findings.append("deploy job is missing final GitHub secret readiness stages")
+    elif not (final_github_check < final_github_upload < final_github_stop < final_cli):
+        findings.append("final GitHub secret report must be uploaded and enforced before Supabase CLI")
 
     readiness_position = workflow.find("Validate deployment readiness")
     validate_only_position = workflow.find("Finish validate-only readiness")
@@ -241,17 +308,14 @@ def main() -> int:
     if config.count("verify_jwt = false") != 2:
         findings.append("supabase/config.toml must set verify_jwt = false exactly for both functions")
 
-    if READINESS.is_file():
-        completed = subprocess.run(
-            [sys.executable, str(READINESS), "--self-test"],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if completed.returncode != 0:
-            detail = (completed.stdout + completed.stderr).strip() or "unknown self-test error"
-            findings.append("edge deploy readiness self-test failed: " + detail)
+    for path, label in (
+        (READINESS, "edge deploy readiness"),
+        (GITHUB_SECRETS, "GitHub secret readiness"),
+    ):
+        if path.is_file():
+            error = run_self_test(path)
+            if error:
+                findings.append(f"{label} self-test failed: {error}")
 
     if findings:
         print("Edge deploy workflow findings:")
