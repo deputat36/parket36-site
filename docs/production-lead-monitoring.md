@@ -23,7 +23,17 @@ Workflow `.github/workflows/lead-endpoint-health.yml` ежедневно и вр
 
 ## Как определяется endpoint
 
-`tools/check_production_lead_endpoint.py` читает значение `PARKET_LEAD_ENDPOINT` непосредственно из `js/main.js`. Это не позволяет мониторингу и публичной форме незаметно использовать разные адреса.
+Источник правды — поле `lead_endpoint` в `data/site.json`.
+
+Команда:
+
+```bash
+python tools/site_settings.py --write
+```
+
+синхронизирует это значение с константой `PARKET_LEAD_ENDPOINT` в `js/main.js` и с эксплуатационными инструкциями. Общий quality gate запускает `python tools/site_settings.py --check` и блокирует публикацию при любом расхождении.
+
+`tools/check_production_lead_endpoint.py` намеренно читает адрес из `js/main.js`, то есть проверяет тот endpoint, которым фактически пользуется публичная форма. Статический guardrail одновременно требует совпадения этого адреса с `data/site.json`.
 
 Проверка требует HTTPS и точный путь `/functions/v1/parket-public-lead`.
 
@@ -82,6 +92,7 @@ PARKET_HEALTHCHECK_TOKEN
 ## Локальная проверка структуры
 
 ```bash
+python tools/site_settings.py --check
 python tools/check_production_lead_endpoint.py --self-test
 python tools/manage_lead_endpoint_issue.py --self-test
 python tools/check_lead_endpoint_monitoring.py
@@ -97,6 +108,16 @@ python tools/check_production_lead_endpoint.py \
 ```
 
 Не публиковать созданный локальный файл, если в него вручную добавлялись дополнительные диагностические данные.
+
+## Смена Supabase endpoint
+
+1. Изменить только `lead_endpoint` в `data/site.json`.
+2. Выполнить `python tools/site_settings.py --write`.
+3. Проверить diff `js/main.js` и двух инструкций.
+4. Запустить общий quality gate.
+5. После публикации вручную запустить `Production lead endpoint health`.
+
+Не редактировать URL отдельно в `js/main.js`: такой diff будет остановлен shared-settings проверкой.
 
 ## Ограничения
 
