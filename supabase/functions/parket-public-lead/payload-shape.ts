@@ -2,6 +2,7 @@ import { validateContactPhone } from "./contact-validation.ts";
 
 export const LEAD_STRING_FIELDS = Object.freeze([
   "request_id",
+  "verify_request_id",
   "service",
   "location",
   "area",
