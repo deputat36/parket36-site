@@ -149,7 +149,7 @@ def handle_failure(report_path: Path) -> int:
         "POST",
         api_base(repository) + "/issues",
         token,
-        {"title": ISSUE_TITLE, "body": body, "labels": ["monitoring"]},
+        {"title": ISSUE_TITLE, "body": body},
     )
     print(f"Created production lead endpoint issue #{created['number']}")
     return 0
