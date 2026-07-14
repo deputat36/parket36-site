@@ -43,6 +43,7 @@ CHECKS = [
     ("Validate homepage callback paths", ["tools/check_home_callback_links.py"]),
     ("Validate lead paths", ["tools/check_lead_paths.py"]),
     ("Validate lead reliability", ["tools/check_lead_reliability.py"]),
+    ("Validate lead notification feedback", ["tools/check_lead_notification_feedback.py"]),
     ("Validate lead payload shape", ["tools/check_payload_shape.py"]),
     ("Validate IndexNow discovery", ["tools/submit_indexnow.py", "--check"]),
     ("Build public directory", ["tools/build_pages.py"]),

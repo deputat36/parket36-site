@@ -49,7 +49,7 @@ test('валидная callback-заявка сохраняет first-touch ка
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 801 })
+      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 801, notification: 'sent' })
     });
   });
   await prepareBrowserSignals(page);
@@ -102,6 +102,8 @@ test('валидная callback-заявка сохраняет first-touch ка
     service: 'Обратный звонок по паркетным работам',
     page: '/kontakty/',
     backend: 'supabase',
+    notification: 'sent',
+    notificationConfirmed: true,
     attribution: {
       source: 'yandex_business',
       medium: 'local',
@@ -137,7 +139,7 @@ test('переход со стоимости открывает callback оди�
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 802 })
+      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 802, notification: 'sent' })
     });
   });
   await prepareBrowserSignals(page);

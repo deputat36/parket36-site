@@ -29,7 +29,7 @@ test('прямая VK-ссылка открывает callback и сохраня
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ ok: true, request_id: payload.request_id, lead_id: 806 })
+      body: JSON.stringify({ ok: true, request_id: payload.request_id, lead_id: 806, notification: 'sent' })
     });
   });
 
@@ -79,6 +79,8 @@ test('прямая VK-ссылка открывает callback и сохраня
     type: 'callback-request',
     topic: 'general',
     topicSource: 'general',
+    notification: 'sent',
+    notificationConfirmed: true,
     attribution: { source: 'vk', content: 'callback_post', landing: '/kontakty/' }
   });
 

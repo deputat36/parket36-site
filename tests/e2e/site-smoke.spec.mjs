@@ -57,7 +57,7 @@ test('шаблон формы заполняет задачу, а успешны
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 101 })
+      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 101, notification: 'sent' })
     });
   });
 
@@ -94,7 +94,7 @@ test('лимиты полей совпадают с backend и счётчик о
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 303 })
+      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 303, notification: 'sent' })
     });
   });
 
@@ -227,7 +227,7 @@ test('форма сообщает об ошибках и блокирует по
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ ok: true, request_id: payload.request_id, lead_id: 202 })
+      body: JSON.stringify({ ok: true, request_id: payload.request_id, lead_id: 202, notification: 'sent' })
     });
   });
 

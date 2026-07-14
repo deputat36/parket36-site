@@ -25,6 +25,7 @@ CONTACT_VALIDATION_SCRIPT = '<script src="/js/contact-validation.js" defer></scr
 LEAD_RELIABILITY_SCRIPT = '<script src="/js/lead-reliability.js" defer></script>'
 FIRST_TOUCH_REFERRER_SCRIPT = '<script src="/js/first-touch-referrer.js" defer></script>'
 MAIN_SCRIPT = '<script src="/js/main.js" defer></script>'
+LEAD_NOTIFICATION_FEEDBACK_SCRIPT = '<script src="/js/lead-notification-feedback.js" defer></script>'
 
 PUBLIC_COPY_REPLACEMENTS = (
     (
@@ -163,11 +164,21 @@ def inject_lead_reliability(errors: list[str]) -> None:
         "contact validation": (DEST / "js" / "contact-validation.js", CONTACT_VALIDATION_SCRIPT),
         "lead reliability": (DEST / "js" / "lead-reliability.js", LEAD_RELIABILITY_SCRIPT),
         "first-touch referrer": (DEST / "js" / "first-touch-referrer.js", FIRST_TOUCH_REFERRER_SCRIPT),
+        "lead notification feedback": (
+            DEST / "js" / "lead-notification-feedback.js",
+            LEAD_NOTIFICATION_FEEDBACK_SCRIPT,
+        ),
     }
     missing_scripts = [label for label, (path, _) in required_scripts.items() if not path.exists()]
     if missing_scripts:
         errors.append("Required lead scripts are missing from the public build: " + ", ".join(missing_scripts))
         return
+
+    before_main_scripts = (
+        CONTACT_VALIDATION_SCRIPT,
+        LEAD_RELIABILITY_SCRIPT,
+        FIRST_TOUCH_REFERRER_SCRIPT,
+    )
 
     for html_file in sorted(DEST.rglob("*.html")):
         text = html_file.read_text(encoding="utf-8")
@@ -179,17 +190,18 @@ def inject_lead_reliability(errors: list[str]) -> None:
             )
             continue
 
-        scripts = [
-            script
-            for _, script in required_scripts.values()
-            if script not in text
-        ]
-        if not scripts:
+        scripts_before = [script for script in before_main_scripts if script not in text]
+        needs_feedback = LEAD_NOTIFICATION_FEEDBACK_SCRIPT not in text
+        if not scripts_before and not needs_feedback:
             continue
+
+        replacement = [*scripts_before, MAIN_SCRIPT]
+        if needs_feedback:
+            replacement.append(LEAD_NOTIFICATION_FEEDBACK_SCRIPT)
 
         text = text.replace(
             MAIN_SCRIPT,
-            "\n".join([*scripts, MAIN_SCRIPT]),
+            "\n".join(replacement),
             1,
         )
         html_file.write_text(text, encoding="utf-8")
