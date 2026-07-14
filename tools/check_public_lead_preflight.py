@@ -15,7 +15,7 @@ from site_settings import load_config
 
 DEFAULT_REPORT = Path("lead-endpoint-preflight.md")
 REQUIRED_METHODS = {"POST", "OPTIONS"}
-REQUIRED_HEADERS = {"content-type"}
+REQUIRED_HEADERS = {"content-type", "x-parket-health-token"}
 
 
 def split_header_values(value: str) -> set[str]:
@@ -29,8 +29,8 @@ def request_preflight(endpoint: str, origin: str, timeout: float) -> tuple[int, 
         headers={
             "Origin": origin,
             "Access-Control-Request-Method": "POST",
-            "Access-Control-Request-Headers": "content-type",
-            "User-Agent": "Parket36-Public-Lead-Preflight/1.0",
+            "Access-Control-Request-Headers": "content-type, x-parket-health-token",
+            "User-Agent": "Parket36-Public-Lead-Preflight/1.1",
         },
     )
     try:
@@ -136,7 +136,8 @@ def render_report(
         lines.append("")
     lines.extend([
         "The request uses HTTP OPTIONS only. It does not send form data, create a lead or require a secret.",
-        "A PASS confirms public routing and the browser CORS contract, not database or notification readiness.",
+        "A PASS confirms public routing, the browser CORS contract and the health-token header advertised by the current GitHub function source.",
+        "It does not confirm database or notification readiness.",
         "",
     ])
     return "\n".join(lines)
@@ -222,11 +223,14 @@ def self_test() -> int:
     broken_headers = dict(healthy_headers)
     broken_headers["access-control-allow-origin"] = "https://example.test"
     broken_headers["access-control-allow-methods"] = "OPTIONS"
+    broken_headers["access-control-allow-headers"] = "authorization, content-type"
     _, broken_findings = validate_preflight(status=200, headers=broken_headers, origin=origin)
     if not any("allow_origin" in finding for finding in broken_findings):
         failures.append("wrong origin was not detected")
     if not any("allow_methods" in finding for finding in broken_findings):
         failures.append("missing POST method was not detected")
+    if not any("x-parket-health-token" in finding for finding in broken_findings):
+        failures.append("stale function contract was not detected")
 
     report = render_report(
         endpoint="https://example.supabase.co/functions/v1/parket-public-lead",
@@ -236,7 +240,7 @@ def self_test() -> int:
         rows=rows,
         findings=[],
     )
-    for marker in ("HTTP OPTIONS only", "does not send form data", "browser CORS contract"):
+    for marker in ("HTTP OPTIONS only", "does not send form data", "current GitHub function source"):
         if marker not in report:
             failures.append(f"report missing marker: {marker}")
 
