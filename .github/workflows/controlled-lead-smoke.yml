@@ -1,0 +1,93 @@
+name: Controlled production lead smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type SEND_CONTROLLED_LEAD"
+        required: true
+        type: string
+      expected_notification:
+        description: "Expected notification state"
+        required: true
+        default: sent
+        type: choice
+        options:
+          - sent
+          - disabled
+          - any
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: controlled-production-lead-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    name: send and verify one controlled lead
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment: production
+    env:
+      PARKET_SMOKE_CONTACT: ${{ secrets.PARKET_SMOKE_CONTACT }}
+      PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}
+      EXPECTED_NOTIFICATION: ${{ inputs.expected_notification }}
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Validate confirmation and protected inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Controlled production smoke is allowed only from main."
+            exit 1
+          fi
+          if [ "${{ inputs.confirm }}" != "SEND_CONTROLLED_LEAD" ]; then
+            echo "::error::Confirmation text does not match SEND_CONTROLLED_LEAD."
+            exit 1
+          fi
+          missing=0
+          for name in PARKET_SMOKE_CONTACT PARKET_HEALTHCHECK_TOKEN; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not configured in GitHub Actions secrets."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+      - name: Run one controlled production lead
+        id: controlled_smoke
+        continue-on-error: true
+        run: >-
+          python tools/run_controlled_lead_smoke.py
+          --expected-notification "$EXPECTED_NOTIFICATION"
+          --report controlled-lead-smoke.md
+      - name: Upload controlled smoke report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: controlled-lead-smoke
+          path: controlled-lead-smoke.md
+          if-no-files-found: error
+          retention-days: 30
+      - name: Comment successful technical verification on issue 373
+        if: steps.controlled_smoke.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh issue comment 373
+          --body "Controlled production lead smoke passed for main commit $GITHUB_SHA in $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. The workflow confirmed the public response plus matching rows in parket_leads and parket_public_lead_audit. Do not close this issue until Ivan confirms actual receipt of the Telegram/email notification."
+      - name: Fail on controlled smoke errors
+        if: steps.controlled_smoke.outcome == 'failure'
+        run: exit 1
