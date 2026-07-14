@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create one monitoring issue for production lead endpoint failures and close it on recovery."""
+"""Create one monitoring issue for lead endpoint failures and close it on recovery."""
 
 from __future__ import annotations
 
@@ -13,9 +13,30 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-ISSUE_TITLE = "[monitoring] production lead endpoint failure"
 API_VERSION = "2022-11-28"
 MAX_REPORT_CHARS = 8_000
+MONITORS = {
+    "protected": {
+        "title": "[monitoring] production lead endpoint failure",
+        "heading": "Production lead endpoint failure",
+        "failure": "The protected healthcheck could not confirm that the public lead function is ready.",
+        "recovery": "The protected test-mode request confirmed the function and required tables.",
+        "safety": "The report never contains the health token and the check does not create a lead.",
+        "default_report": "lead-endpoint-health.md",
+    },
+    "preflight": {
+        "title": "[monitoring] public lead preflight failure",
+        "heading": "Public lead endpoint preflight failure",
+        "failure": "The public OPTIONS request could not confirm endpoint routing and the browser CORS contract for parket36.ru.",
+        "recovery": "The public OPTIONS request confirmed endpoint routing and the required CORS headers.",
+        "safety": "The check uses OPTIONS only, sends no form data, requires no secret and does not create a lead.",
+        "default_report": "lead-endpoint-preflight.md",
+    },
+}
+
+
+def monitor_config(kind: str) -> dict[str, str]:
+    return MONITORS[kind]
 
 
 def api_request(
@@ -33,7 +54,7 @@ def api_request(
             "Accept": "application/vnd.github+json",
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
-            "User-Agent": "Parket36-Lead-Endpoint-Issue-Manager/1.0",
+            "User-Agent": "Parket36-Lead-Endpoint-Issue-Manager/2.0",
             "X-GitHub-Api-Version": API_VERSION,
         },
     )
@@ -71,17 +92,17 @@ def api_base(repository: str) -> str:
     return f"https://api.github.com/repos/{repository}"
 
 
-def find_open_issue(repository: str, token: str) -> dict[str, Any] | None:
+def find_open_issue(repository: str, token: str, title: str) -> dict[str, Any] | None:
     issues = api_request("GET", api_base(repository) + "/issues?state=open&per_page=100", token)
     for issue in issues or []:
-        if issue.get("title") == ISSUE_TITLE and "pull_request" not in issue:
+        if issue.get("title") == title and "pull_request" not in issue:
             return issue
     return None
 
 
-def report_excerpt(path: Path) -> str:
+def report_excerpt(path: Path, kind: str) -> str:
     if not path.exists():
-        return "Production lead endpoint report was not created."
+        return f"{monitor_config(kind)['heading']} report was not created."
     text = path.read_text(encoding="utf-8", errors="replace").strip()
     if len(text) <= MAX_REPORT_CHARS:
         return text
@@ -92,13 +113,14 @@ def run_url(server: str, repository: str, run_id: str) -> str:
     return f"{server}/{repository}/actions/runs/{run_id}"
 
 
-def failure_body(report: str, run_link: str) -> str:
+def failure_body(kind: str, report: str, run_link: str) -> str:
+    config = monitor_config(kind)
     generated = datetime.now(timezone.utc).isoformat()
     return "\n".join(
         [
-            "## Production lead endpoint failure",
+            f"## {config['heading']}",
             "",
-            "The protected healthcheck could not confirm that the public lead function is ready.",
+            config["failure"],
             "",
             f"Checked: `{generated}`",
             f"Workflow run: {run_link}",
@@ -107,22 +129,24 @@ def failure_body(report: str, run_link: str) -> str:
             "",
             report,
             "",
-            "This issue is maintained automatically and will close after a successful protected healthcheck.",
-            "The report never contains the health token and the check does not create a lead.",
+            "This issue is maintained automatically and will close after a successful check of the same kind.",
+            config["safety"],
         ]
     )
 
 
-def recovery_comment(run_link: str) -> str:
+def recovery_comment(kind: str, run_link: str) -> str:
+    config = monitor_config(kind)
     generated = datetime.now(timezone.utc).isoformat()
     return "\n".join(
         [
-            "Production lead endpoint recovered.",
+            f"{config['heading']} recovered.",
             "",
             f"Checked: `{generated}`",
             f"Workflow run: {run_link}",
             "",
-            "The protected test-mode request confirmed the function and required tables. Closing automatically.",
+            config["recovery"],
+            "Closing automatically.",
         ]
     )
 
@@ -136,65 +160,68 @@ def add_comment(repository: str, token: str, issue_number: int, body: str) -> No
     )
 
 
-def handle_failure(report_path: Path) -> int:
+def handle_failure(kind: str, report_path: Path) -> int:
     repository, token, run_id, server = github_context()
-    issue = find_open_issue(repository, token)
-    body = failure_body(report_excerpt(report_path), run_url(server, repository, run_id))
+    config = monitor_config(kind)
+    issue = find_open_issue(repository, token, config["title"])
+    body = failure_body(kind, report_excerpt(report_path, kind), run_url(server, repository, run_id))
     if issue:
         add_comment(repository, token, int(issue["number"]), body)
-        print(f"Updated production lead endpoint issue #{issue['number']}")
+        print(f"Updated {kind} lead endpoint issue #{issue['number']}")
         return 0
 
     created = api_request(
         "POST",
         api_base(repository) + "/issues",
         token,
-        {"title": ISSUE_TITLE, "body": body},
+        {"title": config["title"], "body": body},
     )
-    print(f"Created production lead endpoint issue #{created['number']}")
+    print(f"Created {kind} lead endpoint issue #{created['number']}")
     return 0
 
 
-def handle_success() -> int:
+def handle_success(kind: str) -> int:
     repository, token, run_id, server = github_context()
-    issue = find_open_issue(repository, token)
+    config = monitor_config(kind)
+    issue = find_open_issue(repository, token, config["title"])
     if not issue:
-        print("No open production lead endpoint issue to close")
+        print(f"No open {kind} lead endpoint issue to close")
         return 0
 
     issue_number = int(issue["number"])
-    add_comment(repository, token, issue_number, recovery_comment(run_url(server, repository, run_id)))
+    add_comment(repository, token, issue_number, recovery_comment(kind, run_url(server, repository, run_id)))
     api_request(
         "PATCH",
         api_base(repository) + f"/issues/{issue_number}",
         token,
         {"state": "closed", "state_reason": "completed"},
     )
-    print(f"Closed production lead endpoint issue #{issue_number}")
+    print(f"Closed {kind} lead endpoint issue #{issue_number}")
     return 0
 
 
 def self_test() -> int:
     failures: list[str] = []
-    report = "| `parket_leads` | FAIL | db_error |"
-    failure = failure_body(report, "https://example.test/actions/runs/1")
-    for marker in (
-        "Production lead endpoint failure",
-        report,
-        "does not create a lead",
-        "never contains the health token",
-    ):
-        if marker not in failure:
-            failures.append(f"failure body missing marker: {marker}")
+    report = "| `allow_origin` | FAIL | wrong origin |"
 
-    recovery = recovery_comment("https://example.test/actions/runs/2")
-    for marker in ("recovered", "protected test-mode request", "Closing automatically"):
-        if marker not in recovery:
-            failures.append(f"recovery comment missing marker: {marker}")
+    for kind in MONITORS:
+        failure = failure_body(kind, report, "https://example.test/actions/runs/1")
+        config = monitor_config(kind)
+        for marker in (config["heading"], report, config["safety"], "same kind"):
+            if marker not in failure:
+                failures.append(f"{kind} failure body missing marker: {marker}")
 
-    excerpt = report_excerpt(Path(__file__))
-    if not excerpt or len(excerpt) > MAX_REPORT_CHARS + 50:
-        failures.append("report excerpt limit is invalid")
+        recovery = recovery_comment(kind, "https://example.test/actions/runs/2")
+        for marker in ("recovered", config["recovery"], "Closing automatically"):
+            if marker not in recovery:
+                failures.append(f"{kind} recovery comment missing marker: {marker}")
+
+        excerpt = report_excerpt(Path(__file__), kind)
+        if not excerpt or len(excerpt) > MAX_REPORT_CHARS + 50:
+            failures.append(f"{kind} report excerpt limit is invalid")
+
+    if MONITORS["protected"]["title"] == MONITORS["preflight"]["title"]:
+        failures.append("monitoring issue titles must be distinct")
 
     if failures:
         print("Production lead endpoint issue manager self-test failed:")
@@ -209,16 +236,18 @@ def self_test() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("state", nargs="?", choices=("failure", "success"))
-    parser.add_argument("--report", default="lead-endpoint-health.md")
+    parser.add_argument("--kind", choices=tuple(MONITORS), default="protected")
+    parser.add_argument("--report")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
 
     if args.self_test:
         return self_test()
     if args.state == "failure":
-        return handle_failure(Path(args.report))
+        report = args.report or monitor_config(args.kind)["default_report"]
+        return handle_failure(args.kind, Path(report))
     if args.state == "success":
-        return handle_success()
+        return handle_success(args.kind)
     parser.error("state is required unless --self-test is used")
     return 2
 
