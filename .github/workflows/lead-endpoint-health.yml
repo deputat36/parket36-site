@@ -1,6 +1,8 @@
 name: Production lead endpoint health
 
 on:
+  push:
+    branches: ["main"]
   schedule:
     - cron: "47 4 * * *"
   workflow_dispatch:
@@ -16,7 +18,7 @@ concurrency:
 jobs:
   health:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -24,6 +26,10 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+      - name: Run public endpoint preflight
+        id: public_preflight
+        continue-on-error: true
+        run: python tools/check_public_lead_preflight.py --report lead-endpoint-preflight.md
       - name: Detect protected health token
         id: health_config
         env:
@@ -41,10 +47,18 @@ jobs:
         env:
           PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}
         run: python tools/check_production_lead_endpoint.py --report lead-endpoint-health.md --require-token
-      - name: Write not-configured report
+      - name: Write not-configured protected report
         if: steps.health_config.outputs.configured != 'true'
         run: python tools/check_production_lead_endpoint.py --report lead-endpoint-health.md
-      - name: Upload production lead health report
+      - name: Upload public preflight report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: public-lead-endpoint-preflight
+          path: lead-endpoint-preflight.md
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload protected production lead health report
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -52,23 +66,38 @@ jobs:
           path: lead-endpoint-health.md
           if-no-files-found: error
           retention-days: 30
-      - name: Update endpoint failure issue
+      - name: Update public preflight failure issue
+        if: steps.public_preflight.outcome == 'failure'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_lead_endpoint_issue.py failure --kind preflight --report lead-endpoint-preflight.md
+      - name: Close recovered public preflight issue
+        if: steps.public_preflight.outcome == 'success'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_lead_endpoint_issue.py success --kind preflight
+      - name: Update protected endpoint failure issue
         if: >-
           steps.health_config.outputs.configured == 'true' &&
           steps.endpoint_health.outcome == 'failure'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python tools/manage_lead_endpoint_issue.py failure --report lead-endpoint-health.md
-      - name: Close recovered endpoint issue
+        run: python tools/manage_lead_endpoint_issue.py failure --kind protected --report lead-endpoint-health.md
+      - name: Close recovered protected endpoint issue
         if: >-
           steps.health_config.outputs.configured == 'true' &&
           steps.endpoint_health.outcome == 'success'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python tools/manage_lead_endpoint_issue.py success
-      - name: Fail on production endpoint errors
+        run: python tools/manage_lead_endpoint_issue.py success --kind protected
+      - name: Fail on public preflight errors
+        if: steps.public_preflight.outcome == 'failure'
+        run: exit 1
+      - name: Fail on protected production endpoint errors
         if: >-
           steps.health_config.outputs.configured == 'true' &&
           steps.endpoint_health.outcome == 'failure'

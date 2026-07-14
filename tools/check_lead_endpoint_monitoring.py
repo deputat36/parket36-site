@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate production lead endpoint monitoring, shared settings and secret handling."""
+"""Validate public and protected production lead endpoint monitoring."""
 
 from __future__ import annotations
 
@@ -11,7 +11,8 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "lead-endpoint-health.yml"
-CHECKER = ROOT / "tools" / "check_production_lead_endpoint.py"
+PREFLIGHT_CHECKER = ROOT / "tools" / "check_public_lead_preflight.py"
+PROTECTED_CHECKER = ROOT / "tools" / "check_production_lead_endpoint.py"
 ISSUE_MANAGER = ROOT / "tools" / "manage_lead_endpoint_issue.py"
 DOC = ROOT / "docs" / "production-lead-monitoring.md"
 CONFIG = ROOT / "data" / "site.json"
@@ -33,6 +34,13 @@ REQUIRED_MARKERS = {
         'cron: "47 4 * * *"',
         "workflow_dispatch:",
         "issues: write",
+        "id: public_preflight",
+        "python tools/check_public_lead_preflight.py --report lead-endpoint-preflight.md",
+        "name: public-lead-endpoint-preflight",
+        "steps.public_preflight.outcome == 'failure'",
+        "steps.public_preflight.outcome == 'success'",
+        "failure --kind preflight --report lead-endpoint-preflight.md",
+        "success --kind preflight",
         "PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}",
         "id: health_config",
         "configured=true",
@@ -40,11 +48,24 @@ REQUIRED_MARKERS = {
         "python tools/check_production_lead_endpoint.py --report lead-endpoint-health.md --require-token",
         "python tools/check_production_lead_endpoint.py --report lead-endpoint-health.md",
         "name: production-lead-endpoint-health",
-        "python tools/manage_lead_endpoint_issue.py failure --report lead-endpoint-health.md",
-        "python tools/manage_lead_endpoint_issue.py success",
+        "failure --kind protected --report lead-endpoint-health.md",
+        "success --kind protected",
         "steps.health_config.outputs.configured == 'true'",
     ),
-    CHECKER: (
+    PREFLIGHT_CHECKER: (
+        'method="OPTIONS"',
+        '"Origin": origin',
+        '"Access-Control-Request-Method": "POST"',
+        '"Access-Control-Request-Headers": "content-type"',
+        '"access-control-allow-origin"',
+        '"access-control-allow-methods"',
+        '"access-control-allow-headers"',
+        '"vary"',
+        "HTTP OPTIONS only",
+        "does not send form data",
+        "--self-test",
+    ),
+    PROTECTED_CHECKER: (
         "PARKET_LEAD_ENDPOINT",
         "endpoint_from_site",
         '"test_mode": True',
@@ -60,20 +81,28 @@ REQUIRED_MARKERS = {
         "--self-test",
     ),
     ISSUE_MANAGER: (
-        "[monitoring] production lead endpoint failure",
+        '"[monitoring] production lead endpoint failure"',
+        '"[monitoring] public lead preflight failure"',
+        '"protected"',
+        '"preflight"',
         "find_open_issue",
-        "Closing automatically",
+        "successful check of the same kind",
         '"state": "closed"',
+        "--kind",
         "--self-test",
     ),
     DOC: (
         "Production lead endpoint health",
+        "публичный CORS preflight",
         "data/site.json",
         "site_settings.py --write",
         "PARKET_HEALTHCHECK_TOKEN",
         "test_mode",
         "не создаёт заявку",
+        "public-lead-endpoint-preflight",
         "production-lead-endpoint-health",
+        "[monitoring] public lead preflight failure",
+        "[monitoring] production lead endpoint failure",
         "healthcheck_not_configured",
         "healthcheck_forbidden",
     ),
@@ -105,7 +134,7 @@ def run_self_test(path: Path) -> str | None:
     )
     if completed.returncode == 0:
         return None
-    return (completed.stdout + completed.stderr).strip() or "unknown self-test failure"
+    return (completed.stdout + completed.stderr).strip() or "unknown self-test error"
 
 
 def configured_endpoint(findings: list[str]) -> str:
@@ -178,12 +207,16 @@ def main() -> int:
                 findings.append(f"workflow must not expose the health token: {marker}")
         if workflow_text.count("secrets.PARKET_HEALTHCHECK_TOKEN") != 2:
             findings.append("workflow must reference PARKET_HEALTHCHECK_TOKEN exactly twice through secrets")
+        preflight_position = workflow_text.find("Run public endpoint preflight")
+        token_position = workflow_text.find("Detect protected health token")
+        if preflight_position < 0 or token_position < 0 or preflight_position > token_position:
+            findings.append("public preflight must run before protected token detection")
 
-    for path in (CHECKER, ISSUE_MANAGER):
+    for path in (PREFLIGHT_CHECKER, PROTECTED_CHECKER, ISSUE_MANAGER):
         if path.is_file():
-            failure = run_self_test(path)
-            if failure:
-                findings.append(f"{path.relative_to(ROOT)} self-test failed: {failure}")
+            error = run_self_test(path)
+            if error:
+                findings.append(f"{path.relative_to(ROOT)} self-test error: {error}")
 
     if findings:
         print("Production lead monitoring findings:")
