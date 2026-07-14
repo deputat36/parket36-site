@@ -29,21 +29,28 @@
 - очищенную первую посадочную страницу;
 - защиту повторной отправки;
 - clipboard fallback;
-- политику обработки контактных данных.
+- политику обработки контактных данных;
+- отдельную проверку состояния уведомления Ивану.
 
 Отдельная таблица и отдельная Edge Function не требуются. Тип обращения определяется по полю `service`.
 
 ## Сообщения посетителю
 
-После успешного сохранения:
+HTTP 200 подтверждает сохранение заявки, но не всегда подтверждает автоматическое уведомление Ивану. Форма учитывает поле `notification` из ответа Edge Function.
 
-> Заявка на обратный звонок отправлена Ивану. Он свяжется по указанному номеру.
+При `notification: sent` показывается обычное подтверждение, что заявка отправлена Ивану.
+
+При `notification: disabled`, `notification: partial_failure` или `notification: unknown` посетитель видит, что номер сохранён, но доставка уведомления не подтверждена. Сообщение предлагает сразу позвонить Ивану по номеру `8 (900) 926-79-29`, чтобы не ждать обратного звонка вслепую.
 
 Если backend недоступен, общий механизм копирует текст, а специальный скрипт сообщает, что автоматическая отправка не удалась и предлагает позвонить Ивану или использовать полную форму оценки.
+
+Полный контракт состояний описан в `docs/lead-notification-feedback.md`.
 
 ## Аналитика
 
 Общий `js/main.js` продолжает отправлять событие `parket36:lead` с типом `request-submit` или `request-copy`.
+
+`request-submit` означает, что заявка сохранена backend. Подтверждение доставки уведомления определяется отдельно по `notificationConfirmed` и событию `parket36:lead-notification`.
 
 `js/callback-form.js` отправляет `callback-open` двумя способами:
 
@@ -98,6 +105,9 @@ window.addEventListener('parket36:callback-request', event => {
   event: 'parket36_callback_request',
   page: '/kontakty/',
   service: 'Обратный звонок по паркетным работам',
+  notification_state: 'sent' | 'disabled' | 'partial_failure' | 'unknown',
+  notification_confirmed: true | false,
+  duplicate: false,
   attribution: { /* first-touch UTM */ }
 }
 ```
@@ -107,9 +117,10 @@ window.addEventListener('parket36:callback-request', event => {
 ```text
 callback-open
 callback-request
+lead-notification
 ```
 
-`callback-open` показывает интерес к короткой форме. `callback-request` срабатывает только для `request-submit`. Clipboard fallback `request-copy` не считается успешной заявкой на обратный звонок.
+`callback-open` показывает интерес к короткой форме. `callback-request` срабатывает только для `request-submit`. Clipboard fallback `request-copy` не считается сохранённой заявкой на обратный звонок. `lead-notification` отдельно показывает, подтверждено ли автоматическое уведомление Ивану.
 
 ## Путь со страницы стоимости
 
@@ -144,23 +155,26 @@ callback-request
 
 ## Проверка
 
-`tests/e2e/callback-form.spec.mjs`, `tests/e2e/home-callback-path.spec.mjs` и `tests/e2e/direct-callback-campaign.spec.mjs` проверяют:
+`tests/e2e/callback-form.spec.mjs`, `tests/e2e/home-callback-path.spec.mjs`, `tests/e2e/direct-callback-campaign.spec.mjs` и `tests/e2e/lead-notification-feedback.spec.mjs` проверяют:
 
 1. короткий номер не вызывает endpoint;
 2. валидный номер отправляет preset услуги и задачи;
 3. сохраняются география, удобное время, страница и UTM;
 4. first-touch referer не содержит query-параметров;
-5. выводится специальное подтверждение;
-6. кнопка снова становится активной;
-7. создаётся ровно одно событие `parket36:callback-open` и `parket36_callback_open`;
-8. создаётся ровно одно событие `parket36:callback-request` и `parket36_callback_request`;
-9. переход `/ceny/` → `/kontakty/#callback` создаёт `hash-entry`, не дублирует open-событие и сохраняет landing `/ceny/` до отправки заявки;
-10. готовая главная содержит ровно две статические callback-ссылки, сохраняет landing `/` и отправляет общую заявку с исходными UTM;
-11. прямой UTM-вход на `/kontakty/#callback` сохраняет кампанию уже в раннем `callback-open`, а затем передаёт те же UTM в payload заявки.
+5. `sent` выводит подтверждение;
+6. `disabled`, `partial_failure` и `unknown` не дают ложного обещания звонка;
+7. кнопка снова становится активной;
+8. создаётся ровно одно событие `parket36:callback-open` и `parket36_callback_open`;
+9. создаётся ровно одно событие `parket36:callback-request` и `parket36_callback_request`;
+10. callback-события получают фактическое состояние уведомления;
+11. переход `/ceny/` → `/kontakty/#callback` создаёт `hash-entry`, не дублирует open-событие и сохраняет landing `/ceny/` до отправки заявки;
+12. готовая главная содержит ровно две статические callback-ссылки, сохраняет landing `/` и отправляет общую заявку с исходными UTM;
+13. прямой UTM-вход на `/kontakty/#callback` сохраняет кампанию уже в раннем `callback-open`, а затем передаёт те же UTM в payload заявки.
 
 ## Ограничения
 
 - форма не обещает конкретное время звонка, пока фактический график Ивана не подтверждён;
 - заявка не означает автоматического бронирования выезда;
 - точная цена и состав работ не определяются по одному номеру телефона;
+- `notification: sent` не означает, что Иван уже прочитал сообщение;
 - при неработающем домене или неразвёрнутой production Edge Function автоматическая отправка невозможна.

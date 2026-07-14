@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate honest lead-notification feedback across frontend, callback, build, backend and E2E."""
+"""Validate honest lead-notification feedback across frontend, docs, backend and E2E."""
 
 from __future__ import annotations
 
@@ -13,6 +13,8 @@ BUILD = ROOT / "tools" / "build_pages.py"
 BACKEND = ROOT / "supabase" / "functions" / "parket-public-lead" / "index.ts"
 E2E = ROOT / "tests" / "e2e" / "lead-notification-feedback.spec.mjs"
 DOC = ROOT / "docs" / "lead-notification-feedback.md"
+CALLBACK_DOC = ROOT / "docs" / "callback-form.md"
+ANALYTICS_DOC = ROOT / "docs" / "analytics-events.md"
 
 REQUIRED_MARKERS = {
     FRONTEND: (
@@ -78,6 +80,30 @@ REQUIRED_MARKERS = {
         "lead-notification",
         "контролируемая заявка",
     ),
+    CALLBACK_DOC: (
+        "HTTP 200 подтверждает сохранение заявки, но не всегда подтверждает автоматическое уведомление Ивану",
+        "notification: sent",
+        "notification: disabled",
+        "notification: partial_failure",
+        "notification: unknown",
+        "`request-submit` означает, что заявка сохранена backend",
+        "notification_state",
+        "notification_confirmed",
+        "lead-notification",
+        "не означает, что Иван уже прочитал сообщение",
+    ),
+    ANALYTICS_DOC: (
+        "Сохранение заявки и подтверждение автоматического уведомления Ивану — разные технические факты",
+        "Backend подтвердил сохранение заявки в Supabase",
+        "но не подтверждение доставки уведомления Ивану",
+        "parket36:lead-notification",
+        "notificationConfirmed: true",
+        "notification: sent",
+        "parket36_lead_notification",
+        "notification_state",
+        "notification_confirmed",
+        "Не считать `request-submit` подтверждением",
+    ),
 }
 
 FORBIDDEN_FRONTEND_MARKERS = (
@@ -85,6 +111,16 @@ FORBIDDEN_FRONTEND_MARKERS = (
     "notification || 'sent'",
     "payload?.notification || 'sent'",
 )
+
+FORBIDDEN_DOC_MARKERS = {
+    CALLBACK_DOC: (
+        "Заявка на обратный звонок отправлена Ивану. Он свяжется по указанному номеру.",
+    ),
+    ANALYTICS_DOC: (
+        "Заявка успешно отправлена через Supabase",
+        "Успешная заявка через Supabase",
+    ),
+}
 
 
 def main() -> int:
@@ -106,6 +142,12 @@ def main() -> int:
     for marker in FORBIDDEN_FRONTEND_MARKERS:
         if marker in frontend:
             findings.append(f"frontend must not turn an unknown notification into sent: {marker}")
+
+    for path, markers in FORBIDDEN_DOC_MARKERS.items():
+        text = texts.get(path, "")
+        for marker in markers:
+            if marker in text:
+                findings.append(f"{path.relative_to(ROOT)}: stale unconditional delivery claim: {marker}")
 
     build = texts.get(BUILD, "")
     main_position = build.find("replacement = [*scripts_before, MAIN_SCRIPT]")
