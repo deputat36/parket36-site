@@ -8,6 +8,7 @@
     "Воронеж",
     "Воронежская область"
   ],
+  "lead_endpoint": "https://ofewxuqfjhamgerwzull.supabase.co/functions/v1/parket-public-lead",
   "max_url": "",
   "metrika_id": "",
   "default_request_path": "/zayavka/",
