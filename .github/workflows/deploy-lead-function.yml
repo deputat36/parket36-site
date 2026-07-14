@@ -3,9 +3,18 @@ name: Deploy production lead function
 on:
   workflow_dispatch:
     inputs:
-      confirm:
-        description: "Type DEPLOY_PARKET_PUBLIC_LEAD"
+      operation:
+        description: "Validate readiness only or deploy after validation"
         required: true
+        default: validate-only
+        type: choice
+        options:
+          - validate-only
+          - deploy
+      confirm:
+        description: "For deploy only: type DEPLOY_PARKET_PUBLIC_LEAD"
+        required: false
+        default: ""
         type: string
       notification_policy:
         description: "Notification requirement before deploy"
@@ -26,7 +35,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: validate, deploy and verify
+    name: validate, optionally deploy and verify
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: production
@@ -35,6 +44,7 @@ jobs:
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
       PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}
       NOTIFICATION_POLICY: ${{ inputs.notification_policy }}
+      OPERATION: ${{ inputs.operation }}
     steps:
       - name: Checkout main
         uses: actions/checkout@v7
@@ -48,16 +58,20 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: lts
-      - name: Validate deployment confirmation and GitHub secrets
+      - name: Validate operation, confirmation and GitHub secrets
         shell: bash
         run: |
           set -euo pipefail
           if [ "$GITHUB_REF" != "refs/heads/main" ]; then
-            echo "::error::Production deploy is allowed only from main."
+            echo "::error::Production readiness and deploy are allowed only from main."
             exit 1
           fi
-          if [ "${{ inputs.confirm }}" != "DEPLOY_PARKET_PUBLIC_LEAD" ]; then
-            echo "::error::Confirmation text does not match DEPLOY_PARKET_PUBLIC_LEAD."
+          if [ "$OPERATION" != "validate-only" ] && [ "$OPERATION" != "deploy" ]; then
+            echo "::error::Unsupported operation: $OPERATION"
+            exit 1
+          fi
+          if [ "$OPERATION" = "deploy" ] && [ "${{ inputs.confirm }}" != "DEPLOY_PARKET_PUBLIC_LEAD" ]; then
+            echo "::error::Deploy confirmation text does not match DEPLOY_PARKET_PUBLIC_LEAD."
             exit 1
           fi
           missing=0
@@ -112,11 +126,17 @@ jobs:
           path: edge-deploy-readiness.md
           if-no-files-found: error
           retention-days: 30
-      - name: Stop before deploy when readiness failed
+      - name: Stop when readiness failed
         if: steps.readiness.outcome == 'failure'
         run: exit 1
+      - name: Finish validate-only readiness
+        if: inputs.operation == 'validate-only' && steps.readiness.outcome == 'success'
+        run: |
+          echo "## Production Edge readiness: PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "No Edge Function was deployed because operation was validate-only." >> "$GITHUB_STEP_SUMMARY"
       - name: Deploy controlled lead verifier
         id: deploy_verifier
+        if: inputs.operation == 'deploy'
         continue-on-error: true
         run: >-
           supabase functions deploy parket-lead-verify
@@ -125,7 +145,7 @@ jobs:
           --no-verify-jwt
       - name: Deploy parket-public-lead
         id: deploy_function
-        if: steps.deploy_verifier.outcome == 'success'
+        if: inputs.operation == 'deploy' && steps.deploy_verifier.outcome == 'success'
         continue-on-error: true
         run: >-
           supabase functions deploy parket-public-lead
@@ -134,16 +154,16 @@ jobs:
           --no-verify-jwt
       - name: Run public endpoint preflight
         id: public_preflight
-        if: steps.deploy_verifier.outcome == 'success' && steps.deploy_function.outcome == 'success'
+        if: inputs.operation == 'deploy' && steps.deploy_verifier.outcome == 'success' && steps.deploy_function.outcome == 'success'
         continue-on-error: true
         run: python tools/check_public_lead_preflight.py --report lead-endpoint-preflight.md
       - name: Run protected production healthcheck
         id: protected_health
-        if: steps.deploy_verifier.outcome == 'success' && steps.deploy_function.outcome == 'success'
+        if: inputs.operation == 'deploy' && steps.deploy_verifier.outcome == 'success' && steps.deploy_function.outcome == 'success'
         continue-on-error: true
         run: python tools/check_production_lead_endpoint.py --report lead-endpoint-health.md --require-token
       - name: Upload post-deploy reports
-        if: always()
+        if: always() && inputs.operation == 'deploy'
         uses: actions/upload-artifact@v7
         with:
           name: edge-deploy-post-checks
@@ -153,31 +173,32 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
       - name: Update public preflight failure issue
-        if: steps.public_preflight.outcome == 'failure'
+        if: inputs.operation == 'deploy' && steps.public_preflight.outcome == 'failure'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python tools/manage_lead_endpoint_issue.py failure --kind preflight --report lead-endpoint-preflight.md
       - name: Close recovered public preflight issue
-        if: steps.public_preflight.outcome == 'success'
+        if: inputs.operation == 'deploy' && steps.public_preflight.outcome == 'success'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python tools/manage_lead_endpoint_issue.py success --kind preflight
       - name: Update protected endpoint failure issue
-        if: steps.protected_health.outcome == 'failure'
+        if: inputs.operation == 'deploy' && steps.protected_health.outcome == 'failure'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python tools/manage_lead_endpoint_issue.py failure --kind protected --report lead-endpoint-health.md
       - name: Close recovered protected endpoint issue
-        if: steps.protected_health.outcome == 'success'
+        if: inputs.operation == 'deploy' && steps.protected_health.outcome == 'success'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python tools/manage_lead_endpoint_issue.py success --kind protected
       - name: Comment deployment result on issue 373
         if: >-
+          inputs.operation == 'deploy' &&
           steps.deploy_verifier.outcome == 'success' &&
           steps.deploy_function.outcome == 'success' &&
           steps.public_preflight.outcome == 'success' &&
@@ -188,13 +209,14 @@ jobs:
           gh issue comment 373
           --body "Both Edge Functions deployed from main commit $GITHUB_SHA. Public preflight and protected healthcheck passed in workflow run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Issue remains open until one controlled real lead confirms database, audit and notification delivery."
       - name: Fail on verifier deployment error
-        if: steps.deploy_verifier.outcome == 'failure'
+        if: inputs.operation == 'deploy' && steps.deploy_verifier.outcome == 'failure'
         run: exit 1
       - name: Fail on public lead deployment error
-        if: steps.deploy_verifier.outcome == 'success' && steps.deploy_function.outcome == 'failure'
+        if: inputs.operation == 'deploy' && steps.deploy_verifier.outcome == 'success' && steps.deploy_function.outcome == 'failure'
         run: exit 1
       - name: Fail on post-deploy verification error
         if: >-
+          inputs.operation == 'deploy' &&
           steps.deploy_verifier.outcome == 'success' &&
           steps.deploy_function.outcome == 'success' &&
           (steps.public_preflight.outcome == 'failure' || steps.protected_health.outcome == 'failure')
