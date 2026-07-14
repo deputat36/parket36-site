@@ -1,0 +1,4 @@
+project_id = "parket36-site"
+
+[functions.parket-public-lead]
+verify_jwt = false
