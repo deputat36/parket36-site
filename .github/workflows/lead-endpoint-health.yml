@@ -1,6 +1,8 @@
 name: Production lead endpoint health
 
 on:
+  push:
+    branches: ["main"]
   schedule:
     - cron: "47 4 * * *"
   workflow_dispatch:
