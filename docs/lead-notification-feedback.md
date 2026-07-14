@@ -45,9 +45,25 @@ notificationConfirmed: false
 
 1. оборачивает уже настроенный `window.fetch`, включая timeout и retry из `lead-reliability.js`;
 2. читает клон успешного JSON-ответа Edge Function;
-3. добавляет `notification`, `notificationConfirmed`, `duplicate` и `requestId` в событие `parket36:lead` типа `request-submit`;
-4. при неподтверждённой доставке корректирует итоговый текст статуса;
-5. создаёт отдельное событие `parket36:lead-notification`.
+3. сохраняет безопасный технический результат в `window.parket36LastLeadDelivery`;
+4. добавляет `notification`, `notificationConfirmed`, `duplicate` и `requestId` в событие `parket36:lead` типа `request-submit`;
+5. при неподтверждённой доставке корректирует итоговый текст статуса;
+6. создаёт отдельное событие `parket36:lead-notification`.
+
+Глобальное состояние содержит только request ID, состояние уведомления и признак дубликата. В нём нет телефона, текста заявки, health-токена или других секретов.
+
+## Передача в callback-событие
+
+`callback-form.js` регистрирует собственный listener раньше feedback-модуля. Поэтому он читает `window.parket36LastLeadDelivery` непосредственно перед созданием `callback-request`.
+
+В `parket36:callback-request` и `parket36_callback_request` передаются:
+
+- `notification` / `notification_state`;
+- `notificationConfirmed` / `notification_confirmed`;
+- `duplicate`;
+- `requestId` в браузерном событии.
+
+Это исключает зависимость от порядка поздних listeners и не позволяет callback-аналитике потерять фактический результат уведомления.
 
 Payload заявки, схема Supabase и Edge Function не меняются.
 
@@ -97,7 +113,8 @@ window.addEventListener('parket36:lead-notification', event => {
 2. `disabled` сообщает о сохранённой заявке и рекомендует позвонить;
 3. `partial_failure` не обещает обратный звонок;
 4. ответ старой функции без `notification` считается `unknown`;
-5. состояния попадают в браузерное событие и `dataLayer`.
+5. состояния попадают в браузерное событие и `dataLayer`;
+6. callback-request получает состояние до своего dispatch.
 
 `tools/check_lead_notification_feedback.py` защищает:
 
@@ -105,6 +122,7 @@ window.addEventListener('parket36:lead-notification', event => {
 - отсутствие ложного подтверждения для `unknown`;
 - текст звонкового fallback;
 - подключение скрипта после `main.js`;
+- передачу результата в callback до dispatch события;
 - соответствие backend-контракта, E2E и документации.
 
 ## Ограничение
