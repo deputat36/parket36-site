@@ -86,7 +86,7 @@ REQUIRED_MARKERS = {
         "notification: disabled",
         "notification: partial_failure",
         "notification: unknown",
-        "request-submit означает, что заявка сохранена backend",
+        "`request-submit` означает, что заявка сохранена backend",
         "notification_state",
         "notification_confirmed",
         "lead-notification",
