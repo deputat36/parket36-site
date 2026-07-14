@@ -25,6 +25,7 @@ EXPECTED_CHECKS = [
     ["tools/complete_pages_switch_issue.py", "--self-test"],
     ["tools/check_lead_endpoint_monitoring.py"],
     ["tools/check_edge_deploy_workflow.py"],
+    ["tools/check_controlled_lead_smoke.py"],
     ["tools/check_content_inventory.py"],
     ["tools/check_content_similarity.py"],
     ["tools/check_internal_link_map.py"],
