@@ -17,9 +17,12 @@ Deno.test("validateLeadPayload accepts the public form contract", () => {
   assert(result.ok, "string-based public form payload should be accepted");
 });
 
-Deno.test("validateLeadPayload accepts protected test mode", () => {
-  const result = validateLeadPayload({ test_mode: true });
-  assert(result.ok, "boolean test_mode should be accepted");
+Deno.test("validateLeadPayload accepts protected test mode with request verification", () => {
+  const result = validateLeadPayload({
+    test_mode: true,
+    verify_request_id: "smoke-12345678",
+  });
+  assert(result.ok, "boolean test_mode and string verify_request_id should be accepted");
 });
 
 Deno.test("validateLeadPayload rejects null, arrays and scalar JSON", () => {
@@ -81,4 +84,17 @@ Deno.test("validateLeadPayload rejects non-boolean test mode", () => {
   assert(result.status === 422, "invalid test_mode type should return 422");
   assert(result.field === "test_mode", "invalid test_mode should identify the field");
   assert(result.expected === "boolean", "test_mode should require a boolean");
+});
+
+Deno.test("validateLeadPayload rejects non-string verify_request_id", () => {
+  const result = validateLeadPayload({
+    test_mode: true,
+    verify_request_id: { request: "smoke-12345678" },
+  });
+
+  assert(!result.ok, "object verify_request_id should be rejected");
+  if (result.ok) return;
+  assert(result.status === 422, "invalid verify_request_id type should return 422");
+  assert(result.field === "verify_request_id", "invalid verify_request_id should identify the field");
+  assert(result.expected === "string", "verify_request_id should require a string");
 });
