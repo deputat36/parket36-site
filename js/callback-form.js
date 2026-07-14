@@ -200,10 +200,28 @@
     sendGoal('callback-open', detail);
   };
 
+  const readLeadDelivery = leadDetail => {
+    const delivery = window.parket36LastLeadDelivery || {};
+    const notification = leadDetail.notification || delivery.notification || 'unknown';
+    const notificationConfirmed = typeof leadDetail.notificationConfirmed === 'boolean'
+      ? leadDetail.notificationConfirmed
+      : notification === 'sent';
+    return {
+      notification,
+      notificationConfirmed,
+      duplicate: typeof leadDetail.duplicate === 'boolean'
+        ? leadDetail.duplicate
+        : Boolean(delivery.duplicate),
+      requestId: leadDetail.requestId || delivery.requestId || ''
+    };
+  };
+
   const emitCallbackRequest = leadDetail => {
     const topic = applyTopicContext();
+    const delivery = readLeadDelivery(leadDetail);
     const detail = {
       ...leadDetail,
+      ...delivery,
       type: 'callback-request',
       topic: topic?.key || 'general',
       topicSource: topic?.source || 'general'
@@ -217,6 +235,9 @@
         service: detail.service || 'Обратный звонок по паркетным работам',
         callback_topic: detail.topic,
         callback_topic_source: detail.topicSource,
+        notification_state: detail.notification,
+        notification_confirmed: detail.notificationConfirmed,
+        duplicate: detail.duplicate,
         attribution: detail.attribution || getEventAttribution()
       });
     }
