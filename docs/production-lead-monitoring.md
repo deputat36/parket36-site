@@ -1,6 +1,6 @@
 # Production lead endpoint health
 
-Workflow `.github/workflows/lead-endpoint-health.yml` ежедневно и вручную проверяет production Edge Function `parket-public-lead` двумя независимыми способами:
+Workflow `.github/workflows/lead-endpoint-health.yml` после каждого merge в `main`, ежедневно и вручную проверяет production Edge Function `parket-public-lead` двумя независимыми способами:
 
 1. публичный CORS preflight без secret;
 2. защищённый `test_mode` при наличии `PARKET_HEALTHCHECK_TOKEN`.
@@ -15,17 +15,19 @@ Workflow `.github/workflows/lead-endpoint-health.yml` ежедневно и вр
 
 - `Origin: https://parket36.ru`;
 - `Access-Control-Request-Method: POST`;
-- `Access-Control-Request-Headers: content-type`.
+- `Access-Control-Request-Headers: content-type, x-parket-health-token`.
 
 Проверяются:
 
 - HTTP 200 или 204;
 - точный `Access-Control-Allow-Origin: https://parket36.ru`;
 - наличие `POST` и `OPTIONS` в `Access-Control-Allow-Methods`;
-- наличие `content-type` в `Access-Control-Allow-Headers`;
+- наличие `content-type` и `x-parket-health-token` в `Access-Control-Allow-Headers`;
 - `Vary: Origin`.
 
-Эта проверка не отправляет данные формы, не использует токен, не обращается к таблицам и не создаёт заявку. Она подтверждает только публичную маршрутизацию Edge Function и браузерный CORS-контракт.
+Заголовок `x-parket-health-token` не содержит secret: проверяется только то, что развёрнутая функция объявляет поддержку защищённого healthcheck. Его отсутствие позволяет обнаружить устаревшую production-функцию, которая отвечает на обычный CORS, но ещё не соответствует текущему GitHub-коду.
+
+Эта проверка не отправляет данные формы, не использует токен, не обращается к таблицам и не создаёт заявку. Она подтверждает публичную маршрутизацию Edge Function, браузерный CORS-контракт и наличие актуального healthcheck-контракта в развёрнутой функции.
 
 Отчёт сохраняется как artifact:
 
@@ -115,20 +117,21 @@ PARKET_HEALTHCHECK_TOKEN
 - protected issue не создаётся и не закрывается;
 - public preflight issue создаётся или закрывается по фактическому OPTIONS-ответу.
 
-Таким образом можно контролировать доступность endpoint до ручной настройки production secrets, не создавая ложного впечатления, что таблицы и уведомления уже готовы.
+Таким образом можно контролировать доступность и актуальность CORS-контракта endpoint до ручной настройки production secrets, не создавая ложного впечатления, что таблицы и уведомления уже готовы.
 
 ## Поведение при ошибке
 
-Публичная ошибка означает, что браузер, вероятно, не сможет вызвать Edge Function с `parket36.ru`. Типовые причины:
+Публичная ошибка означает, что браузер, вероятно, не сможет вызвать актуальную Edge Function с `parket36.ru` либо в Supabase всё ещё развёрнута старая версия. Типовые причины:
 
 - endpoint не развёрнут или недоступен;
 - неправильный URL;
 - production origin отсутствует в CORS;
 - не разрешён метод `POST`;
 - не разрешён заголовок `content-type`;
+- не объявлен `x-parket-health-token`, поэтому production-функция не соответствует текущему healthcheck-контракту;
 - отсутствует `Vary: Origin`.
 
-Защищённая ошибка означает, что функция доступна, но production-контур не готов полностью. Типовые ответы:
+Защищённая ошибка означает, что актуальная функция доступна, но production-контур не готов полностью. Типовые ответы:
 
 - `healthcheck_not_configured` — токен не настроен в Supabase;
 - `healthcheck_forbidden` — GitHub и Supabase используют разные токены;
@@ -146,10 +149,10 @@ PARKET_HEALTHCHECK_TOKEN
 
 Проверять оба artifacts:
 
-1. `public-lead-endpoint-preflight` — публичная маршрутизация и CORS;
+1. `public-lead-endpoint-preflight` — публичная маршрутизация, CORS и актуальный healthcheck-контракт;
 2. `production-lead-endpoint-health` — таблицы, secrets и уведомления.
 
-Зелёный preflight без настроенного protected healthcheck не подтверждает готовность принимать и доставлять заявки.
+Зелёный preflight без настроенного protected healthcheck подтверждает актуальный публичный контракт, но не подтверждает готовность сохранять и доставлять заявки.
 
 ## Локальная проверка структуры
 
@@ -192,7 +195,7 @@ python tools/check_production_lead_endpoint.py \
 
 ## Ограничения
 
-- public preflight подтверждает маршрутизацию и CORS, но не проверяет Supabase tables или уведомления;
+- public preflight подтверждает маршрутизацию, CORS и поддержку текущего healthcheck-заголовка, но не проверяет Supabase tables или уведомления;
 - protected healthcheck подтверждает функцию, таблицы и конфигурацию каналов, но не отправляет реальное уведомление Ивану;
 - после первого зелёного protected healthcheck всё равно нужна одна контролируемая реальная заявка;
 - исходник Edge Function в GitHub не развёртывается в Supabase автоматически;
