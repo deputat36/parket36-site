@@ -17,6 +17,14 @@ REQUIRED_MARKERS = {
     WORKFLOW: (
         "name: Deploy production lead function",
         "workflow_dispatch:",
+        "operation:",
+        'description: "Validate readiness only or deploy after validation"',
+        "default: validate-only",
+        "- validate-only",
+        "- deploy",
+        'description: "For deploy only: type DEPLOY_PARKET_PUBLIC_LEAD"',
+        "required: false",
+        'default: ""',
         "DEPLOY_PARKET_PUBLIC_LEAD",
         "notification_policy:",
         "require-configured",
@@ -26,7 +34,9 @@ REQUIRED_MARKERS = {
         "SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}",
         "SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}",
         "PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}",
+        "OPERATION: ${{ inputs.operation }}",
         'if [ "$GITHUB_REF" != "refs/heads/main" ]',
+        'if [ "$OPERATION" = "deploy" ]',
         "uses: actions/checkout@v7",
         "persist-credentials: false",
         "uses: actions/setup-python@v6",
@@ -43,10 +53,14 @@ REQUIRED_MARKERS = {
         "--notification-policy",
         "rm -f remote-secret-names.json",
         "name: edge-deploy-readiness",
+        "Finish validate-only readiness",
+        "inputs.operation == 'validate-only'",
+        "No Edge Function was deployed because operation was validate-only.",
         "Deploy controlled lead verifier",
         "supabase functions deploy parket-lead-verify",
         "Deploy parket-public-lead",
         "supabase functions deploy parket-public-lead",
+        "inputs.operation == 'deploy'",
         "--use-api",
         "--no-verify-jwt",
         "python tools/check_public_lead_preflight.py",
@@ -85,6 +99,10 @@ REQUIRED_MARKERS = {
     ),
     DOC: (
         "Deploy production lead function",
+        "validate-only",
+        "режим по умолчанию",
+        "ничего не развёртывает",
+        "operation",
         "parket-public-lead",
         "parket-lead-verify",
         "SUPABASE_ACCESS_TOKEN",
@@ -108,6 +126,7 @@ FORBIDDEN_WORKFLOW_MARKERS = (
     "  push:",
     "  pull_request:",
     "  schedule:",
+    "default: deploy",
     "permissions: write-all",
     "set -x",
     'echo "$SUPABASE_ACCESS_TOKEN"',
@@ -115,6 +134,33 @@ FORBIDDEN_WORKFLOW_MARKERS = (
     "path: remote-secret-names.json",
     "--prune",
 )
+
+DEPLOY_ONLY_STEPS = (
+    "Deploy controlled lead verifier",
+    "Deploy parket-public-lead",
+    "Run public endpoint preflight",
+    "Run protected production healthcheck",
+    "Upload post-deploy reports",
+    "Update public preflight failure issue",
+    "Close recovered public preflight issue",
+    "Update protected endpoint failure issue",
+    "Close recovered protected endpoint issue",
+    "Comment deployment result on issue 373",
+    "Fail on verifier deployment error",
+    "Fail on public lead deployment error",
+    "Fail on post-deploy verification error",
+)
+
+
+def workflow_step_block(workflow: str, name: str) -> str:
+    marker = f"- name: {name}"
+    start = workflow.find(marker)
+    if start < 0:
+        return ""
+    next_step = workflow.find("\n      - name:", start + len(marker))
+    if next_step < 0:
+        return workflow[start:]
+    return workflow[start:next_step]
 
 
 def main() -> int:
@@ -144,15 +190,38 @@ def main() -> int:
     if workflow.count("secrets.PARKET_HEALTHCHECK_TOKEN") != 1:
         findings.append("deploy workflow must reference PARKET_HEALTHCHECK_TOKEN exactly once through secrets")
 
+    inputs_block_start = workflow.find("workflow_dispatch:")
+    inputs_block_end = workflow.find("\npermissions:")
+    inputs_block = workflow[inputs_block_start:inputs_block_end]
+    operation_position = inputs_block.find("operation:")
+    confirm_position = inputs_block.find("confirm:")
+    notification_position = inputs_block.find("notification_policy:")
+    if min(operation_position, confirm_position, notification_position) < 0:
+        findings.append("workflow inputs must include operation, confirm and notification_policy")
+    elif not (operation_position < confirm_position < notification_position):
+        findings.append("workflow inputs must keep operation before confirm and notification_policy")
+
+    confirm_block = inputs_block[confirm_position:notification_position] if confirm_position >= 0 else ""
+    if "required: false" not in confirm_block:
+        findings.append("deploy confirmation must be optional for validate-only runs")
+
+    for step_name in DEPLOY_ONLY_STEPS:
+        block = workflow_step_block(workflow, step_name)
+        if not block:
+            findings.append(f"deploy workflow is missing step: {step_name}")
+        elif "inputs.operation == 'deploy'" not in block:
+            findings.append(f"deploy-only step lacks explicit operation guard: {step_name}")
+
     readiness_position = workflow.find("Validate deployment readiness")
+    validate_only_position = workflow.find("Finish validate-only readiness")
     verifier_position = workflow.find("Deploy controlled lead verifier")
     public_position = workflow.find("Deploy parket-public-lead")
     preflight_position = workflow.find("Run public endpoint preflight")
     protected_position = workflow.find("Run protected production healthcheck")
-    if min(readiness_position, verifier_position, public_position, preflight_position, protected_position) < 0:
-        findings.append("deploy workflow is missing one or more required deployment stages")
-    elif not (readiness_position < verifier_position < public_position < preflight_position):
-        findings.append("deployment order must be readiness, verifier, public lead, public preflight")
+    if min(readiness_position, validate_only_position, verifier_position, public_position, preflight_position, protected_position) < 0:
+        findings.append("deploy workflow is missing one or more required readiness or deployment stages")
+    elif not (readiness_position < validate_only_position < verifier_position < public_position < preflight_position):
+        findings.append("workflow order must be readiness, validate-only finish, verifier, public lead, preflight")
     if protected_position < public_position:
         findings.append("protected healthcheck must run after both deployments")
 
