@@ -4,6 +4,7 @@
   const PHONE_DISPLAY = '8 (900) 926-79-29';
   const originalFetch = window.fetch.bind(window);
   let lastDelivery = null;
+  window.parket36LastLeadDelivery = null;
 
   const requestUrl = input => {
     if (typeof input === 'string') return input;
@@ -31,16 +32,21 @@
     };
   };
 
+  const publishDelivery = delivery => {
+    lastDelivery = delivery;
+    window.parket36LastLeadDelivery = delivery ? Object.freeze({ ...delivery }) : null;
+  };
+
   window.fetch = async (input, init = {}) => {
     const response = await originalFetch(input, init);
     if (!requestUrl(input).includes(LEAD_ENDPOINT_PATH)) return response;
 
-    lastDelivery = await readDelivery(response);
+    publishDelivery(await readDelivery(response));
     return response;
   };
 
   document.addEventListener('submit', event => {
-    if (event.target?.id === 'request-form') lastDelivery = null;
+    if (event.target?.id === 'request-form') publishDelivery(null);
   }, true);
 
   const warningText = (notification, callback, fallbackVisible) => {
