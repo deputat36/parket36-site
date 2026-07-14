@@ -54,7 +54,7 @@ test('UTM сохраняются после навигации, а первая 
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 701 })
+      body: JSON.stringify({ ok: true, request_id: submittedPayload.request_id, lead_id: 701, notification: 'sent' })
     });
   });
   await allowClipboard(page);
