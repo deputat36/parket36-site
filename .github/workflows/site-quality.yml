@@ -36,10 +36,15 @@ jobs:
         run: deno test supabase/functions/parket-public-lead/payload-shape_test.ts
       - name: Test Edge Function contact phone
         run: deno test supabase/functions/parket-public-lead/contact-validation_test.ts
-      - name: Type-check Edge Function
+      - name: Test controlled lead verifier request ID
+        run: deno test supabase/functions/parket-lead-verify/request-id_test.ts
+      - name: Type-check Edge Functions
         id: edge_typecheck
         continue-on-error: true
-        run: deno check supabase/functions/parket-public-lead/index.ts > edge-function-check.log 2>&1
+        run: |
+          deno check supabase/functions/parket-public-lead/index.ts
+          deno check supabase/functions/parket-lead-verify/index.ts
+          > edge-function-check.log 2>&1
       - name: Upload Edge Function check log
         if: always()
         uses: actions/upload-artifact@v7
