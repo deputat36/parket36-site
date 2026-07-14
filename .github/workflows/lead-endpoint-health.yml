@@ -1,0 +1,75 @@
+name: Production lead endpoint health
+
+on:
+  schedule:
+    - cron: "47 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: production-lead-endpoint-health
+  cancel-in-progress: false
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Detect protected health token
+        id: health_config
+        env:
+          PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}
+        run: |
+          if [ -n "$PARKET_HEALTHCHECK_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Run protected production healthcheck
+        id: endpoint_health
+        if: steps.health_config.outputs.configured == 'true'
+        continue-on-error: true
+        env:
+          PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}
+        run: python tools/check_production_lead_endpoint.py --report lead-endpoint-health.md --require-token
+      - name: Write not-configured report
+        if: steps.health_config.outputs.configured != 'true'
+        run: python tools/check_production_lead_endpoint.py --report lead-endpoint-health.md
+      - name: Upload production lead health report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: production-lead-endpoint-health
+          path: lead-endpoint-health.md
+          if-no-files-found: error
+          retention-days: 30
+      - name: Update endpoint failure issue
+        if: >-
+          steps.health_config.outputs.configured == 'true' &&
+          steps.endpoint_health.outcome == 'failure'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_lead_endpoint_issue.py failure --report lead-endpoint-health.md
+      - name: Close recovered endpoint issue
+        if: >-
+          steps.health_config.outputs.configured == 'true' &&
+          steps.endpoint_health.outcome == 'success'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_lead_endpoint_issue.py success
+      - name: Fail on production endpoint errors
+        if: >-
+          steps.health_config.outputs.configured == 'true' &&
+          steps.endpoint_health.outcome == 'failure'
+        run: exit 1

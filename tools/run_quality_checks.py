@@ -22,6 +22,7 @@ CHECKS = [
     ("Validate live deployment source", ["tools/check_live_deployment.py", "--self-test"]),
     ("Validate post-deploy verification", ["tools/check_post_deploy_verification.py"]),
     ("Validate Pages issue completion", ["tools/complete_pages_switch_issue.py", "--self-test"]),
+    ("Validate production lead monitoring", ["tools/check_lead_endpoint_monitoring.py"]),
     ("Validate content inventory", ["tools/check_content_inventory.py"]),
     ("Validate content similarity", ["tools/check_content_similarity.py"]),
     ("Validate internal link map", ["tools/check_internal_link_map.py"]),
