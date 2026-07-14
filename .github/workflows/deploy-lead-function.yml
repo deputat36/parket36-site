@@ -84,8 +84,12 @@ jobs:
         run: deno test supabase/functions/parket-public-lead/payload-shape_test.ts
       - name: Test Edge Function contact phone
         run: deno test supabase/functions/parket-public-lead/contact-validation_test.ts
-      - name: Type-check Edge Function
+      - name: Type-check public lead function
         run: deno check supabase/functions/parket-public-lead/index.ts
+      - name: Test controlled lead verifier request ID
+        run: deno test supabase/functions/parket-lead-verify/request-id_test.ts
+      - name: Type-check controlled lead verifier
+        run: deno check supabase/functions/parket-lead-verify/index.ts
       - name: Read remote Supabase secret names
         run: supabase secrets list --project-ref "$SUPABASE_PROJECT_ID" --output json > remote-secret-names.json
       - name: Validate deployment readiness
@@ -111,8 +115,17 @@ jobs:
       - name: Stop before deploy when readiness failed
         if: steps.readiness.outcome == 'failure'
         run: exit 1
+      - name: Deploy controlled lead verifier
+        id: deploy_verifier
+        continue-on-error: true
+        run: >-
+          supabase functions deploy parket-lead-verify
+          --project-ref "$SUPABASE_PROJECT_ID"
+          --use-api
+          --no-verify-jwt
       - name: Deploy parket-public-lead
         id: deploy_function
+        if: steps.deploy_verifier.outcome == 'success'
         continue-on-error: true
         run: >-
           supabase functions deploy parket-public-lead
@@ -121,12 +134,12 @@ jobs:
           --no-verify-jwt
       - name: Run public endpoint preflight
         id: public_preflight
-        if: steps.deploy_function.outcome == 'success'
+        if: steps.deploy_verifier.outcome == 'success' && steps.deploy_function.outcome == 'success'
         continue-on-error: true
         run: python tools/check_public_lead_preflight.py --report lead-endpoint-preflight.md
       - name: Run protected production healthcheck
         id: protected_health
-        if: steps.deploy_function.outcome == 'success'
+        if: steps.deploy_verifier.outcome == 'success' && steps.deploy_function.outcome == 'success'
         continue-on-error: true
         run: python tools/check_production_lead_endpoint.py --report lead-endpoint-health.md --require-token
       - name: Upload post-deploy reports
@@ -165,6 +178,7 @@ jobs:
         run: python tools/manage_lead_endpoint_issue.py success --kind protected
       - name: Comment deployment result on issue 373
         if: >-
+          steps.deploy_verifier.outcome == 'success' &&
           steps.deploy_function.outcome == 'success' &&
           steps.public_preflight.outcome == 'success' &&
           steps.protected_health.outcome == 'success'
@@ -172,12 +186,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: >-
           gh issue comment 373
-          --body "Edge Function deployed from main commit $GITHUB_SHA. Public preflight and protected healthcheck passed in workflow run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Issue remains open until one controlled real lead confirms database, audit and notification delivery."
-      - name: Fail on deployment error
-        if: steps.deploy_function.outcome == 'failure'
+          --body "Both Edge Functions deployed from main commit $GITHUB_SHA. Public preflight and protected healthcheck passed in workflow run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Issue remains open until one controlled real lead confirms database, audit and notification delivery."
+      - name: Fail on verifier deployment error
+        if: steps.deploy_verifier.outcome == 'failure'
+        run: exit 1
+      - name: Fail on public lead deployment error
+        if: steps.deploy_verifier.outcome == 'success' && steps.deploy_function.outcome == 'failure'
         run: exit 1
       - name: Fail on post-deploy verification error
         if: >-
+          steps.deploy_verifier.outcome == 'success' &&
           steps.deploy_function.outcome == 'success' &&
           (steps.public_preflight.outcome == 'failure' || steps.protected_health.outcome == 'failure')
         run: exit 1

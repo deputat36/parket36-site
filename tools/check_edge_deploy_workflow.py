@@ -35,12 +35,17 @@ REQUIRED_MARKERS = {
         "deno-version: lts",
         "supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf",
         "version: latest",
+        "Test controlled lead verifier request ID",
+        "Type-check controlled lead verifier",
         "supabase secrets list --project-ref",
         "--output json > remote-secret-names.json",
         "python tools/check_edge_deploy_readiness.py",
         "--notification-policy",
         "rm -f remote-secret-names.json",
         "name: edge-deploy-readiness",
+        "Deploy controlled lead verifier",
+        "supabase functions deploy parket-lead-verify",
+        "Deploy parket-public-lead",
         "supabase functions deploy parket-public-lead",
         "--use-api",
         "--no-verify-jwt",
@@ -53,10 +58,12 @@ REQUIRED_MARKERS = {
         "failure --kind protected",
         "success --kind protected",
         "gh issue comment 373",
+        "Both Edge Functions deployed",
     ),
     SUPABASE_CONFIG: (
         'project_id = "parket36-site"',
         "[functions.parket-public-lead]",
+        "[functions.parket-lead-verify]",
         "verify_jwt = false",
     ),
     READINESS: (
@@ -68,6 +75,9 @@ REQUIRED_MARKERS = {
         "PARKET_EMAIL_FROM",
         "PARKET_EMAIL_TO",
         "SUPABASE_PROJECT_ID mismatch",
+        "parket-public-lead",
+        "parket-lead-verify",
+        "function_config_has_public_mode",
         "verify_jwt = false",
         "allow-disabled",
         "This report contains secret names only",
@@ -75,6 +85,8 @@ REQUIRED_MARKERS = {
     ),
     DOC: (
         "Deploy production lead function",
+        "parket-public-lead",
+        "parket-lead-verify",
         "SUPABASE_ACCESS_TOKEN",
         "SUPABASE_PROJECT_ID",
         "PARKET_HEALTHCHECK_TOKEN",
@@ -133,13 +145,20 @@ def main() -> int:
         findings.append("deploy workflow must reference PARKET_HEALTHCHECK_TOKEN exactly once through secrets")
 
     readiness_position = workflow.find("Validate deployment readiness")
-    deploy_position = workflow.find("Deploy parket-public-lead")
+    verifier_position = workflow.find("Deploy controlled lead verifier")
+    public_position = workflow.find("Deploy parket-public-lead")
     preflight_position = workflow.find("Run public endpoint preflight")
     protected_position = workflow.find("Run protected production healthcheck")
-    if readiness_position < 0 or deploy_position < 0 or readiness_position > deploy_position:
-        findings.append("readiness validation must run before deploy")
-    if deploy_position < 0 or preflight_position < deploy_position or protected_position < deploy_position:
-        findings.append("public and protected checks must run after deploy")
+    if min(readiness_position, verifier_position, public_position, preflight_position, protected_position) < 0:
+        findings.append("deploy workflow is missing one or more required deployment stages")
+    elif not (readiness_position < verifier_position < public_position < preflight_position):
+        findings.append("deployment order must be readiness, verifier, public lead, public preflight")
+    if protected_position < public_position:
+        findings.append("protected healthcheck must run after both deployments")
+
+    config = texts.get(SUPABASE_CONFIG, "")
+    if config.count("verify_jwt = false") != 2:
+        findings.append("supabase/config.toml must set verify_jwt = false exactly for both functions")
 
     if READINESS.is_file():
         completed = subprocess.run(

@@ -14,7 +14,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 SITE_CONFIG = ROOT / "data" / "site.json"
 SUPABASE_CONFIG = ROOT / "supabase" / "config.toml"
-FUNCTION_DIR = ROOT / "supabase" / "functions" / "parket-public-lead"
+PUBLIC_FUNCTION_DIR = ROOT / "supabase" / "functions" / "parket-public-lead"
+VERIFY_FUNCTION_DIR = ROOT / "supabase" / "functions" / "parket-lead-verify"
 DEFAULT_REPORT = Path("edge-deploy-readiness.md")
 
 REQUIRED_REMOTE_SECRETS = {
@@ -30,13 +31,19 @@ EMAIL_SECRETS = {
     "PARKET_EMAIL_FROM",
     "PARKET_EMAIL_TO",
 }
-REQUIRED_FUNCTION_FILES = {
+PUBLIC_FUNCTION_FILES = {
     "index.ts",
     "origin-policy.ts",
     "field-limits.ts",
     "payload-shape.ts",
     "contact-validation.ts",
 }
+VERIFY_FUNCTION_FILES = {
+    "index.ts",
+    "request-id.ts",
+    "request-id_test.ts",
+}
+FUNCTION_SLUGS = ("parket-public-lead", "parket-lead-verify")
 PROJECT_REF_RE = re.compile(r"https://(?P<ref>[a-z0-9]+)\.supabase\.co/functions/v1/parket-public-lead")
 
 
@@ -109,6 +116,17 @@ def notification_state(names: set[str]) -> tuple[str, list[str]]:
     return ", ".join(complete_channels) if complete_channels else "disabled", findings
 
 
+def function_config_has_public_mode(config_text: str, slug: str) -> bool:
+    pattern = re.compile(
+        rf"(?ms)^\[functions\.{re.escape(slug)}\]\s*$"
+        rf"(?P<body>.*?)(?=^\[|\Z)"
+    )
+    match = pattern.search(config_text)
+    if not match:
+        return False
+    return bool(re.search(r"(?m)^verify_jwt\s*=\s*false\s*$", match.group("body")))
+
+
 def validate_repository(project_ref: str) -> list[str]:
     findings: list[str] = []
     expected = expected_project_ref()
@@ -119,14 +137,23 @@ def validate_repository(project_ref: str) -> list[str]:
         findings.append("supabase/config.toml is missing")
     else:
         config_text = SUPABASE_CONFIG.read_text(encoding="utf-8", errors="ignore")
-        if "[functions.parket-public-lead]" not in config_text:
-            findings.append("supabase/config.toml is missing [functions.parket-public-lead]")
-        if not re.search(r"(?m)^verify_jwt\s*=\s*false\s*$", config_text):
-            findings.append("supabase/config.toml must set verify_jwt = false")
+        for slug in FUNCTION_SLUGS:
+            if not function_config_has_public_mode(config_text, slug):
+                findings.append(
+                    f"supabase/config.toml must configure [functions.{slug}] with verify_jwt = false"
+                )
 
-    missing_files = sorted(name for name in REQUIRED_FUNCTION_FILES if not (FUNCTION_DIR / name).is_file())
-    if missing_files:
-        findings.append("function source is incomplete; missing: " + ", ".join(missing_files))
+    missing_public = sorted(
+        name for name in PUBLIC_FUNCTION_FILES if not (PUBLIC_FUNCTION_DIR / name).is_file()
+    )
+    if missing_public:
+        findings.append("parket-public-lead source is incomplete; missing: " + ", ".join(missing_public))
+
+    missing_verifier = sorted(
+        name for name in VERIFY_FUNCTION_FILES if not (VERIFY_FUNCTION_DIR / name).is_file()
+    )
+    if missing_verifier:
+        findings.append("parket-lead-verify source is incomplete; missing: " + ", ".join(missing_verifier))
 
     return findings
 
@@ -138,7 +165,8 @@ def evaluate(
     notification_policy: str,
 ) -> tuple[list[dict[str, str]], list[str]]:
     rows: list[dict[str, str]] = []
-    findings = validate_repository(project_ref)
+    repo_findings = validate_repository(project_ref)
+    findings = list(repo_findings)
 
     missing_required = sorted(REQUIRED_REMOTE_SECRETS - remote_names)
     rows.append({
@@ -160,11 +188,11 @@ def evaluate(
     if channels == "disabled" and notification_policy != "allow-disabled":
         findings.append("no complete notification channel is configured; choose allow-disabled only consciously")
 
-    repo_findings = validate_repository(project_ref)
     rows.append({
         "check": "repository_contract",
         "status": "PASS" if not repo_findings else "FAIL",
-        "detail": "project ref, config and source files match" if not repo_findings else "; ".join(repo_findings),
+        "detail": "project ref, both function configs and source files match"
+        if not repo_findings else "; ".join(repo_findings),
     })
 
     return rows, findings
@@ -180,17 +208,13 @@ def render_report(
 ) -> str:
     generated = datetime.now(timezone.utc).isoformat()
     result = "PASS" if not findings else "FAIL"
-    visible_names = sorted(
-        name
-        for name in remote_names
-        if name.startswith("PARKET_")
-    )
+    visible_names = sorted(name for name in remote_names if name.startswith("PARKET_"))
     lines = [
         "# Edge Function deployment readiness",
         "",
         f"Generated: `{generated}`",
         f"Project ref: `{project_ref}`",
-        f"Function: `parket-public-lead`",
+        "Functions: `parket-public-lead`, `parket-lead-verify`",
         f"Notification policy: `{notification_policy}`",
         f"Result: **{result}**",
         "",
@@ -216,7 +240,7 @@ def render_report(
     lines.extend([
         "",
         "This report contains secret names only. It never contains secret values, digests or access tokens.",
-        "A PASS permits deployment but does not replace the post-deploy preflight, protected healthcheck or controlled real lead.",
+        "A PASS permits deployment of both functions but does not replace the post-deploy preflight, protected healthcheck or controlled real lead.",
         "",
     ])
     return "\n".join(lines)

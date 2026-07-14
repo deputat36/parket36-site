@@ -24,6 +24,7 @@ CHECKS = [
     ("Validate Pages issue completion", ["tools/complete_pages_switch_issue.py", "--self-test"]),
     ("Validate production lead monitoring", ["tools/check_lead_endpoint_monitoring.py"]),
     ("Validate production Edge deploy workflow", ["tools/check_edge_deploy_workflow.py"]),
+    ("Validate controlled production lead smoke", ["tools/check_controlled_lead_smoke.py"]),
     ("Validate content inventory", ["tools/check_content_inventory.py"]),
     ("Validate content similarity", ["tools/check_content_similarity.py"]),
     ("Validate internal link map", ["tools/check_internal_link_map.py"]),
