@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate honest lead-notification feedback across frontend, build, backend and E2E."""
+"""Validate honest lead-notification feedback across frontend, callback, build, backend and E2E."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "js" / "lead-notification-feedback.js"
+CALLBACK = ROOT / "js" / "callback-form.js"
 BUILD = ROOT / "tools" / "build_pages.py"
 BACKEND = ROOT / "supabase" / "functions" / "parket-public-lead" / "index.ts"
 E2E = ROOT / "tests" / "e2e" / "lead-notification-feedback.spec.mjs"
@@ -17,6 +18,9 @@ REQUIRED_MARKERS = {
     FRONTEND: (
         "new Set(['sent', 'disabled', 'partial_failure'])",
         "? value : 'unknown'",
+        "window.parket36LastLeadDelivery = null",
+        "const publishDelivery = delivery =>",
+        "window.parket36LastLeadDelivery = delivery ? Object.freeze({ ...delivery }) : null",
         "notificationConfirmed = delivery.notification === 'sent'",
         "Заявка сохранена",
         "Номер сохранён",
@@ -28,6 +32,15 @@ REQUIRED_MARKERS = {
         "parket36_lead_notification",
         "notification_state",
         "lead-notification",
+    ),
+    CALLBACK: (
+        "const readLeadDelivery = leadDetail =>",
+        "window.parket36LastLeadDelivery || {}",
+        "notification = leadDetail.notification || delivery.notification || 'unknown'",
+        "notificationConfirmed",
+        "notification_state: detail.notification",
+        "notification_confirmed: detail.notificationConfirmed",
+        "duplicate: detail.duplicate",
     ),
     BUILD: (
         "LEAD_NOTIFICATION_FEEDBACK_SCRIPT",
@@ -57,6 +70,9 @@ REQUIRED_MARKERS = {
         "notification: disabled",
         "notification: partial_failure",
         "unknown",
+        "window.parket36LastLeadDelivery",
+        "callback-request",
+        "notification_state",
         "parket36:lead-notification",
         "parket36_lead_notification",
         "lead-notification",
@@ -96,6 +112,12 @@ def main() -> int:
     feedback_position = build.find("replacement.append(LEAD_NOTIFICATION_FEEDBACK_SCRIPT)")
     if main_position < 0 or feedback_position < 0 or feedback_position < main_position:
         findings.append("lead notification feedback must be appended after main.js")
+
+    callback = texts.get(CALLBACK, "")
+    delivery_position = callback.find("const delivery = readLeadDelivery(leadDetail)")
+    dispatch_position = callback.find("window.dispatchEvent(new CustomEvent('parket36:callback-request'")
+    if delivery_position < 0 or dispatch_position < 0 or delivery_position > dispatch_position:
+        findings.append("callback request must read delivery state before dispatching its event")
 
     if findings:
         print("Lead notification feedback findings:")
