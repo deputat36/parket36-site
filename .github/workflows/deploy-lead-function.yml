@@ -1,0 +1,183 @@
+name: Deploy production lead function
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DEPLOY_PARKET_PUBLIC_LEAD"
+        required: true
+        type: string
+      notification_policy:
+        description: "Notification requirement before deploy"
+        required: true
+        default: require-configured
+        type: choice
+        options:
+          - require-configured
+          - allow-disabled
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: deploy-production-parket-public-lead
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: validate, deploy and verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}
+      NOTIFICATION_POLICY: ${{ inputs.notification_policy }}
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: lts
+      - name: Validate deployment confirmation and GitHub secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Production deploy is allowed only from main."
+            exit 1
+          fi
+          if [ "${{ inputs.confirm }}" != "DEPLOY_PARKET_PUBLIC_LEAD" ]; then
+            echo "::error::Confirmation text does not match DEPLOY_PARKET_PUBLIC_LEAD."
+            exit 1
+          fi
+          missing=0
+          for name in SUPABASE_ACCESS_TOKEN SUPABASE_PROJECT_ID PARKET_HEALTHCHECK_TOKEN; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not configured in GitHub Actions secrets."
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2.1.1
+        with:
+          version: latest
+      - name: Record Supabase CLI version
+        run: supabase --version
+      - name: Test Edge Function field limits
+        run: deno test supabase/functions/parket-public-lead/field-limits_test.ts
+      - name: Test Edge Function origin policy
+        run: deno test supabase/functions/parket-public-lead/origin-policy_test.ts
+      - name: Test Edge Function payload shape
+        run: deno test supabase/functions/parket-public-lead/payload-shape_test.ts
+      - name: Test Edge Function contact phone
+        run: deno test supabase/functions/parket-public-lead/contact-validation_test.ts
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/parket-public-lead/index.ts
+      - name: Read remote Supabase secret names
+        run: supabase secrets list --project-ref "$SUPABASE_PROJECT_ID" --output json > remote-secret-names.json
+      - name: Validate deployment readiness
+        id: readiness
+        continue-on-error: true
+        run: >-
+          python tools/check_edge_deploy_readiness.py
+          --project-ref "$SUPABASE_PROJECT_ID"
+          --remote-secrets remote-secret-names.json
+          --notification-policy "$NOTIFICATION_POLICY"
+          --report edge-deploy-readiness.md
+      - name: Remove temporary remote secret list
+        if: always()
+        run: rm -f remote-secret-names.json
+      - name: Upload deployment readiness report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: edge-deploy-readiness
+          path: edge-deploy-readiness.md
+          if-no-files-found: error
+          retention-days: 30
+      - name: Stop before deploy when readiness failed
+        if: steps.readiness.outcome == 'failure'
+        run: exit 1
+      - name: Deploy parket-public-lead
+        id: deploy_function
+        continue-on-error: true
+        run: >-
+          supabase functions deploy parket-public-lead
+          --project-ref "$SUPABASE_PROJECT_ID"
+          --use-api
+          --no-verify-jwt
+      - name: Run public endpoint preflight
+        id: public_preflight
+        if: steps.deploy_function.outcome == 'success'
+        continue-on-error: true
+        run: python tools/check_public_lead_preflight.py --report lead-endpoint-preflight.md
+      - name: Run protected production healthcheck
+        id: protected_health
+        if: steps.deploy_function.outcome == 'success'
+        continue-on-error: true
+        run: python tools/check_production_lead_endpoint.py --report lead-endpoint-health.md --require-token
+      - name: Upload post-deploy reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: edge-deploy-post-checks
+          path: |
+            lead-endpoint-preflight.md
+            lead-endpoint-health.md
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Update public preflight failure issue
+        if: steps.public_preflight.outcome == 'failure'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_lead_endpoint_issue.py failure --kind preflight --report lead-endpoint-preflight.md
+      - name: Close recovered public preflight issue
+        if: steps.public_preflight.outcome == 'success'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_lead_endpoint_issue.py success --kind preflight
+      - name: Update protected endpoint failure issue
+        if: steps.protected_health.outcome == 'failure'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_lead_endpoint_issue.py failure --kind protected --report lead-endpoint-health.md
+      - name: Close recovered protected endpoint issue
+        if: steps.protected_health.outcome == 'success'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_lead_endpoint_issue.py success --kind protected
+      - name: Comment deployment result on issue 373
+        if: >-
+          steps.deploy_function.outcome == 'success' &&
+          steps.public_preflight.outcome == 'success' &&
+          steps.protected_health.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh issue comment 373
+          --body "Edge Function deployed from main commit $GITHUB_SHA. Public preflight and protected healthcheck passed in workflow run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Issue remains open until one controlled real lead confirms database, audit and notification delivery."
+      - name: Fail on deployment error
+        if: steps.deploy_function.outcome == 'failure'
+        run: exit 1
+      - name: Fail on post-deploy verification error
+        if: >-
+          steps.deploy_function.outcome == 'success' &&
+          (steps.public_preflight.outcome == 'failure' || steps.protected_health.outcome == 'failure')
+        run: exit 1
