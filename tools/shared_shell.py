@@ -6,6 +6,8 @@ from __future__ import annotations
 from pathlib import Path
 import re
 
+DEFAULT_REQUEST_LABEL = "Оценка по фото"
+
 PAGE_PROFILES = {
     Path("index.html"): {
         "components": ("header", "final-cta", "footer", "mobile-cta"),
@@ -36,6 +38,17 @@ PAGE_PROFILES = {
         "components": ("header", "footer", "mobile-cta"),
         "active_nav": "/portfolio/",
         "request_href": "/zayavka/",
+    },
+    Path("sovety/index.html"): {
+        "components": ("header", "footer", "mobile-cta"),
+        "active_nav": "/sovety/",
+        "request_href": "/zayavka/",
+    },
+    Path("kontakty/index.html"): {
+        "components": ("header", "footer", "mobile-cta"),
+        "active_nav": "/kontakty/",
+        "request_href": "#callback",
+        "request_label": "Обратный звонок",
     },
 }
 
@@ -96,12 +109,22 @@ def render_header(fragment: str, active_nav: str | None, context: str, errors: l
     )
 
 
-def render_mobile_cta(fragment: str, request_href: str, context: str, errors: list[str]) -> str:
-    needle = 'href="#request"'
+def render_mobile_cta(
+    fragment: str,
+    request_href: str,
+    request_label: str,
+    context: str,
+    errors: list[str],
+) -> str:
+    needle = f'<a href="#request">{DEFAULT_REQUEST_LABEL}</a>'
     if fragment.count(needle) != 1:
-        errors.append(f"{context}: shared mobile CTA must contain one canonical request target")
+        errors.append(f"{context}: shared mobile CTA must contain one canonical request action")
         return fragment
-    return fragment.replace(needle, f'href="{request_href}"', 1)
+    return fragment.replace(
+        needle,
+        f'<a href="{request_href}">{request_label}</a>',
+        1,
+    )
 
 
 def render_fragment(
@@ -124,7 +147,17 @@ def render_fragment(
         if not isinstance(request_href, str) or not request_href:
             errors.append(f"{context}: shared shell profile must define request_href")
             return fragment
-        return render_mobile_cta(fragment, request_href, context, errors)
+        request_label = profile.get("request_label", DEFAULT_REQUEST_LABEL)
+        if not isinstance(request_label, str) or not request_label.strip():
+            errors.append(f"{context}: shared shell profile must define a non-empty request_label")
+            return fragment
+        return render_mobile_cta(
+            fragment,
+            request_href,
+            request_label.strip(),
+            context,
+            errors,
+        )
     return fragment
 
 
@@ -163,10 +196,17 @@ def validate_page(
             errors.append(f"{context}: expected one active navigation marker for {active_nav}")
 
     request_href = profile.get("request_href")
-    if "mobile-cta" in rendered and isinstance(request_href, str):
-        mobile_target = f'<a href="{request_href}">Оценка по фото</a>'
+    request_label = profile.get("request_label", DEFAULT_REQUEST_LABEL)
+    if (
+        "mobile-cta" in rendered
+        and isinstance(request_href, str)
+        and isinstance(request_label, str)
+    ):
+        mobile_target = f'<a href="{request_href}">{request_label.strip()}</a>'
         if text.count(mobile_target) != 1:
-            errors.append(f"{context}: expected shared mobile CTA target {request_href}")
+            errors.append(
+                f"{context}: expected shared mobile CTA action {request_label.strip()} -> {request_href}"
+            )
 
 
 def apply_shared_shell(root: Path, destination: Path, errors: list[str]) -> None:
