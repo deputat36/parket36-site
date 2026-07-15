@@ -11,8 +11,8 @@ import sys
 from build_shared_shell_coverage import self_test, write_report
 
 ROOT = Path(__file__).resolve().parents[1]
-COMMITTED_CSV = ROOT / "docs" / "shared-shell-coverage.csv"
-COMMITTED_MARKDOWN = ROOT / "docs" / "shared-shell-coverage.md"
+COMMITTED_CSV = ROOT / "docs/shared-shell-coverage.csv"
+COMMITTED_MARKDOWN = ROOT / "docs/shared-shell-coverage.md"
 
 
 def print_diff(actual: str, expected: str, actual_name: str, expected_name: str) -> None:
