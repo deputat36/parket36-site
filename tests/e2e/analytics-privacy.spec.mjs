@@ -143,7 +143,9 @@ test('callback-заявка не передаёт контакт, адрес и 
 
   await page.goto('/kontakty/?utm_source=privacy-test&utm_medium=e2e&utm_campaign=callback-contract#callback');
   await page.locator('#request-location').fill(PRIVATE.location);
-  await page.locator('#request-task').fill(PRIVATE.task);
+  await page.locator('#request-task').evaluate((field, value) => {
+    field.value = value;
+  }, PRIVATE.task);
   await page.locator('#request-callback').fill(PRIVATE.callback);
   await page.locator('#request-contact').fill(PRIVATE.contact);
   await page.getByRole('button', { name: 'Заказать обратный звонок' }).click();
