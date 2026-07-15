@@ -40,6 +40,7 @@ CHECKS = [
     ("Validate OG cards", ["tools/check_og_cards.py"]),
     ("Validate image attributes", ["tools/check_image_attributes.py"]),
     ("Validate live health checker", ["tools/check_live_site.py", "--self-test"]),
+    ("Validate live conversion monitoring", ["tools/check_live_conversion_workflow.py"]),
     ("Validate Supabase retention", ["tools/check_supabase_retention.py"]),
     ("Validate link attributes", ["tools/check_empty_link_attributes.py"]),
     ("Run static audit", ["tools/check_site.py"]),
