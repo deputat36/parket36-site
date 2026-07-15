@@ -28,7 +28,7 @@ HELPER_MARKERS = (
     "Homepage call route",
     "IndexNow key HTTP",
     "IndexNow key content",
-    'href=\\"tel:{phone_e164}\\"',
+    'href="tel:{phone_e164}"',
     "Позвонить Ивану",
     "Оценка по фото",
     "def run_with_retries",
