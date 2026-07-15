@@ -111,6 +111,7 @@ python tools/run_quality_checks.py
 - `check_workflows.py` — версии GitHub Actions и обязательные шаги CI/деплоя;
 - `check_quality_runner.py` — точный состав и порядок общего quality gate;
 - `check_docs.py` — актуальность README и workflow относительно общего quality runner;
+- `check_shared_shell_coverage.py` — актуальность сохранённых Markdown/CSV и полный охват публичного дерева отчётом shared shell;
 - `check_content_inventory.py` — соответствие сохранённого реестра текущим HTML-страницам и sitemap;
 - `check_sitemap_helper.py` — проверка вспомогательного инструмента добавления sitemap-записей;
 - `check_live_site.py --self-test` — офлайн-проверка генерации диагностического отчёта без обращения к боевому домену;
@@ -131,6 +132,8 @@ python tools/run_quality_checks.py
 - наличие страниц в sitemap;
 - соответствие `dateModified` в HTML и `lastmod` в sitemap;
 - актуальность реестра страниц, объёма текста, внутренних ссылок и конверсионных элементов;
+- актуальность классификации каждой публичной HTML-страницы по явному, семейному или отсутствующему профилю shared shell;
+- отсутствие профилей shared shell, указывающих на удалённые, непубличные или рабочие HTML-страницы;
 - alt у изображений;
 - безопасное подключение основного JavaScript через `defer`;
 - версии GitHub Actions и обязательный запуск quality gate перед деплоем;
@@ -149,12 +152,21 @@ python tools/run_quality_checks.py
 - успешная сборка чистого публичного каталога;
 - отсутствие внутренних рабочих страниц и приватных файлов в публичной сборке.
 
-`Site quality` дополнительно сохраняет artifact `content-inventory` на 30 дней. В нём находятся Markdown и CSV с title, H1, description, canonical, word count, lastmod, внутренними ссылками и конверсионными элементами каждой страницы. Актуальная Markdown-версия хранится в `docs/content-inventory.md`.
+`Site quality` дополнительно сохраняет artifacts на 30 дней:
+
+- `content-inventory` — Markdown и CSV с title, H1, description, canonical, word count, lastmod, внутренними ссылками и конверсионными элементами каждой страницы; актуальная Markdown-версия хранится в `docs/content-inventory.md`;
+- `shared-shell-coverage` — Markdown-сводка и CSV-классификация всех публичных HTML; сохранённый baseline хранится в `docs/shared-shell-coverage.md` и `docs/shared-shell-coverage.csv`.
 
 Локальная проверка перед PR:
 
 ```bash
 python tools/run_quality_checks.py
+```
+
+Ручная генерация отчёта покрытия shared shell:
+
+```bash
+python tools/build_shared_shell_coverage.py --output-dir reports/shared-shell-coverage
 ```
 
 Ручной отчёт по карточкам раздела советов можно запускать отдельно:
