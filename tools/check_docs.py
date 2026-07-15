@@ -10,6 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 README_PATH = ROOT / "README.md"
 SITE_QUALITY_PATH = ROOT / ".github" / "workflows" / "site-quality.yml"
 PAGES_PATH = ROOT / ".github" / "workflows" / "pages.yml"
+INDEXNOW_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "indexnow.yml"
+INDEXNOW_DOC_PATH = ROOT / "docs" / "indexnow-automation.md"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 OLD_LOCAL_CHECK_BLOCK = "python tools/site_settings.py --check\npython tools/check_site.py"
 
@@ -21,9 +23,25 @@ def read(path: Path) -> str:
 def main() -> int:
     findings: list[str] = []
 
+    required_files = (
+        README_PATH,
+        SITE_QUALITY_PATH,
+        PAGES_PATH,
+        INDEXNOW_WORKFLOW_PATH,
+        INDEXNOW_DOC_PATH,
+    )
+    missing = [path.relative_to(ROOT).as_posix() for path in required_files if not path.is_file()]
+    if missing:
+        print("Documentation findings:")
+        for path in missing:
+            print(f"  - required file is missing: {path}")
+        return 1
+
     readme = read(README_PATH)
     site_quality = read(SITE_QUALITY_PATH)
     pages = read(PAGES_PATH)
+    indexnow_workflow = read(INDEXNOW_WORKFLOW_PATH)
+    indexnow_doc = read(INDEXNOW_DOC_PATH)
 
     required_readme_markers = [
         QUALITY_RUNNER,
@@ -51,6 +69,25 @@ def main() -> int:
     for path, text in ((SITE_QUALITY_PATH, site_quality), (PAGES_PATH, pages)):
         if QUALITY_RUNNER not in text:
             findings.append(f"{path.relative_to(ROOT)} must run {QUALITY_RUNNER}")
+
+    required_indexnow_doc_markers = (
+        "Notify IndexNow after deploy",
+        "workflow_dispatch",
+        "tools/submit_indexnow.py --self-test",
+        "tools/submit_indexnow.py --check",
+        "tools/check_indexnow_workflow.py",
+        "indexnow-report",
+        "Ответ `200` или `202`",
+        "не гарантирует",
+    )
+    for marker in required_indexnow_doc_markers:
+        if marker not in indexnow_doc:
+            findings.append(f"docs/indexnow-automation.md must mention {marker}")
+
+    if 'workflows: ["Deploy GitHub Pages"]' not in indexnow_workflow:
+        findings.append("IndexNow workflow must run after Deploy GitHub Pages")
+    if "--report indexnow-report.md" not in indexnow_workflow:
+        findings.append("IndexNow workflow must preserve a Markdown report")
 
     if findings:
         print("Documentation findings:")

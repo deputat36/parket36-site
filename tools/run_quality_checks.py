@@ -52,6 +52,7 @@ CHECKS = [
     ("Validate lead reliability", ["tools/check_lead_reliability.py"]),
     ("Validate lead notification feedback", ["tools/check_lead_notification_feedback.py"]),
     ("Validate lead payload shape", ["tools/check_payload_shape.py"]),
+    ("Validate IndexNow workflow", ["tools/check_indexnow_workflow.py"]),
     ("Validate IndexNow discovery", ["tools/submit_indexnow.py", "--check"]),
     ("Build public directory", ["tools/build_pages.py"]),
 ]
