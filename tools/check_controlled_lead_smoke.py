@@ -10,6 +10,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "controlled-lead-smoke.yml"
 SCRIPT = ROOT / "tools" / "run_controlled_lead_smoke.py"
+SECRET_CHECKER = ROOT / "tools" / "check_controlled_smoke_github_secrets.py"
 DOC = ROOT / "docs" / "controlled-production-lead-smoke.md"
 CONFIG = ROOT / "supabase" / "config.toml"
 VERIFIER = ROOT / "supabase" / "functions" / "parket-lead-verify" / "index.ts"
@@ -23,12 +24,25 @@ REQUIRED_MARKERS = {
     WORKFLOW: (
         "name: Controlled production lead smoke",
         "workflow_dispatch:",
-        "SEND_CONTROLLED_LEAD",
+        "operation:",
+        "default: validate-only",
+        "- validate-only",
+        "- send",
+        "For send only: type SEND_CONTROLLED_LEAD",
         "expected_notification:",
         "sent",
         "disabled",
         "any",
         "issues: write",
+        "validate:",
+        "HAS_PARKET_SMOKE_CONTACT: ${{ secrets.PARKET_SMOKE_CONTACT != '' }}",
+        "HAS_PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN != '' }}",
+        "python tools/check_controlled_smoke_github_secrets.py",
+        "name: controlled-lead-smoke-secret-readiness",
+        "No production lead was created because operation was validate-only.",
+        "smoke:",
+        "if: inputs.operation == 'send'",
+        "needs: validate",
         "environment: production",
         "PARKET_SMOKE_CONTACT: ${{ secrets.PARKET_SMOKE_CONTACT }}",
         "PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}",
@@ -37,6 +51,7 @@ REQUIRED_MARKERS = {
         "persist-credentials: false",
         "uses: actions/setup-python@v6",
         'python-version: "3.12"',
+        "name: controlled-lead-smoke-final-secret-readiness",
         "python tools/run_controlled_lead_smoke.py",
         "--expected-notification",
         "name: controlled-lead-smoke",
@@ -58,8 +73,22 @@ REQUIRED_MARKERS = {
         "--expected-notification",
         "--self-test",
     ),
+    SECRET_CHECKER: (
+        "GitHub secret readiness for controlled production lead smoke",
+        '("PARKET_SMOKE_CONTACT", "has_smoke_contact")',
+        '("PARKET_HEALTHCHECK_TOKEN", "has_healthcheck_token")',
+        "configured/missing booleans only",
+        "never reads, prints, hashes, measures or stores secret values",
+        "--has-smoke-contact",
+        "--has-healthcheck-token",
+        "--self-test",
+    ),
     DOC: (
         "Controlled production lead smoke",
+        "validate-only",
+        "operation=send",
+        "controlled-lead-smoke-secret-readiness",
+        "controlled-lead-smoke-final-secret-readiness",
         "PARKET_SMOKE_CONTACT",
         "PARKET_HEALTHCHECK_TOKEN",
         "SEND_CONTROLLED_LEAD",
@@ -129,6 +158,7 @@ FORBIDDEN_WORKFLOW_MARKERS = (
     'echo "$PARKET_HEALTHCHECK_TOKEN"',
     "state: closed",
     "gh issue close 373",
+    "default: send",
 )
 
 FORBIDDEN_SCRIPT_MARKERS = (
@@ -170,12 +200,42 @@ def main() -> int:
     for marker in FORBIDDEN_WORKFLOW_MARKERS:
         if marker in workflow:
             findings.append(f"controlled smoke workflow contains forbidden marker: {marker}")
-    if workflow.count("secrets.PARKET_SMOKE_CONTACT") != 1:
-        findings.append("controlled smoke workflow must reference PARKET_SMOKE_CONTACT exactly once")
-    if workflow.count("secrets.PARKET_HEALTHCHECK_TOKEN") != 1:
-        findings.append("controlled smoke workflow must reference PARKET_HEALTHCHECK_TOKEN exactly once")
+
+    if workflow.count("PARKET_SMOKE_CONTACT: ${{ secrets.PARKET_SMOKE_CONTACT }}") != 1:
+        findings.append("controlled smoke workflow must expose PARKET_SMOKE_CONTACT to the send job exactly once")
+    if workflow.count("PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}") != 1:
+        findings.append("controlled smoke workflow must expose PARKET_HEALTHCHECK_TOKEN to the send job exactly once")
+    if workflow.count("HAS_PARKET_SMOKE_CONTACT: ${{ secrets.PARKET_SMOKE_CONTACT != '' }}") != 2:
+        findings.append("controlled smoke workflow must check the smoke contact before and after approval")
+    if workflow.count("HAS_PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN != '' }}") != 2:
+        findings.append("controlled smoke workflow must check the health token before and after approval")
     if "PARKET_SMOKE_CONTACT" in workflow.split("inputs:", 1)[-1].split("permissions:", 1)[0]:
         findings.append("PARKET_SMOKE_CONTACT must never be accepted as a workflow input")
+
+    if "\n  validate:" not in workflow or "\n  smoke:" not in workflow:
+        findings.append("controlled smoke workflow must separate validate and smoke jobs")
+        validate_job = ""
+        smoke_job = ""
+    else:
+        validate_job = workflow.split("\n  validate:", 1)[1].split("\n  smoke:", 1)[0]
+        smoke_job = workflow.split("\n  smoke:", 1)[1]
+
+    if "environment: production" in validate_job:
+        findings.append("validate-only job must not require the production environment")
+    if "tools/run_controlled_lead_smoke.py" in validate_job:
+        findings.append("validate-only job must never create a production lead")
+    validate_upload = validate_job.find("name: controlled-lead-smoke-secret-readiness")
+    validate_stop = validate_job.find("Stop when controlled smoke secret readiness failed")
+    if validate_upload < 0 or validate_stop < 0 or validate_upload > validate_stop:
+        findings.append("validate-only job must upload secret readiness before failing")
+
+    if "if: inputs.operation == 'send'" not in smoke_job or "needs: validate" not in smoke_job:
+        findings.append("send job must run only after successful validation")
+    final_upload = smoke_job.find("name: controlled-lead-smoke-final-secret-readiness")
+    final_stop = smoke_job.find("Stop before controlled lead when final secret readiness failed")
+    send_command = smoke_job.find("python tools/run_controlled_lead_smoke.py")
+    if min(final_upload, final_stop, send_command) < 0 or not (final_upload < final_stop < send_command):
+        findings.append("send job must upload and enforce final secret readiness before creating a lead")
 
     config = texts.get(CONFIG, "")
     if config.count("verify_jwt = false") != 2:
@@ -195,10 +255,14 @@ def main() -> int:
     elif not (auth_position < client_position < query_position):
         findings.append("verifier must authorize before creating the database client and querying rows")
 
-    if SCRIPT.is_file():
-        error = run_self_test(SCRIPT)
-        if error:
-            findings.append("controlled lead smoke self-test failed: " + error)
+    for self_test_path, label in (
+        (SCRIPT, "controlled lead smoke"),
+        (SECRET_CHECKER, "controlled smoke GitHub secret readiness"),
+    ):
+        if self_test_path.is_file():
+            error = run_self_test(self_test_path)
+            if error:
+                findings.append(f"{label} self-test failed: {error}")
 
     if findings:
         print("Controlled lead smoke findings:")
