@@ -5,6 +5,7 @@ Workflow: `.github/workflows/live-site-health.yml`.
 Скрипты:
 
 - `tools/check_live_site.py` — проверка DNS, GitHub Pages и публичного сайта с созданием отчёта;
+- `tools/check_live_conversion.py` — проверка рабочего `tel:`-маршрута, подписей звонка и публичного IndexNow-ключа;
 - `tools/check_live_deployment.py` — проверка источника и точной версии опубликованного Pages artifact;
 - `tools/deployment_manifest.py` — создание `_site/deployment.json` внутри Pages workflow;
 - `tools/manage_live_health_issue.py` — управление одним issue при повторяющемся сбое;
@@ -36,6 +37,24 @@ Workflow: `.github/workflows/live-site-health.yml`.
 - правильные строки Sitemap и Host в `robots.txt`;
 - доступность и корректность XML в `sitemap.xml`;
 - минимальное количество URL и единый домен в sitemap.
+
+### Звонок и IndexNow
+
+Отдельный live-check повторно читает боевую главную и требует одновременно:
+
+- точную ссылку `href="tel:+79009267929"`, сформированную из `data/site.json`;
+- отображаемый номер телефона из общих настроек;
+- понятную подпись `Позвонить Ивану`;
+- действие `Оценка по фото`.
+
+Это защищает от ситуации, когда номер остаётся видимым текстом, но кликабельный телефонный маршрут исчезает из опубликованного HTML.
+
+Также проверяется:
+
+- HTTP 200 для `https://parket36.ru/indexnow-key.txt`;
+- точное совпадение содержимого файла с ключом из `data/indexnow.json`.
+
+В post-deploy режиме выполняется до шести попыток с интервалом 10 секунд, чтобы краткая задержка CDN не создавала ложный сбой. Ежедневный и ручной запуск выполняют одну попытку.
 
 ### Источник и версия публикации
 
@@ -74,7 +93,7 @@ Manifest содержит:
 Issue `#5 Переключить parket36.ru на GitHub Pages` закрывается автоматически только когда одновременно выполнены все условия:
 
 1. workflow запущен событием `workflow_run` после успешного `Deploy GitHub Pages`;
-2. DNS, HTTPS, главная, `robots.txt` и `sitemap.xml` прошли live-проверку;
+2. DNS, HTTPS, главная, телефонный маршрут, IndexNow-ключ, `robots.txt` и `sitemap.xml` прошли live-проверку;
 3. `/deployment.json` подтверждает Actions artifact `_site`;
 4. live `commit` совпадает с `workflow_run.head_sha`;
 5. live `run_id` совпадает с ID завершившегося Pages deploy.
@@ -97,6 +116,8 @@ Issue `#5 Переключить parket36.ru на GitHub Pages` закрывае
 - результат разрешения `www`;
 - конечный адрес HTTPS-перехода с `www`;
 - состояние главной, robots и sitemap;
+- наличие точного `tel:`-маршрута и подписей звонка;
+- доступность и точность IndexNow-ключа;
 - наличие `/deployment.json`;
 - publisher и artifact;
 - опубликованный SHA и workflow run ID;
@@ -118,7 +139,7 @@ Issue `#5 Переключить parket36.ru на GitHub Pages` закрывае
 
 Monitoring issue и issue #5 имеют разные роли: первое отражает повторный технический сбой, второе — одноразовую задачу переключения домена на правильную публикацию.
 
-В issue попадают ссылка на workflow run и содержимое диагностического отчёта. Secrets и персональные данные туда не передаются.
+В issue попадают ссылка на workflow run и содержимое диагностического отчёта. Secrets и персональные данные туда не передаются. Значение IndexNow-ключа в отчёт не выводится.
 
 ## Права workflow
 
@@ -138,6 +159,15 @@ Workflow использует минимально необходимые раз
 
 ```bash
 python tools/check_live_site.py --report live-health-report.md
+```
+
+Проверка живого звонка и IndexNow-ключа:
+
+```bash
+python tools/check_live_conversion.py \
+  --report live-health-report.md \
+  --attempts 1 \
+  --timeout 20
 ```
 
 Проверка опубликованного Actions artifact без требования версии:
@@ -165,6 +195,8 @@ python tools/check_live_deployment.py --self-test
 python tools/check_post_deploy_verification.py
 python tools/complete_pages_switch_issue.py --self-test
 python tools/check_live_site.py --self-test
+python tools/check_live_conversion.py --self-test
+python tools/check_live_conversion_workflow.py
 python tools/manage_live_health_issue.py --self-test
 ```
 
@@ -172,6 +204,6 @@ python tools/manage_live_health_issue.py --self-test
 
 ## Ограничения
 
-Проверка не меняет DNS, Pages settings или сертификат. Она фиксирует фактическое состояние публичного сайта и точную опубликованную версию. Настройка DNS, Custom domain и Enforce HTTPS остаётся ручным действием до первого успешного post-deploy подтверждения.
+Проверка не меняет DNS, Pages settings или сертификат. Она фиксирует фактическое состояние публичного сайта, телефонного маршрута, IndexNow-ключа и точную опубликованную версию. Настройка DNS, Custom domain и Enforce HTTPS остаётся ручным действием до первого успешного post-deploy подтверждения.
 
 Issue создаётся только после двух последовательных неуспешных запусков. Если GitHub API временно недоступен, artifact и красный статус workflow сохраняются, но issue может быть создан или закрыт только при следующем подходящем запуске.
