@@ -1,0 +1,143 @@
+name: Production lead launch readiness
+
+on:
+  workflow_dispatch:
+    inputs:
+      notification_policy:
+        description: "Notification requirement before deploy"
+        required: true
+        default: require-configured
+        type: choice
+        options:
+          - require-configured
+          - allow-disabled
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-lead-launch-readiness
+  cancel-in-progress: false
+
+jobs:
+  readiness:
+    name: build unified production lead readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      HAS_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
+      HAS_SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID != '' }}
+      HAS_PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN != '' }}
+      HAS_PARKET_SMOKE_CONTACT: ${{ secrets.PARKET_SMOKE_CONTACT != '' }}
+      NOTIFICATION_POLICY: ${{ inputs.notification_policy }}
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: lts
+      - name: Validate safe readiness context
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Production launch readiness is allowed only from main."
+            exit 1
+          fi
+          if [ "$NOTIFICATION_POLICY" != "require-configured" ] && [ "$NOTIFICATION_POLICY" != "allow-disabled" ]; then
+            echo "::error::Unsupported notification policy: $NOTIFICATION_POLICY"
+            exit 1
+          fi
+      - name: Verify Edge Function sources
+        id: source_checks
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          deno test supabase/functions/parket-public-lead/field-limits_test.ts
+          deno test supabase/functions/parket-public-lead/origin-policy_test.ts
+          deno test supabase/functions/parket-public-lead/payload-shape_test.ts
+          deno test supabase/functions/parket-public-lead/contact-validation_test.ts
+          deno check supabase/functions/parket-public-lead/index.ts
+          deno test supabase/functions/parket-lead-verify/request-id_test.ts
+          deno check supabase/functions/parket-lead-verify/index.ts
+      - name: Check deploy GitHub secret readiness
+        id: deploy_github
+        continue-on-error: true
+        run: >-
+          python tools/check_edge_github_secrets.py
+          --has-supabase-access-token "$HAS_SUPABASE_ACCESS_TOKEN"
+          --has-supabase-project-id "$HAS_SUPABASE_PROJECT_ID"
+          --has-healthcheck-token "$HAS_PARKET_HEALTHCHECK_TOKEN"
+          --report edge-github-secret-readiness.md
+      - name: Check controlled smoke GitHub secret readiness
+        id: smoke_github
+        continue-on-error: true
+        run: >-
+          python tools/check_controlled_smoke_github_secrets.py
+          --has-smoke-contact "$HAS_PARKET_SMOKE_CONTACT"
+          --has-healthcheck-token "$HAS_PARKET_HEALTHCHECK_TOKEN"
+          --report controlled-lead-smoke-secret-readiness.md
+      - name: Check current public production contract
+        id: preflight
+        continue-on-error: true
+        run: python tools/check_public_lead_preflight.py --report lead-endpoint-preflight.md
+      - name: Set up Supabase CLI
+        if: steps.deploy_github.outcome == 'success'
+        uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2.1.1
+        with:
+          version: latest
+      - name: Read remote Supabase secret names
+        id: remote_names
+        if: steps.deploy_github.outcome == 'success'
+        run: supabase secrets list --project-ref "$SUPABASE_PROJECT_ID" --output json > remote-secret-names.json
+      - name: Check remote Supabase readiness
+        id: remote_readiness
+        if: steps.remote_names.outcome == 'success'
+        continue-on-error: true
+        run: >-
+          python tools/check_edge_deploy_readiness.py
+          --project-ref "$SUPABASE_PROJECT_ID"
+          --remote-secrets remote-secret-names.json
+          --notification-policy "$NOTIFICATION_POLICY"
+          --report edge-deploy-readiness.md
+      - name: Remove temporary remote secret list
+        if: always()
+        run: rm -f remote-secret-names.json
+      - name: Build unified readiness summary
+        id: summary
+        if: always()
+        continue-on-error: true
+        run: >-
+          python tools/build_production_lead_launch_readiness.py
+          --notification-policy "$NOTIFICATION_POLICY"
+          --source-status "${{ steps.source_checks.outcome }}"
+          --deploy-github-status "${{ steps.deploy_github.outcome }}"
+          --remote-readiness-status "${{ steps.remote_readiness.outcome }}"
+          --smoke-github-status "${{ steps.smoke_github.outcome }}"
+          --preflight-status "${{ steps.preflight.outcome }}"
+          --report production-lead-launch-readiness.md
+      - name: Upload unified readiness artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: production-lead-launch-readiness
+          path: |
+            production-lead-launch-readiness.md
+            edge-github-secret-readiness.md
+            edge-deploy-readiness.md
+            controlled-lead-smoke-secret-readiness.md
+            lead-endpoint-preflight.md
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail when launch prerequisites are blocked
+        if: steps.summary.outcome == 'failure'
+        run: exit 1
