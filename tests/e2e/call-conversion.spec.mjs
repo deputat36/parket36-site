@@ -83,7 +83,7 @@ test('памятка звонка также сохраняет фиксиров
   await page.goto('/pozvonit-ivanu/');
 
   await expect(page.locator('h1')).toHaveText('Что сказать Ивану по телефону про паркет');
-  await expect(page.locator(`a[href="${phoneHref}"]`)).toHaveCount(7);
+  await expect(page.locator(`a[href="${phoneHref}"]`)).toHaveCount(8);
   await expect(page.locator('.mobile-cta')).toBeVisible();
-  await expect(page.locator(`.mobile-cta a[href="${phoneHref}"]`)).toBeVisible();
+  await expect(page.locator(`.mobile-cta a[href="${phoneHref}"]`)).toHaveText('Позвонить Ивану');
 });
