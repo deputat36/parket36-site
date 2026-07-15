@@ -69,19 +69,13 @@ jobs:
           if-no-files-found: error
           retention-days: 30
       - name: Update repeated failure issue
-        if: >-
-          steps.live_health.outcome == 'failure' ||
-          steps.live_conversion.outcome == 'failure' ||
-          steps.deployment_source.outcome == 'failure'
+        if: steps.live_health.outcome == 'failure' || steps.live_conversion.outcome == 'failure' || steps.deployment_source.outcome == 'failure'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python tools/manage_live_health_issue.py failure --report live-health-report.md
       - name: Close recovered issue
-        if: >-
-          steps.live_health.outcome == 'success' &&
-          steps.live_conversion.outcome == 'success' &&
-          steps.deployment_source.outcome == 'success'
+        if: steps.live_health.outcome == 'success' && steps.live_conversion.outcome == 'success' && steps.deployment_source.outcome == 'success'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -99,8 +93,5 @@ jobs:
           PAGES_DEPLOY_RUN_ID: ${{ github.event.workflow_run.id }}
         run: python tools/complete_pages_switch_issue.py
       - name: Fail on live health errors
-        if: >-
-          steps.live_health.outcome == 'failure' ||
-          steps.live_conversion.outcome == 'failure' ||
-          steps.deployment_source.outcome == 'failure'
+        if: steps.live_health.outcome == 'failure' || steps.live_conversion.outcome == 'failure' || steps.deployment_source.outcome == 'failure'
         run: exit 1
