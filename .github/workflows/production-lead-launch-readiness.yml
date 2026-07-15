@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: production-lead-launch-readiness
@@ -138,6 +139,14 @@ jobs:
             lead-endpoint-preflight.md
           if-no-files-found: error
           retention-days: 30
+      - name: Update issue 373 readiness snapshot
+        if: always()
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          python tools/manage_production_lead_launch_readiness.py
+          --report production-lead-launch-readiness.md
       - name: Fail when launch prerequisites are blocked
         if: steps.summary.outcome == 'failure'
         run: exit 1

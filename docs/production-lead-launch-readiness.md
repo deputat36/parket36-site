@@ -38,6 +38,8 @@ Workflow `.github/workflows/production-lead-launch-readiness.yml` собирае
 production-lead-launch-readiness
 ```
 
+7. Открыть issue #373: один служебный комментарий с последним итоговым уровнем и дальнейшими действиями обновляется автоматически после каждого запуска.
+
 Environment `production` и required reviewer для этой проверки не используются.
 
 ## Уровни готовности
@@ -101,6 +103,23 @@ lead-endpoint-preflight.md
 
 Если GitHub deploy secrets отсутствуют, remote Supabase check будет отмечен как `BLOCKED`, а файл `edge-deploy-readiness.md` может отсутствовать. Итоговый summary всё равно создаётся.
 
+## Синхронизация с issue #373
+
+После загрузки artifact workflow запускает `tools/manage_production_lead_launch_readiness.py`.
+
+Скрипт поддерживает один автоматически управляемый комментарий в issue #373:
+
+- первый запуск создаёт комментарий с уникальным служебным marker;
+- следующие запуски находят этот комментарий и обновляют его через GitHub API;
+- новые повторяющиеся комментарии не создаются;
+- комментарий содержит только единый `production-lead-launch-readiness.md` summary и ссылку на workflow run;
+- component reports не копируются в issue и остаются только в Actions artifact;
+- сбой синхронизации issue не скрывает artifact и не меняет итог readiness workflow.
+
+Комментарий не закрывает issue #373 и не подтверждает deploy, protected healthcheck или доставку уведомления. Он только фиксирует последнюю проверенную готовность и следующие действия.
+
+Для этого workflow имеет минимальное дополнительное разрешение `issues: write`. Доступ к содержимому репозитория остаётся `contents: read`.
+
 ## Защита данных
 
 Workflow:
@@ -112,7 +131,9 @@ Workflow:
 - не загружает raw-ответ Supabase CLI;
 - не выводит длины, hashes, digests, части значений или тестовый контакт;
 - не содержит `supabase functions deploy`;
-- не вызывает `tools/run_controlled_lead_smoke.py`.
+- не вызывает `tools/run_controlled_lead_smoke.py`;
+- публикует в issue только summary, который сам содержит явные safety markers;
+- отказывается публиковать component или diagnostic reports вместо summary.
 
 ## Почему production drift не всегда делает workflow красным
 
@@ -131,6 +152,7 @@ Workflow:
 
 ```bash
 python tools/build_production_lead_launch_readiness.py --self-test
+python tools/manage_production_lead_launch_readiness.py --self-test
 python tools/check_production_lead_launch_readiness.py
 python tools/check_edge_github_secrets.py --self-test
 python tools/check_controlled_smoke_github_secrets.py --self-test

@@ -10,6 +10,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "production-lead-launch-readiness.yml"
 BUILDER = ROOT / "tools" / "build_production_lead_launch_readiness.py"
+ISSUE_MANAGER = ROOT / "tools" / "manage_production_lead_launch_readiness.py"
 DOC = ROOT / "docs" / "production-lead-launch-readiness.md"
 RUNNER = ROOT / "tools" / "run_quality_checks.py"
 QUALITY_CHECKER = ROOT / "tools" / "check_quality_runner.py"
@@ -23,6 +24,7 @@ REQUIRED_MARKERS = {
         "allow-disabled",
         "permissions:",
         "contents: read",
+        "issues: write",
         "build unified production lead readiness",
         "HAS_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}",
         "HAS_SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID != '' }}",
@@ -57,6 +59,9 @@ REQUIRED_MARKERS = {
         "edge-deploy-readiness.md",
         "controlled-lead-smoke-secret-readiness.md",
         "lead-endpoint-preflight.md",
+        "Update issue 373 readiness snapshot",
+        "GITHUB_TOKEN: ${{ github.token }}",
+        "python tools/manage_production_lead_launch_readiness.py",
         "Fail when launch prerequisites are blocked",
         "steps.summary.outcome == 'failure'",
     ),
@@ -81,6 +86,18 @@ REQUIRED_MARKERS = {
         "--preflight-status",
         "--self-test",
     ),
+    ISSUE_MANAGER: (
+        "ISSUE_NUMBER = 373",
+        "parket36-production-lead-launch-readiness",
+        "Production lead launch readiness",
+        "Readiness level:",
+        "This summary never contains secret values",
+        "component reports остаются",
+        "find_managed_comment",
+        "PATCH",
+        "--report",
+        "--self-test",
+    ),
     DOC: (
         "Production lead launch readiness",
         "BLOCKED",
@@ -93,6 +110,10 @@ REQUIRED_MARKERS = {
         "не развёртывает Edge Functions",
         "не создаёт заявку",
         "remote-secret-names.json",
+        "issue #373",
+        "один служебный комментарий",
+        "component reports",
+        "manage_production_lead_launch_readiness.py --self-test",
         "issue #375",
     ),
     RUNNER: (
@@ -109,7 +130,6 @@ FORBIDDEN_WORKFLOW_MARKERS = (
     "  schedule:",
     "environment: production",
     "permissions: write-all",
-    "issues: write",
     "supabase functions deploy",
     "tools/run_controlled_lead_smoke.py",
     "tools/check_production_lead_endpoint.py",
@@ -153,6 +173,8 @@ def main() -> int:
         if marker in workflow:
             findings.append(f"launch readiness workflow contains forbidden marker: {marker}")
 
+    if workflow.count("issues: write") != 1:
+        findings.append("workflow must grant issues: write exactly once for the managed issue 373 snapshot")
     if workflow.count("SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}") != 1:
         findings.append("workflow must expose SUPABASE_ACCESS_TOKEN only once for read-only Supabase CLI access")
     if workflow.count("SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}") != 1:
@@ -183,6 +205,7 @@ def main() -> int:
         "remove_raw": workflow.find("Remove temporary remote secret list"),
         "summary": workflow.find("Build unified readiness summary"),
         "upload": workflow.find("Upload unified readiness artifact"),
+        "issue_snapshot": workflow.find("Update issue 373 readiness snapshot"),
         "fail": workflow.find("Fail when launch prerequisites are blocked"),
     }
     if any(position < 0 for position in positions.values()):
@@ -197,12 +220,15 @@ def main() -> int:
         < positions["remove_raw"]
         < positions["summary"]
         < positions["upload"]
+        < positions["issue_snapshot"]
         < positions["fail"]
     ):
-        findings.append("workflow stages must preserve safe source, secret, remote, cleanup, summary, upload and fail order")
+        findings.append(
+            "workflow stages must preserve safe source, secret, remote, cleanup, summary, upload, issue snapshot and fail order"
+        )
 
-    if "if: always()" not in workflow[positions.get("remove_raw", 0):positions.get("upload", len(workflow))]:
-        findings.append("raw remote secret cleanup and summary must run even after earlier failures")
+    if "if: always()" not in workflow[positions.get("remove_raw", 0):positions.get("fail", len(workflow))]:
+        findings.append("raw cleanup, summary, artifact and issue snapshot must remain available after earlier failures")
 
     setup_cli = workflow.find("Set up Supabase CLI")
     remote_names = workflow.find("Read remote Supabase secret names")
@@ -217,6 +243,21 @@ def main() -> int:
     ):
         findings.append("temporary remote secret names must be removed before artifact upload")
 
+    issue_block_start = positions.get("issue_snapshot", -1)
+    issue_block_end = positions.get("fail", -1)
+    issue_block = workflow[issue_block_start:issue_block_end] if min(issue_block_start, issue_block_end) >= 0 else ""
+    for marker in ("if: always()", "continue-on-error: true", "GITHUB_TOKEN: ${{ github.token }}"):
+        if marker not in issue_block:
+            findings.append(f"issue 373 snapshot step must contain: {marker}")
+    for forbidden in (
+        "edge-github-secret-readiness.md",
+        "edge-deploy-readiness.md",
+        "controlled-lead-smoke-secret-readiness.md",
+        "lead-endpoint-preflight.md",
+    ):
+        if forbidden in issue_block:
+            findings.append(f"issue snapshot must publish only unified summary, not component report: {forbidden}")
+
     builder = texts.get(BUILDER, "")
     for forbidden in (
         "PARKET_SMOKE_CONTACT =",
@@ -228,10 +269,29 @@ def main() -> int:
         if forbidden in builder:
             findings.append(f"summary builder contains protected-data marker: {forbidden}")
 
-    if BUILDER.is_file():
-        error = run_self_test(BUILDER)
-        if error:
-            findings.append("production lead launch readiness self-test failed: " + error)
+    manager = texts.get(ISSUE_MANAGER, "")
+    for forbidden in (
+        "edge-github-secret-readiness.md",
+        "edge-deploy-readiness.md",
+        "controlled-lead-smoke-secret-readiness.md",
+        "lead-endpoint-preflight.md",
+        "PARKET_SMOKE_CONTACT =",
+        "PARKET_HEALTHCHECK_TOKEN =",
+        "SUPABASE_ACCESS_TOKEN =",
+        "print(contact)",
+        "print(token)",
+    ):
+        if forbidden in manager:
+            findings.append(f"issue manager contains forbidden component or protected-data marker: {forbidden}")
+
+    for self_test_path, label in (
+        (BUILDER, "production lead launch readiness"),
+        (ISSUE_MANAGER, "production lead launch readiness issue manager"),
+    ):
+        if self_test_path.is_file():
+            error = run_self_test(self_test_path)
+            if error:
+                findings.append(f"{label} self-test failed: {error}")
 
     if findings:
         print("Production lead launch readiness findings:")
