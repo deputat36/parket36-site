@@ -18,7 +18,7 @@ VALIDITY_LINE = (
 
 
 def normalize_commit_sha(value: str) -> str:
-    sha = value.strip().lower()
+    sha = value.strip()
     if not COMMIT_RE.fullmatch(sha):
         raise ValueError("commit SHA must contain exactly 40 lowercase hexadecimal characters")
     return sha
