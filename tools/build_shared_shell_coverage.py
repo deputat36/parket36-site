@@ -17,6 +17,7 @@ from shared_shell import (
     FAMILY_PROFILES,
     PAGE_PROFILES,
     build_page_profiles,
+    declared_family_pages,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,7 +48,6 @@ def path_to_url(relative: Path) -> str:
 def iter_public_source_html(root: Path) -> list[Path]:
     """Return exactly the public source HTML files copied by build_pages.py."""
     result: set[Path] = set()
-
     for name in PUBLIC_DIRS:
         directory = root / name
         if not directory.is_dir():
@@ -63,32 +63,25 @@ def iter_public_source_html(root: Path) -> list[Path]:
         path = root / name
         if path.is_file():
             result.add(path)
-
     return sorted(result)
 
 
-def family_sources(root: Path, profiles: dict[Path, dict[str, object]]) -> tuple[dict[Path, str], list[str]]:
+def family_sources(
+    root: Path,
+    profiles: dict[Path, dict[str, object]],
+) -> tuple[dict[Path, str], list[str]]:
     """Map discovered family pages to their declarative family name."""
     findings: list[str] = []
     sources: dict[Path, str] = {}
 
     for family in FAMILY_PROFILES:
         name = family.get("name")
-        family_root = family.get("root")
-        pattern = family.get("glob")
         if not isinstance(name, str) or not name.strip():
             continue
-        if not isinstance(family_root, Path) or not isinstance(pattern, str):
-            continue
-
-        base = root / family_root
-        if not base.is_dir():
-            continue
-
-        for path in sorted(base.glob(pattern)):
-            if not path.is_file():
-                continue
-            relative = path.relative_to(root)
+        family_findings: list[str] = []
+        pages = declared_family_pages(root, family, family_findings)
+        findings.extend(family_findings)
+        for relative in pages:
             if relative not in profiles or relative in PAGE_PROFILES:
                 continue
             previous = sources.get(relative)
@@ -99,7 +92,6 @@ def family_sources(root: Path, profiles: dict[Path, dict[str, object]]) -> tuple
                 )
                 continue
             sources[relative] = name.strip()
-
     return sources, findings
 
 
@@ -110,7 +102,6 @@ def classify_records(
 ) -> list[CoverageRecord]:
     """Classify public pages as explicit, family-backed or outside shared shell."""
     records: list[CoverageRecord] = []
-
     for relative in sorted(public_pages):
         profile = profiles.get(relative)
         if profile is None:
@@ -135,26 +126,25 @@ def classify_records(
             profile_source = f"family:{family_name}" if family_name else "family:unknown"
 
         components = profile.get("components")
-        components_text = ", ".join(components) if isinstance(components, tuple) else "—"
         active_nav = profile.get("active_nav")
         request_href = profile.get("request_href")
         request_label = profile.get("request_label", DEFAULT_REQUEST_LABEL)
-
         records.append(
             CoverageRecord(
                 source_path=relative.as_posix(),
                 url_path=path_to_url(relative),
                 coverage="profiled",
                 profile_source=profile_source,
-                components=components_text,
+                components=", ".join(components) if isinstance(components, tuple) else "—",
                 active_nav=active_nav if isinstance(active_nav, str) else "none",
                 request_href=request_href if isinstance(request_href, str) else "—",
-                request_label=request_label.strip()
-                if isinstance(request_label, str) and request_label.strip()
-                else "—",
+                request_label=(
+                    request_label.strip()
+                    if isinstance(request_label, str) and request_label.strip()
+                    else "—"
+                ),
             )
         )
-
     return records
 
 
@@ -181,9 +171,9 @@ def collect_coverage(root: Path = ROOT) -> tuple[list[CoverageRecord], list[str]
     unknown_family = [record.source_path for record in records if record.profile_source == "family:unknown"]
     if unknown_family:
         findings.append(
-            "Family-backed pages are missing a declarative family source: " + ", ".join(unknown_family)
+            "Family-backed pages are missing a declarative family source: "
+            + ", ".join(unknown_family)
         )
-
     return records, findings
 
 
@@ -224,7 +214,6 @@ def markdown_text(records: list[CoverageRecord]) -> str:
         "| Источник | Страниц |",
         "|---|---:|",
     ]
-
     for source, count in sorted(source_counts.items()):
         lines.append(f"| `{source}` | {count} |")
     lines.append(f"| вне shared shell | {len(outside)} |")
@@ -269,6 +258,7 @@ def self_test() -> list[str]:
         Path("index.html"),
         Path("politika/index.html"),
         Path("sovety/example/index.html"),
+        Path("uslugi/example/index.html"),
     ]
     profiles = {
         Path("index.html"): {
@@ -281,25 +271,33 @@ def self_test() -> list[str]:
             "active_nav": "/sovety/",
             "request_href": "/zayavka/",
         },
+        Path("uslugi/example/index.html"): {
+            "components": ("header", "mobile-cta"),
+            "active_nav": None,
+            "request_href": "/zayavka/",
+        },
     }
     records = classify_records(
         public_pages,
         profiles,
-        {Path("sovety/example/index.html"): "articles"},
+        {
+            Path("sovety/example/index.html"): "articles",
+            Path("uslugi/example/index.html"): "adjacent-services",
+        },
     )
     by_path = {record.source_path: record for record in records}
-
     if by_path["index.html"].profile_source != "explicit":
         findings.append("self-test: explicit profile classification failed")
     if by_path["sovety/example/index.html"].profile_source != "family:articles":
-        findings.append("self-test: family profile classification failed")
+        findings.append("self-test: glob family profile classification failed")
+    if by_path["uslugi/example/index.html"].profile_source != "family:adjacent-services":
+        findings.append("self-test: allowlist family profile classification failed")
     if by_path["politika/index.html"].coverage != "outside":
         findings.append("self-test: outside-page classification failed")
     if by_path["404.html"].url_path != "/404.html":
         findings.append("self-test: file URL conversion failed")
     if by_path["sovety/example/index.html"].url_path != "/sovety/example/":
         findings.append("self-test: index URL conversion failed")
-
     return findings
 
 
@@ -325,7 +323,6 @@ def main() -> int:
         for finding in findings:
             print(f"  - {finding}")
         return 1
-
     print(f"Wrote {csv_path.relative_to(ROOT)}")
     print(f"Wrote {markdown_path.relative_to(ROOT)}")
     return 0
