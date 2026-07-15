@@ -110,6 +110,7 @@ RESPONSIVE_CALL_CSS_MARKERS = {
     "@media (max-width: 1000px) {": "tablet call breakpoint",
     "padding-bottom: calc(86px + env(safe-area-inset-bottom));": "sticky CTA body clearance",
     "bottom: calc(10px + env(safe-area-inset-bottom));": "safe-area-aware sticky position",
+    "display: grid !important;": "tablet CTA override for legacy hide rule",
     "width: min(620px, calc(100% - 24px));": "tablet sticky CTA width",
     ".mobile-cta a {": "sticky CTA action style",
 }
