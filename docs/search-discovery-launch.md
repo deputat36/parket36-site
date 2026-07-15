@@ -14,34 +14,50 @@
 
 ## Что автоматизировано
 
-После успешного workflow `Deploy GitHub Pages` запускается workflow `IndexNow`.
+После успешного workflow `Deploy GitHub Pages` запускается workflow `Notify IndexNow after deploy`.
 
 Он:
 
+- получает SHA именно завершившейся публикации;
 - проверяет `data/indexnow.json`;
 - сверяет публичный ключ `indexnow-key.txt`;
 - читает все URL из `sitemap.xml`;
 - проверяет, что URL принадлежат `parket36.ru`;
-- проверяет доступность ключа на боевом домене;
-- отправляет один пакет URL в IndexNow;
-- пропускает отправку без ошибки, если домен или ключ ещё не опубликованы.
+- до шести раз проверяет доступность ключа на боевом домене, чтобы пережить задержку CDN;
+- отправляет один пакет URL в глобальный endpoint IndexNow;
+- сохраняет Markdown-отчёт как artifact `indexnow-report` на 30 дней;
+- завершает отдельный workflow ошибкой, если живой ключ недоступен или уведомление не принято.
+
+Ошибка IndexNow не откатывает уже опубликованный сайт. Она остаётся отдельным диагностическим сигналом после успешного deploy.
 
 Статическая проверка входит в общий quality gate:
 
 ```bash
+python tools/check_indexnow_workflow.py
 python tools/submit_indexnow.py --check
+```
+
+Офлайн-проверка payload и отчёта:
+
+```bash
+python tools/submit_indexnow.py --self-test
 ```
 
 Проверка ключа на боевом домене:
 
 ```bash
-python tools/submit_indexnow.py --verify-live-key
+python tools/submit_indexnow.py --verify-live-key --attempts 6 --retry-delay 10
 ```
 
-Ручная отправка всех URL sitemap:
+Ручная отправка всех URL sitemap с отчётом:
 
 ```bash
-python tools/submit_indexnow.py --submit
+python tools/submit_indexnow.py \
+  --submit \
+  --attempts 6 \
+  --retry-delay 10 \
+  --timeout 20 \
+  --report indexnow-report.md
 ```
 
 Код принимает ответы HTTP 200 и 202 как подтверждение приёма запроса. Это не является гарантией попадания страницы в индекс или высокой позиции.
