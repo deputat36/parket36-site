@@ -31,5 +31,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: >-
-          python tools/mark_production_lead_launch_readiness_stale.py
+          python tools/mark_production_lead_readiness_stale.py
           --current-commit "$GITHUB_SHA"
