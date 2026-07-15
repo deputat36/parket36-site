@@ -24,6 +24,11 @@ PAGE_PROFILES = {
         "active_nav": "/uslugi/",
         "request_href": "/zayavka/",
     },
+    Path("uslugi/parket-i-poly/index.html"): {
+        "components": ("header", "mobile-cta"),
+        "active_nav": "/uslugi/",
+        "request_href": "/zayavka/",
+    },
     Path("uslugi/ciklevka-parketa/index.html"): {
         "components": ("header", "mobile-cta"),
         "active_nav": "/uslugi/",
@@ -34,7 +39,27 @@ PAGE_PROFILES = {
         "active_nav": "/uslugi/",
         "request_href": "/zayavka/",
     },
+    Path("uslugi/ukladka-parketa/index.html"): {
+        "components": ("header", "mobile-cta"),
+        "active_nav": "/uslugi/",
+        "request_href": "/zayavka/",
+    },
+    Path("uslugi/ukladka-laminata/index.html"): {
+        "components": ("header", "mobile-cta"),
+        "active_nav": "/uslugi/",
+        "request_href": "/zayavka/",
+    },
     Path("uslugi/shlifovka-doshchatogo-pola/index.html"): {
+        "components": ("header", "mobile-cta"),
+        "active_nav": "/uslugi/",
+        "request_href": "/zayavka/",
+    },
+    Path("uslugi/terrasy-i-derevyannye-poly/index.html"): {
+        "components": ("header", "mobile-cta"),
+        "active_nav": "/uslugi/",
+        "request_href": "/zayavka/",
+    },
+    Path("uslugi/pokrytie-lakom-i-maslom/index.html"): {
         "components": ("header", "mobile-cta"),
         "active_nav": "/uslugi/",
         "request_href": "/zayavka/",
