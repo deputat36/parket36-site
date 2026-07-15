@@ -3,9 +3,18 @@ name: Controlled production lead smoke
 on:
   workflow_dispatch:
     inputs:
-      confirm:
-        description: "Type SEND_CONTROLLED_LEAD"
+      operation:
+        description: "Validate readiness only or send one controlled lead"
         required: true
+        default: validate-only
+        type: choice
+        options:
+          - validate-only
+          - send
+      confirm:
+        description: "For send only: type SEND_CONTROLLED_LEAD"
+        required: false
+        default: ""
         type: string
       expected_notification:
         description: "Expected notification state"
@@ -26,15 +35,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  smoke:
-    name: send and verify one controlled lead
+  validate:
+    name: validate controlled smoke readiness
     runs-on: ubuntu-latest
-    timeout-minutes: 8
-    environment: production
+    timeout-minutes: 5
     env:
-      PARKET_SMOKE_CONTACT: ${{ secrets.PARKET_SMOKE_CONTACT }}
-      PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}
-      EXPECTED_NOTIFICATION: ${{ inputs.expected_notification }}
+      HAS_PARKET_SMOKE_CONTACT: ${{ secrets.PARKET_SMOKE_CONTACT != '' }}
+      HAS_PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN != '' }}
+      OPERATION: ${{ inputs.operation }}
     steps:
       - name: Checkout main
         uses: actions/checkout@v7
@@ -44,7 +52,70 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Validate confirmation and protected inputs
+      - name: Validate operation and confirmation
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Controlled production smoke readiness is allowed only from main."
+            exit 1
+          fi
+          if [ "$OPERATION" != "validate-only" ] && [ "$OPERATION" != "send" ]; then
+            echo "::error::Unsupported operation: $OPERATION"
+            exit 1
+          fi
+          if [ "$OPERATION" = "send" ] && [ "${{ inputs.confirm }}" != "SEND_CONTROLLED_LEAD" ]; then
+            echo "::error::Confirmation text does not match SEND_CONTROLLED_LEAD."
+            exit 1
+          fi
+      - name: Check controlled smoke GitHub secret readiness
+        id: smoke_secrets
+        continue-on-error: true
+        run: >-
+          python tools/check_controlled_smoke_github_secrets.py
+          --has-smoke-contact "$HAS_PARKET_SMOKE_CONTACT"
+          --has-healthcheck-token "$HAS_PARKET_HEALTHCHECK_TOKEN"
+          --report controlled-lead-smoke-secret-readiness.md
+      - name: Upload controlled smoke secret readiness report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: controlled-lead-smoke-secret-readiness
+          path: controlled-lead-smoke-secret-readiness.md
+          if-no-files-found: error
+          retention-days: 30
+      - name: Stop when controlled smoke secret readiness failed
+        if: steps.smoke_secrets.outcome == 'failure'
+        run: exit 1
+      - name: Finish validate-only readiness
+        if: inputs.operation == 'validate-only' && steps.smoke_secrets.outcome == 'success'
+        run: |
+          echo "## Controlled production lead smoke readiness: PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "No production lead was created because operation was validate-only." >> "$GITHUB_STEP_SUMMARY"
+
+  smoke:
+    name: send and verify one controlled lead
+    if: inputs.operation == 'send'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment: production
+    env:
+      PARKET_SMOKE_CONTACT: ${{ secrets.PARKET_SMOKE_CONTACT }}
+      PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN }}
+      HAS_PARKET_SMOKE_CONTACT: ${{ secrets.PARKET_SMOKE_CONTACT != '' }}
+      HAS_PARKET_HEALTHCHECK_TOKEN: ${{ secrets.PARKET_HEALTHCHECK_TOKEN != '' }}
+      EXPECTED_NOTIFICATION: ${{ inputs.expected_notification }}
+    steps:
+      - name: Checkout validated main commit
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Revalidate confirmation after approval
         shell: bash
         run: |
           set -euo pipefail
@@ -56,16 +127,25 @@ jobs:
             echo "::error::Confirmation text does not match SEND_CONTROLLED_LEAD."
             exit 1
           fi
-          missing=0
-          for name in PARKET_SMOKE_CONTACT PARKET_HEALTHCHECK_TOKEN; do
-            if [ -z "${!name:-}" ]; then
-              echo "::error::$name is not configured in GitHub Actions secrets."
-              missing=1
-            fi
-          done
-          if [ "$missing" -ne 0 ]; then
-            exit 1
-          fi
+      - name: Recheck controlled smoke GitHub secrets after approval
+        id: final_smoke_secrets
+        continue-on-error: true
+        run: >-
+          python tools/check_controlled_smoke_github_secrets.py
+          --has-smoke-contact "$HAS_PARKET_SMOKE_CONTACT"
+          --has-healthcheck-token "$HAS_PARKET_HEALTHCHECK_TOKEN"
+          --report controlled-lead-smoke-final-secret-readiness.md
+      - name: Upload final controlled smoke secret readiness report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: controlled-lead-smoke-final-secret-readiness
+          path: controlled-lead-smoke-final-secret-readiness.md
+          if-no-files-found: error
+          retention-days: 30
+      - name: Stop before controlled lead when final secret readiness failed
+        if: steps.final_smoke_secrets.outcome == 'failure'
+        run: exit 1
       - name: Run one controlled production lead
         id: controlled_smoke
         continue-on-error: true
