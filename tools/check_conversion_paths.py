@@ -118,7 +118,7 @@ PHONE_HELPER_MARKERS = {
     '<meta name="robots" content="noindex, follow">': "intentional helper noindex directive",
     "Что сказать Ивану по телефону про паркет": "phone helper heading",
     "Самый простой первый шаг — короткий звонок": "phone helper final CTA",
-    '<div class="mobile-cta">': "phone helper sticky CTA",
+    'class="mobile-cta" aria-label="Быстрые действия"': "accessible phone helper sticky CTA",
 }
 
 STALE_LABELS = {
