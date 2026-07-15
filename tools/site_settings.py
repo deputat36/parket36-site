@@ -4,10 +4,11 @@
 Usage:
     python tools/site_settings.py --check
     python tools/site_settings.py --write
+    python tools/site_settings.py --self-test
 
 The script intentionally touches only predictable shared values: phone links,
-display phone, approved MAX links, the public lead endpoint and the optional
-Yandex Metrika snippet generated from data/site.json.
+display phone, approved MAX links, current-year fallbacks, the public lead
+endpoint and the optional Yandex Metrika snippet generated from data/site.json.
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ import argparse
 import json
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,10 +27,15 @@ LEAD_ENDPOINT_DOCS = (
     ROOT / "docs" / "supabase-parket-leads.md",
     ROOT / "docs" / "lead-endpoint-test-mode.md",
 )
+SHARED_FRAGMENT_DIR = Path("data/shared-shell")
 IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
 
 TEL_RE = re.compile(r"tel:\+7\d{10}")
 DISPLAY_PHONE_RE = re.compile(r"8\s*\(\d{3}\)\s*\d{3}[\-– ]\d{2}[\-– ]\d{2}")
+CURRENT_YEAR_RE = re.compile(
+    r'(<span\b[^>]*\bdata-current-year\b[^>]*>)\d{4}(</span>)',
+    re.IGNORECASE,
+)
 MAX_HREF_RE = re.compile(r'href="https://max\.ru[^\"]*"')
 METRIKA_BLOCK_RE = re.compile(
     r"\n?\s*<!-- Parket36 Metrika start -->.*?<!-- Parket36 Metrika end -->\n?",
@@ -42,13 +49,20 @@ LEAD_ENDPOINT_CONST_RE = re.compile(
 )
 
 
-def iter_html_files() -> list[Path]:
-    result: list[Path] = []
-    for path in ROOT.rglob("*.html"):
-        rel_parts = path.relative_to(ROOT).parts
+def iter_markup_files(root: Path = ROOT) -> list[Path]:
+    """Return source HTML plus canonical shared-shell fragments."""
+    result: set[Path] = set()
+
+    for path in root.rglob("*.html"):
+        rel_parts = path.relative_to(root).parts
         if any(part in IGNORED_DIRS for part in rel_parts):
             continue
-        result.append(path)
+        result.add(path)
+
+    fragment_dir = root / SHARED_FRAGMENT_DIR
+    if fragment_dir.is_dir():
+        result.update(fragment_dir.glob("*.htmlfrag"))
+
     return sorted(result)
 
 
@@ -66,6 +80,7 @@ def load_config() -> dict[str, object]:
         "max_url",
         "metrika_id",
         "default_request_path",
+        "current_year",
     }
     missing = sorted(required - data.keys())
     if missing:
@@ -108,6 +123,12 @@ def load_config() -> dict[str, object]:
         raise ValueError("default_request_path must look like /zayavka/")
     data["default_request_path"] = default_request_path
 
+    current_year = data["current_year"]
+    if isinstance(current_year, bool) or not isinstance(current_year, int):
+        raise ValueError("current_year must be an integer")
+    if not 2000 <= current_year <= 2100:
+        raise ValueError("current_year must be between 2000 and 2100")
+
     return data
 
 
@@ -123,19 +144,21 @@ def render_metrika_block(counter_id: str) -> str:
   <!-- Parket36 Metrika end -->"""
 
 
-def update_html_text(text: str, config: dict[str, object]) -> str:
+def update_markup_text(text: str, config: dict[str, object]) -> str:
     phone_e164 = str(config["phone_e164"])
     phone_display = str(config["phone_display"])
+    current_year = str(config["current_year"])
     max_url = str(config.get("max_url", "")).strip()
     metrika_id = str(config.get("metrika_id", "")).strip()
 
     text = TEL_RE.sub(f"tel:{phone_e164}", text)
     text = DISPLAY_PHONE_RE.sub(phone_display, text)
+    text = CURRENT_YEAR_RE.sub(rf"\g<1>{current_year}\g<2>", text)
 
     if max_url:
         text = MAX_HREF_RE.sub(f'href="{max_url}"', text)
 
-    text = METRIKA_BLOCK_RE.sub("\n", text)
+    text = METRIKA_BLOCK_RE.sub("", text)
     if metrika_id and "</head>" in text:
         text = text.replace("</head>", f"{render_metrika_block(metrika_id)}\n</head>", 1)
 
@@ -158,12 +181,93 @@ def update_endpoint_text(path: Path, text: str, config: dict[str, object]) -> st
     return LEAD_ENDPOINT_RE.sub(endpoint, text)
 
 
+def run_self_test(verbose: bool = True) -> int:
+    """Exercise markup discovery and deterministic shared-value rewriting."""
+    findings: list[str] = []
+    config: dict[str, object] = {
+        "phone_display": "8 (900) 926-79-29",
+        "phone_e164": "+79009267929",
+        "current_year": 2026,
+        "max_url": "https://max.ru/ivan-parket",
+        "metrika_id": "12345678",
+    }
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        fragment_dir = root / SHARED_FRAGMENT_DIR
+        fragment_dir.mkdir(parents=True)
+        ignored_dir = root / "tools"
+        ignored_dir.mkdir()
+
+        (root / "index.html").write_text("<html><head></head><body></body></html>", encoding="utf-8")
+        (fragment_dir / "header.htmlfrag").write_text("<header></header>", encoding="utf-8")
+        (ignored_dir / "ignored.html").write_text("<html></html>", encoding="utf-8")
+
+        discovered = {path.relative_to(root).as_posix() for path in iter_markup_files(root)}
+        expected = {"index.html", "data/shared-shell/header.htmlfrag"}
+        if discovered != expected:
+            findings.append(
+                "markup discovery must include source HTML and shared-shell fragments only; "
+                f"found: {sorted(discovered)}"
+            )
+
+    stale_html = (
+        '<html><head></head><body><a href="tel:+79999999999">8 (999) 999-99-99</a>'
+        '<a href="https://max.ru/old">MAX</a><span data-current-year>2025</span></body></html>'
+    )
+    updated_html = update_markup_text(stale_html, config)
+    expected_html_markers = (
+        'href="tel:+79009267929"',
+        "8 (900) 926-79-29",
+        'href="https://max.ru/ivan-parket"',
+        '<span data-current-year>2026</span>',
+        "window.parket36MetrikaId = 12345678;",
+    )
+    for marker in expected_html_markers:
+        if marker not in updated_html:
+            findings.append(f"markup rewrite is missing expected marker: {marker}")
+    if updated_html.count("<!-- Parket36 Metrika start -->") != 1:
+        findings.append("markup rewrite must add exactly one Metrika block")
+    if update_markup_text(updated_html, config) != updated_html:
+        findings.append("markup rewrite must be idempotent")
+
+    stale_fragment = (
+        '<!-- shared-shell:footer --><footer><a href="tel:+79999999999">'
+        '8 (999) 999-99-99</a><span data-current-year>2025</span></footer>'
+    )
+    updated_fragment = update_markup_text(stale_fragment, config)
+    if 'href="tel:+79009267929"' not in updated_fragment:
+        findings.append("shared-shell fragment phone link was not synchronized")
+    if "8 (900) 926-79-29" not in updated_fragment:
+        findings.append("shared-shell fragment display phone was not synchronized")
+    if '<span data-current-year>2026</span>' not in updated_fragment:
+        findings.append("shared-shell fragment current-year fallback was not synchronized")
+    if "Parket36 Metrika start" in updated_fragment:
+        findings.append("shared-shell fragments must not receive a Metrika block")
+
+    if findings:
+        print("Shared settings self-test findings:")
+        for finding in findings:
+            print(f"  - {finding}")
+        return 1
+
+    if verbose:
+        print("Shared settings self-test passed")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--write", action="store_true")
+    mode.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
+
+    if args.self_test:
+        return run_self_test()
+    if args.check and run_self_test(verbose=False) != 0:
+        return 1
 
     try:
         config = load_config()
@@ -178,9 +282,9 @@ def main() -> int:
 
     changed: list[str] = []
     try:
-        for path in iter_html_files():
+        for path in iter_markup_files():
             original = path.read_text(encoding="utf-8")
-            updated = update_html_text(original, config)
+            updated = update_markup_text(original, config)
             if original == updated:
                 continue
             rel = path.relative_to(ROOT).as_posix()
