@@ -522,7 +522,10 @@ def validate_page(
         and isinstance(request_label, str)
     ):
         mobile_target = f'<a href="{request_href}">{request_label.strip()}</a>'
-        if text.count(mobile_target) != 1:
+        mobile_match = PATTERNS["mobile-cta"].search(text)
+        if mobile_match is None:
+            errors.append(f"{context}: rendered mobile CTA block is missing")
+        elif mobile_match.group(0).count(mobile_target) != 1:
             errors.append(
                 f"{context}: expected shared mobile CTA action "
                 f"{request_label.strip()} -> {request_href}"
