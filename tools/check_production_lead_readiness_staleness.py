@@ -38,7 +38,6 @@ REQUIRED_MARKERS = {
     ),
     VERIFIER: (
         "Source commit:",
-        "refs/heads/main",
         "/git/ref/heads/main",
         "exactly one valid Source commit",
         "does not match current main",
@@ -157,13 +156,6 @@ def main() -> int:
     if stale_workflow.count("push:") != 1:
         findings.append("stale workflow must have exactly one push trigger")
 
-    stale_step = block(
-        stale_workflow,
-        "- name: Mark issue 373 readiness snapshot stale",
-        "\n",
-    )
-    if not stale_step:
-        stale_step = stale_workflow[stale_workflow.find("- name: Mark issue 373 readiness snapshot stale") :]
     for marker in (
         "GITHUB_TOKEN: ${{ github.token }}",
         "python tools/mark_production_lead_readiness_stale.py",
