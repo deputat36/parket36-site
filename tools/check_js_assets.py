@@ -37,7 +37,7 @@ REQUIRED_MARKERS = {
         "Fingerprinting JavaScript",
         "первые 12 символов SHA-256",
         "только внутри `_site`",
-        "исходные HTML и JavaScript не изменяются",
+        "Исходные HTML и JavaScript не изменяются",
         "порядок `defer`-скриптов",
         "tools/js_assets.py --self-test",
         "Browser smoke",
