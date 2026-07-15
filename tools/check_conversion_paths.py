@@ -11,6 +11,12 @@ from site_settings import load_config
 ROOT = Path(__file__).resolve().parents[1]
 FORM_POLICY_NOTICE = 'Нажимая кнопку, вы соглашаетесь с <a href="/politika/">обработкой контактных данных</a>.'
 CONTACT_MOBILE_CALLBACK_LINK = 'href="#callback">Обратный звонок</a>'
+SHARED_HEADER_FRAGMENT = "data/shared-shell/header.htmlfrag"
+SHARED_MOBILE_FRAGMENT = "data/shared-shell/mobile-cta.htmlfrag"
+SHARED_FINAL_FRAGMENT = "data/shared-shell/final-cta.htmlfrag"
+SHARED_FOOTER_FRAGMENT = "data/shared-shell/footer.htmlfrag"
+CALL_CSS = "css/cta-polish.css"
+PHONE_HELPER_PAGE = "pozvonit-ivanu/index.html"
 
 CORE_CONVERSION_PAGES = {
     "ceny/index.html",
@@ -73,6 +79,48 @@ REQUEST_STATIC_PAGE_MARKERS = {
     'href="#request">Оценка по фото</a>': "mobile local request CTA",
 }
 
+SHARED_HEADER_MARKERS = {
+    'class="phone phone--header"': "prominent header phone style hook",
+    'data-call-source="header"': "header call source marker",
+    '<span class="phone__label">Позвонить Ивану</span>': "header call action label",
+    '<span class="phone__number">': "header phone number wrapper",
+}
+
+SHARED_MOBILE_MARKERS = {
+    'class="mobile-cta" aria-label="Быстрые действия"': "accessible sticky action label",
+    'data-call-source="mobile-sticky"': "sticky call source marker",
+    '>Позвонить Ивану</a>': "explicit sticky phone action",
+    'href="#request">Оценка по фото</a>': "canonical sticky assessment action",
+}
+
+SHARED_FINAL_MARKERS = {
+    "Не знаете, с чего начать с полом? Позвоните Ивану": "call-first final heading",
+    'data-call-source="final-cta"': "final CTA call source marker",
+    "Не нужно выбирать услугу заранее.": "low-friction call explanation",
+}
+
+SHARED_FOOTER_MARKERS = {
+    "Не знаете название услуги — опишите состояние пола своими словами.": "footer call reassurance",
+    'data-call-source="footer"': "footer call source marker",
+}
+
+RESPONSIVE_CALL_CSS_MARKERS = {
+    ".phone--header {": "prominent desktop phone component",
+    ".phone__label {": "header phone action label style",
+    "@media (max-width: 1000px) {": "tablet call breakpoint",
+    "padding-bottom: calc(86px + env(safe-area-inset-bottom));": "sticky CTA body clearance",
+    "bottom: calc(10px + env(safe-area-inset-bottom));": "safe-area-aware sticky position",
+    "width: min(620px, calc(100% - 24px));": "tablet sticky CTA width",
+    ".mobile-cta a {": "sticky CTA action style",
+}
+
+PHONE_HELPER_MARKERS = {
+    '<meta name="robots" content="noindex, follow">': "intentional helper noindex directive",
+    "Что сказать Ивану по телефону про паркет": "phone helper heading",
+    "Самый простой первый шаг — короткий звонок": "phone helper final CTA",
+    '<div class="mobile-cta">': "phone helper sticky CTA",
+}
+
 STALE_LABELS = {
     "Составить заявку",
     "Подготовить заявку",
@@ -85,10 +133,10 @@ STALE_LABELS = {
 }
 
 
-def read_page(rel: str, findings: list[str]) -> str:
+def read_text(rel: str, findings: list[str]) -> str:
     path = ROOT / rel
     if not path.exists():
-        findings.append(f"{rel}: page is missing")
+        findings.append(f"{rel}: file is missing")
         return ""
     return path.read_text(encoding="utf-8", errors="ignore")
 
@@ -119,8 +167,23 @@ def main() -> int:
         phone_link: "direct phone link",
     }
 
+    shared_checks = (
+        (SHARED_HEADER_FRAGMENT, SHARED_HEADER_MARKERS),
+        (SHARED_MOBILE_FRAGMENT, SHARED_MOBILE_MARKERS),
+        (SHARED_FINAL_FRAGMENT, SHARED_FINAL_MARKERS),
+        (SHARED_FOOTER_FRAGMENT, SHARED_FOOTER_MARKERS),
+        (CALL_CSS, RESPONSIVE_CALL_CSS_MARKERS),
+    )
+    for rel, markers in shared_checks:
+        text = read_text(rel, findings)
+        if not text:
+            continue
+        check_markers(rel, text, markers, findings)
+        if rel != CALL_CSS and phone_link not in text:
+            findings.append(f"{rel}: missing configured phone link: {phone_link}")
+
     for rel in sorted(CORE_CONVERSION_PAGES):
-        text = read_page(rel, findings)
+        text = read_text(rel, findings)
         if not text:
             continue
         page_markers = dict(core_required_markers)
@@ -139,7 +202,7 @@ def main() -> int:
                 findings.append(f"{rel}: contains stale CTA label: {label}")
 
     request_rel = "zayavka/index.html"
-    request_text = read_page(request_rel, findings)
+    request_text = read_text(request_rel, findings)
     if request_text:
         check_markers(request_rel, request_text, request_page_markers, findings)
         if request_text.count('href="#request"') < 3:
@@ -147,6 +210,12 @@ def main() -> int:
         for label in sorted(STALE_LABELS):
             if label in request_text:
                 findings.append(f"{request_rel}: contains stale lead disclosure: {label}")
+
+    helper_text = read_text(PHONE_HELPER_PAGE, findings)
+    if helper_text:
+        check_markers(PHONE_HELPER_PAGE, helper_text, PHONE_HELPER_MARKERS, findings)
+        if helper_text.count(phone_link) < 5:
+            findings.append(f"{PHONE_HELPER_PAGE}: expected at least five direct phone links")
 
     if findings:
         print("Conversion path findings:")
