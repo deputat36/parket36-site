@@ -126,6 +126,14 @@ jobs:
           --smoke-github-status "${{ steps.smoke_github.outcome }}"
           --preflight-status "${{ steps.preflight.outcome }}"
           --report production-lead-launch-readiness.md
+      - name: Stamp readiness source commit
+        id: stamp
+        if: always()
+        continue-on-error: true
+        run: >-
+          python tools/stamp_production_lead_launch_readiness.py
+          --commit-sha "$GITHUB_SHA"
+          --report production-lead-launch-readiness.md
       - name: Upload unified readiness artifact
         if: always()
         uses: actions/upload-artifact@v7
@@ -140,7 +148,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
       - name: Update issue 373 readiness snapshot
-        if: always()
+        if: always() && steps.stamp.outcome == 'success'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -148,5 +156,5 @@ jobs:
           python tools/manage_production_lead_launch_readiness.py
           --report production-lead-launch-readiness.md
       - name: Fail when launch prerequisites are blocked
-        if: steps.summary.outcome == 'failure'
+        if: steps.summary.outcome == 'failure' || steps.stamp.outcome == 'failure'
         run: exit 1
