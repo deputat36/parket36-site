@@ -27,6 +27,16 @@ PAGE_PROFILES = {
         "active_nav": "/ceny/",
         "request_href": "/zayavka/",
     },
+    Path("o-mastere/index.html"): {
+        "components": ("header", "footer", "mobile-cta"),
+        "active_nav": "/o-mastere/",
+        "request_href": "/zayavka/",
+    },
+    Path("portfolio/index.html"): {
+        "components": ("header", "footer", "mobile-cta"),
+        "active_nav": "/portfolio/",
+        "request_href": "/zayavka/",
+    },
 }
 
 # Backward-compatible name retained for the static workflow guardrail.
