@@ -24,6 +24,21 @@ PAGE_PROFILES = {
         "active_nav": "/uslugi/",
         "request_href": "/zayavka/",
     },
+    Path("uslugi/ciklevka-parketa/index.html"): {
+        "components": ("header", "mobile-cta"),
+        "active_nav": "/uslugi/",
+        "request_href": "/zayavka/",
+    },
+    Path("uslugi/restavraciya-parketa/index.html"): {
+        "components": ("header", "mobile-cta"),
+        "active_nav": "/uslugi/",
+        "request_href": "/zayavka/",
+    },
+    Path("uslugi/shlifovka-doshchatogo-pola/index.html"): {
+        "components": ("header", "mobile-cta"),
+        "active_nav": "/uslugi/",
+        "request_href": "/zayavka/",
+    },
     Path("ceny/index.html"): {
         "components": ("header", "footer", "mobile-cta"),
         "active_nav": "/ceny/",
