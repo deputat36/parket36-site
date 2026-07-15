@@ -27,6 +27,7 @@ CHECKS = [
     ("Validate controlled production lead smoke", ["tools/check_controlled_lead_smoke.py"]),
     ("Validate production lead launch readiness", ["tools/check_production_lead_launch_readiness.py"]),
     ("Validate production lead readiness staleness", ["tools/check_production_lead_readiness_staleness.py"]),
+    ("Validate analytics privacy", ["tools/check_analytics_privacy.py"]),
     ("Validate content inventory", ["tools/check_content_inventory.py"]),
     ("Validate content similarity", ["tools/check_content_similarity.py"]),
     ("Validate internal link map", ["tools/check_internal_link_map.py"]),
