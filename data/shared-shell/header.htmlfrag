@@ -4,6 +4,6 @@
     <a class="brand" href="/" aria-label="Паркет36 — главная"><span class="brand__mark">36</span><span><strong>Паркет36</strong><small>мастер Иван · Воронеж и область</small></span></a>
     <button class="menu-toggle" type="button" data-menu-toggle aria-label="Открыть меню">☰</button>
     <nav class="nav" data-nav><a href="/uslugi/">Услуги</a><a href="/o-mastere/">О мастере</a><a href="/portfolio/">Примеры задач</a><a href="/ceny/">Стоимость</a><a href="/sovety/">Советы</a><a href="/kontakty/">Контакты</a></nav>
-    <div class="topbar__contacts"><a class="phone" href="tel:+79009267929">8 (900) 926-79-29</a></div>
+    <div class="topbar__contacts"><a class="phone phone--header" data-call-source="header" href="tel:+79009267929" aria-label="Позвонить Ивану: 8 (900) 926-79-29"><span class="phone__label">Позвонить Ивану</span><span class="phone__number">8 (900) 926-79-29</span></a></div>
   </div>
 </header>

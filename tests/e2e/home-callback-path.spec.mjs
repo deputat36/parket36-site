@@ -28,7 +28,7 @@ test('главная предлагает два статических пути
   await expect(links.nth(0)).toHaveText('Неудобно звонить — оставить номер для обратного звонка →');
   await expect(links.nth(1)).toHaveText('Удобнее, чтобы Иван позвонил сам — оставить номер →');
 
-  await expect(page.locator('.mobile-cta a[href="tel:+79009267929"]')).toHaveText('Позвонить');
+  await expect(page.locator('.mobile-cta a[href="tel:+79009267929"]')).toHaveText('Позвонить Ивану');
   await expect(page.locator('.mobile-cta a[href="#request"]')).toHaveText('Оценка по фото');
 });
 
