@@ -1,4 +1,4 @@
-name: IndexNow
+name: Notify IndexNow after deploy
 
 on:
   workflow_run:
@@ -9,36 +9,48 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: indexnow-${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+  cancel-in-progress: false
+
 jobs:
-  submit:
+  notify:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout deployed revision
         uses: actions/checkout@v7
-
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-
-      - name: Validate IndexNow configuration
-        run: python tools/submit_indexnow.py --check
-
-      - name: Check deployed ownership key
-        id: live_key
-        shell: bash
+      - name: Validate IndexNow helper
         run: |
-          if python tools/submit_indexnow.py --verify-live-key; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-            echo "IndexNow ownership key is available on the live domain." >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "IndexNow submission skipped: the live key file is not available yet. Check DNS, GitHub Pages and HTTPS." >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-      - name: Submit sitemap URLs
-        if: steps.live_key.outputs.ready == 'true'
-        run: |
-          python tools/submit_indexnow.py --submit | tee indexnow-result.txt
-          cat indexnow-result.txt >> "$GITHUB_STEP_SUMMARY"
+          python tools/submit_indexnow.py --self-test
+          python tools/submit_indexnow.py --check
+      - name: Notify IndexNow
+        id: indexnow
+        continue-on-error: true
+        run: >-
+          python tools/submit_indexnow.py
+          --submit
+          --attempts 6
+          --retry-delay 10
+          --timeout 20
+          --report indexnow-report.md
+      - name: Upload IndexNow report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: indexnow-report
+          path: indexnow-report.md
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Add IndexNow result to summary
+        if: always() && hashFiles('indexnow-report.md') != ''
+        run: cat indexnow-report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Fail on IndexNow notification error
+        if: steps.indexnow.outcome == 'failure'
+        run: exit 1
