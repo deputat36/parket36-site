@@ -17,24 +17,61 @@
 
 Документация: `docs/github-pages-switch-checklist.md`, `docs/live-site-monitoring.md`, `docs/deployment-manifest-cache.md`.
 
-## Production Edge Function и заявки
+## Production Edge Functions и заявки
 
-Что осталось выполнить вручную:
+Сначала выполнить единый безопасный аудит готовности:
 
-1. Настроить в Supabase:
-   - `PARKET_IP_HASH_SALT`;
-   - `PARKET_HEALTHCHECK_TOKEN`;
-   - параметры выбранного канала уведомлений.
-2. Развернуть актуальную функцию `parket-public-lead`.
-3. Добавить тот же `PARKET_HEALTHCHECK_TOKEN` в GitHub Actions secrets.
-4. Запустить workflow `Production lead endpoint health`.
-5. Убедиться, что функция и обе таблицы получают `PASS`.
-6. Выполнить одну контролируемую реальную заявку.
-7. Проверить строку в `parket_leads`, audit-запись и фактическое уведомление Ивану.
+1. Открыть `Actions → Production lead launch readiness`.
+2. Выбрать ветку `main`.
+3. Оставить политику `require-configured`, если Telegram или email должны работать сразу после deploy.
+4. Запустить workflow.
+5. Скачать artifact `production-lead-launch-readiness`.
+6. Устранить все причины уровня `BLOCKED` или `DEPLOY_READY`.
 
-До появления GitHub secret workflow создаёт только безопасный отчёт `NOT CONFIGURED` и не отправляет запрос.
+Этот workflow:
 
-Порядок проверки: `docs/lead-endpoint-test-mode.md` и `docs/production-lead-monitoring.md`.
+- запускает Deno tests и type-check обеих функций;
+- проверяет наличие GitHub deploy secrets;
+- проверяет имена remote Supabase secrets;
+- проверяет GitHub secrets controlled smoke;
+- выполняет только публичный HTTP OPTIONS preflight;
+- не использует environment `production`;
+- не развёртывает функции;
+- не вызывает protected healthcheck;
+- не создаёт заявку.
+
+Документация: `docs/production-lead-launch-readiness.md`.
+
+Для полного запуска должны быть настроены:
+
+### GitHub Actions secrets
+
+- `SUPABASE_ACCESS_TOKEN`;
+- `SUPABASE_PROJECT_ID` со значением project ref `ofewxuqfjhamgerwzull`;
+- `PARKET_HEALTHCHECK_TOKEN`;
+- `PARKET_SMOKE_CONTACT`.
+
+### Supabase Edge Function secrets
+
+- `PARKET_IP_HASH_SALT`;
+- `PARKET_HEALTHCHECK_TOKEN`;
+- полный Telegram-канал или полный email-канал.
+
+После уровня `LAUNCH_READY` выполнить:
+
+1. `Deploy production lead function` с `operation=validate-only`.
+2. Проверить artifacts `edge-github-secret-readiness` и `edge-deploy-readiness`.
+3. Отдельно запустить тот же workflow с `operation=deploy` и точной фразой `DEPLOY_PARKET_PUBLIC_LEAD`.
+4. Подтвердить environment `production`.
+5. Получить PASS public preflight и protected healthcheck.
+6. Убедиться, что monitoring issue #375 закрылся автоматически.
+7. Запустить `Controlled production lead smoke` с `operation=validate-only`.
+8. Отдельно выполнить один `operation=send` с точной фразой `SEND_CONTROLLED_LEAD`.
+9. Проверить строку в `parket_leads`, принятую audit-запись и фактическое уведомление Ивану.
+10. Закрыть issue #373 только после подтверждения получения уведомления.
+
+Порядок deploy: `docs/production-edge-deploy.md`.
+Порядок controlled smoke: `docs/controlled-production-lead-smoke.md`.
 
 ## Поисковые кабинеты и аналитика
 
