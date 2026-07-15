@@ -11,12 +11,13 @@ import ssl
 import sys
 import time
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from site_settings import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
-USER_AGENT = "Parket36-Live-Public-Copy/1.0"
+USER_AGENT = "Parket36-Live-Public-Copy/1.1"
 MAX_RESPONSE_BYTES = 2_000_000
 
 FORBIDDEN = (
@@ -59,8 +60,21 @@ def evaluate(text: str) -> Result:
     return Result(not details, "client-ready markers found" if not details else "; ".join(details))
 
 
+def request_url(domain: str, attempt: int, nonce: int | None = None) -> str:
+    token = time.time_ns() if nonce is None else nonce
+    query = urlencode({"verify_public_copy": str(token), "attempt": str(attempt)})
+    return domain.rstrip("/") + "/?" + query
+
+
 def fetch_homepage(url: str, timeout: float) -> tuple[int, str, str]:
-    request = Request(url, headers={"User-Agent": USER_AGENT, "Cache-Control": "no-cache"})
+    request = Request(
+        url,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Cache-Control": "no-cache, no-store, max-age=0",
+            "Pragma": "no-cache",
+        },
+    )
     context = ssl.create_default_context()
     with urlopen(request, timeout=timeout, context=context) as response:
         body = response.read(MAX_RESPONSE_BYTES + 1)
@@ -69,24 +83,28 @@ def fetch_homepage(url: str, timeout: float) -> tuple[int, str, str]:
         return response.status, response.geturl(), body.decode("utf-8", errors="replace")
 
 
-def run_once(domain: str, timeout: float) -> Result:
+def run_once(domain: str, timeout: float, attempt: int) -> Result:
+    url = request_url(domain, attempt)
     try:
-        status, final_url, text = fetch_homepage(domain + "/", timeout)
+        status, final_url, text = fetch_homepage(url, timeout)
     except HTTPError as exc:
-        return Result(False, f"HTTP {exc.code}: {exc.reason}")
+        return Result(False, f"HTTP {exc.code}: {exc.reason}; cache_bust_attempt={attempt}")
     except (URLError, TimeoutError, ssl.SSLError, ValueError) as exc:
-        return Result(False, str(exc))
+        return Result(False, f"{exc}; cache_bust_attempt={attempt}")
 
     if status != 200:
-        return Result(False, f"HTTP {status}, final URL: {final_url}")
+        return Result(False, f"HTTP {status}, final URL: {final_url}; cache_bust_attempt={attempt}")
     copy_result = evaluate(text)
-    return Result(copy_result.ok, f"HTTP 200, final URL: {final_url}; {copy_result.detail}")
+    return Result(
+        copy_result.ok,
+        f"HTTP 200, final URL: {final_url}; {copy_result.detail}; cache_bust_attempt={attempt}",
+    )
 
 
 def run_with_retries(domain: str, timeout: float, attempts: int, retry_delay: float) -> tuple[Result, int]:
     result = Result(False, "not checked")
     for attempt in range(1, attempts + 1):
-        result = run_once(domain, timeout)
+        result = run_once(domain, timeout, attempt)
         if result.ok:
             return result, attempt
         if attempt < attempts and retry_delay:
@@ -132,6 +150,7 @@ def self_test() -> int:
     passing = evaluate(good)
     forbidden = evaluate(good + " Фото вместо иллюстрации")
     missing = evaluate("Оценка по фото")
+    cache_busted = request_url("https://example.test", 3, nonce=123456)
     findings: list[str] = []
     if not passing.ok:
         findings.append("complete client-ready copy must pass")
@@ -139,6 +158,9 @@ def self_test() -> int:
         findings.append("forbidden editor copy must fail with detail")
     if missing.ok or "missing:" not in missing.detail:
         findings.append("incomplete client-ready copy must fail")
+    for marker in ("https://example.test/?", "verify_public_copy=123456", "attempt=3"):
+        if marker not in cache_busted:
+            findings.append(f"cache-busted homepage URL missing marker: {marker}")
 
     for valid in ((20, 1, 0), (20, 6, 10)):
         try:
