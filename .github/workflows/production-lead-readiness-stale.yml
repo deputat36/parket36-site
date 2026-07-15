@@ -1,0 +1,35 @@
+name: Mark production lead readiness stale
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: production-lead-readiness-stale
+  cancel-in-progress: true
+
+jobs:
+  mark-stale:
+    name: mark managed production readiness snapshot stale
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Mark issue 373 readiness snapshot stale
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          python tools/mark_production_lead_readiness_stale.py
+          --current-commit "$GITHUB_SHA"

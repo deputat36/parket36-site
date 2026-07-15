@@ -148,13 +148,18 @@ jobs:
           if-no-files-found: error
           retention-days: 30
       - name: Update issue 373 readiness snapshot
+        id: issue_snapshot
         if: always() && steps.stamp.outcome == 'success'
         continue-on-error: true
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: >-
-          python tools/manage_production_lead_launch_readiness.py
-          --report production-lead-launch-readiness.md
+        run: |
+          set -euo pipefail
+          python tools/verify_production_lead_readiness_current_main.py \
+            --report production-lead-launch-readiness.md
+          python tools/manage_production_lead_launch_readiness.py \
+            --report production-lead-launch-readiness.md
       - name: Fail when launch prerequisites are blocked
-        if: steps.summary.outcome == 'failure' || steps.stamp.outcome == 'failure'
+        if: steps.summary.outcome == 'failure' || steps.stamp.outcome == 'failure' || steps.issue_snapshot.outcome == 'failure'
         run: exit 1
