@@ -110,6 +110,19 @@ PAGE_PROFILES = {
 # Backward-compatible name retained for the static workflow guardrail.
 PILOT_PAGES = tuple(PAGE_PROFILES)
 
+ARTICLE_FAMILY_ROOT = Path("sovety")
+ARTICLE_FAMILY_GLOB = "*/index.html"
+ARTICLE_FAMILY_PROFILE = {
+    "components": ("header", "mobile-cta"),
+    "active_nav": "/sovety/",
+    "request_href": "/zayavka/",
+}
+ARTICLE_META_RE = re.compile(
+    r'<meta\b(?=[^>]*\bproperty=["\']og:type["\'])'
+    r'(?=[^>]*\bcontent=["\']article["\'])[^>]*>',
+    re.IGNORECASE,
+)
+
 FRAGMENTS = {
     "header": Path("data/shared-shell/header.htmlfrag"),
     "final-cta": Path("data/shared-shell/final-cta.htmlfrag"),
@@ -146,6 +159,111 @@ def load_fragments(root: Path, errors: list[str]) -> dict[str, str]:
             continue
         loaded[name] = text
     return loaded
+
+
+def discover_direct_index_pages(base: Path, root: Path) -> list[Path]:
+    """Return direct child index pages relative to the supplied tree root."""
+    if not base.is_dir():
+        return []
+    return sorted(
+        path.relative_to(root)
+        for path in base.glob(ARTICLE_FAMILY_GLOB)
+        if path.is_file()
+    )
+
+
+def discover_article_profiles(
+    root: Path,
+    destination: Path,
+    errors: list[str],
+) -> dict[Path, dict[str, object]]:
+    """Discover every direct article under /sovety and validate family coverage."""
+    source_root = root / ARTICLE_FAMILY_ROOT
+    destination_root = destination / ARTICLE_FAMILY_ROOT
+
+    if not source_root.is_dir():
+        errors.append(f"Article family source directory is missing: {ARTICLE_FAMILY_ROOT.as_posix()}")
+        return {}
+    if not destination_root.is_dir():
+        errors.append(f"Article family public directory is missing: {ARTICLE_FAMILY_ROOT.as_posix()}")
+        return {}
+
+    source_pages = discover_direct_index_pages(source_root, root)
+    destination_pages = discover_direct_index_pages(destination_root, destination)
+
+    if not source_pages:
+        errors.append(
+            f"Article family has no direct pages matching "
+            f"{ARTICLE_FAMILY_ROOT.as_posix()}/{ARTICLE_FAMILY_GLOB}"
+        )
+        return {}
+
+    source_set = set(source_pages)
+    destination_set = set(destination_pages)
+    missing = sorted(source_set - destination_set)
+    extra = sorted(destination_set - source_set)
+    if missing:
+        errors.append(
+            "Article family pages are missing from public build: "
+            + ", ".join(path.as_posix() for path in missing)
+        )
+    if extra:
+        errors.append(
+            "Article family public build contains unexpected pages: "
+            + ", ".join(path.as_posix() for path in extra)
+        )
+
+    family_index = ARTICLE_FAMILY_ROOT / "index.html"
+    all_family_indexes = {
+        path.relative_to(root)
+        for path in source_root.rglob("index.html")
+        if path.is_file()
+    }
+    unsupported = sorted(all_family_indexes - source_set - {family_index})
+    if unsupported:
+        errors.append(
+            "Article family contains unsupported nested index pages: "
+            + ", ".join(path.as_posix() for path in unsupported)
+        )
+
+    profiles: dict[Path, dict[str, object]] = {}
+    for relative in source_pages:
+        if relative in PAGE_PROFILES:
+            errors.append(f"{relative.as_posix()}: article family overlaps an explicit page profile")
+            continue
+
+        source_text = (root / relative).read_text(encoding="utf-8")
+        article_markers = ARTICLE_META_RE.findall(source_text)
+        if len(article_markers) != 1:
+            errors.append(
+                f"{relative.as_posix()}: article family requires exactly one og:type=article marker"
+            )
+            continue
+
+        profiles[relative] = dict(ARTICLE_FAMILY_PROFILE)
+
+    return profiles
+
+
+def build_page_profiles(
+    root: Path,
+    destination: Path,
+    errors: list[str],
+) -> dict[Path, dict[str, object]]:
+    """Combine explicit profiles with validated page-family profiles."""
+    profiles = {relative: dict(profile) for relative, profile in PAGE_PROFILES.items()}
+    family_profiles = discover_article_profiles(root, destination, errors)
+
+    overlaps = sorted(set(profiles) & set(family_profiles))
+    if overlaps:
+        errors.append(
+            "Shared shell profile overlap: "
+            + ", ".join(path.as_posix() for path in overlaps)
+        )
+        return profiles
+
+    profiles.update(family_profiles)
+    return profiles
 
 
 def render_header(fragment: str, active_nav: str | None, context: str, errors: list[str]) -> str:
@@ -270,7 +388,8 @@ def apply_shared_shell(root: Path, destination: Path, errors: list[str]) -> None
     if len(fragments) != len(FRAGMENTS):
         return
 
-    for relative, profile in PAGE_PROFILES.items():
+    profiles = build_page_profiles(root, destination, errors)
+    for relative, profile in profiles.items():
         page = destination / relative
         context = relative.as_posix()
         if not page.is_file():

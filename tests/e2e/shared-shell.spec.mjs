@@ -209,3 +209,47 @@ test('страницы услуг используют общую шапку и 
     expect(content).not.toContain('<!-- shared-shell:final-cta -->');
   }
 });
+
+test('статьи советов используют семейный header и mobile CTA, сохраняя локальный контент', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  for (const profile of [
+    {
+      path: '/sovety/mozhno-li-vosstanovit-staryy-parket/',
+      heading: 'Можно ли восстановить старый паркет'
+    },
+    {
+      path: '/sovety/kak-sfotografirovat-pol-dlya-ocenki/',
+      heading: 'Как сфотографировать паркет и деревянный пол для оценки'
+    },
+    {
+      path: '/sovety/kak-proverit-shlifovku-parketa-pered-lakom/',
+      heading: 'Как проверить шлифовку паркета перед лаком'
+    }
+  ]) {
+    await page.goto(profile.path);
+
+    await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content', 'article');
+    await expect(page.locator('header.topbar')).toHaveCount(1);
+    await expect(page.locator('footer.footer')).toHaveCount(1);
+    await expect(page.locator('div.mobile-cta')).toHaveCount(1);
+    await expect(page.locator('main h1')).toHaveText(profile.heading);
+
+    const activeLink = page.locator('header.topbar nav a[href="/sovety/"]');
+    await expect(activeLink).toHaveClass(/active/);
+    await expect(activeLink).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('header.topbar nav a[aria-current="page"]')).toHaveCount(1);
+
+    await expect(page.locator('div.mobile-cta a[href="tel:+79009267929"]')).toBeVisible();
+    const requestAction = page.locator('div.mobile-cta a[href="/zayavka/"]');
+    await expect(requestAction).toBeVisible();
+    await expect(requestAction).toHaveText('Оценка по фото');
+    await expect(page.locator('div.mobile-cta a[href="#request"]')).toHaveCount(0);
+
+    const content = await page.content();
+    expect(content).toContain('<!-- shared-shell:header -->');
+    expect(content).toContain('<!-- shared-shell:mobile-cta -->');
+    expect(content).not.toContain('<!-- shared-shell:footer -->');
+    expect(content).not.toContain('<!-- shared-shell:final-cta -->');
+  }
+});
