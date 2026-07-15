@@ -50,6 +50,21 @@ PAGE_PROFILES = {
         "request_href": "#callback",
         "request_label": "Обратный звонок",
     },
+    Path("resheniya/index.html"): {
+        "components": ("header", "footer", "mobile-cta"),
+        "active_nav": None,
+        "request_href": "/zayavka/",
+    },
+    Path("voprosy-i-otvety/index.html"): {
+        "components": ("header", "footer", "mobile-cta"),
+        "active_nav": None,
+        "request_href": "/zayavka/",
+    },
+    Path("kak-rabotaem/index.html"): {
+        "components": ("header", "footer", "mobile-cta"),
+        "active_nav": None,
+        "request_href": "/zayavka/",
+    },
 }
 
 # Backward-compatible name retained for the static workflow guardrail.

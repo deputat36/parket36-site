@@ -93,3 +93,45 @@ test('страницы основной навигации используют 
     }
   }
 });
+
+test('вспомогательные страницы используют общую оболочку без ложного активного пункта', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const canonicalFooter = await page.locator('footer.footer').evaluate(element => element.outerHTML);
+
+  for (const profile of [
+    {
+      path: '/resheniya/',
+      finalCtaHeading: 'Не уверены, какой сценарий выбрать?'
+    },
+    {
+      path: '/voprosy-i-otvety/',
+      finalCtaHeading: 'Остался вопрос по вашему полу?'
+    },
+    {
+      path: '/kak-rabotaem/',
+      finalCtaHeading: 'Готовы начать с правильных данных?'
+    }
+  ]) {
+    await page.goto(profile.path);
+
+    await expect(page.locator('header.topbar')).toHaveCount(1);
+    await expect(page.locator('footer.footer')).toHaveCount(1);
+    await expect(page.locator('div.mobile-cta')).toHaveCount(1);
+    await expect(page.locator('section.final-cta')).toHaveCount(1);
+    await expect(page.locator('header.topbar nav a.active')).toHaveCount(0);
+    await expect(page.locator('header.topbar nav a[aria-current="page"]')).toHaveCount(0);
+
+    const footer = await page.locator('footer.footer').evaluate(element => element.outerHTML);
+    expect(footer).toBe(canonicalFooter);
+
+    await expect(page.locator('div.mobile-cta a[href="tel:+79009267929"]')).toBeVisible();
+    const requestAction = page.locator('div.mobile-cta a[href="/zayavka/"]');
+    await expect(requestAction).toBeVisible();
+    await expect(requestAction).toHaveText('Оценка по фото');
+    await expect(page.locator('div.mobile-cta a[href="#request"]')).toHaveCount(0);
+
+    await expect(page.locator('section.final-cta h2')).toHaveText(profile.finalCtaHeading);
+    expect(await page.content()).not.toContain('<!-- shared-shell:final-cta -->');
+  }
+});
