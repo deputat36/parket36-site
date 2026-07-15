@@ -6,10 +6,31 @@ from __future__ import annotations
 from pathlib import Path
 import re
 
-PILOT_PAGES = (
-    Path("index.html"),
-    Path("zayavka/index.html"),
-)
+PAGE_PROFILES = {
+    Path("index.html"): {
+        "components": ("header", "final-cta", "footer", "mobile-cta"),
+        "active_nav": None,
+        "request_href": "#request",
+    },
+    Path("zayavka/index.html"): {
+        "components": ("header", "final-cta", "footer", "mobile-cta"),
+        "active_nav": None,
+        "request_href": "#request",
+    },
+    Path("uslugi/index.html"): {
+        "components": ("header", "footer", "mobile-cta"),
+        "active_nav": "/uslugi/",
+        "request_href": "/zayavka/",
+    },
+    Path("ceny/index.html"): {
+        "components": ("header", "footer", "mobile-cta"),
+        "active_nav": "/ceny/",
+        "request_href": "/zayavka/",
+    },
+}
+
+# Backward-compatible name retained for the static workflow guardrail.
+PILOT_PAGES = tuple(PAGE_PROFILES)
 
 FRAGMENTS = {
     "header": Path("data/shared-shell/header.htmlfrag"),
@@ -49,6 +70,54 @@ def load_fragments(root: Path, errors: list[str]) -> dict[str, str]:
     return loaded
 
 
+def render_header(fragment: str, active_nav: str | None, context: str, errors: list[str]) -> str:
+    if not active_nav:
+        return fragment
+
+    needle = f'<a href="{active_nav}">'
+    if fragment.count(needle) != 1:
+        errors.append(f"{context}: shared header cannot resolve active navigation link {active_nav}")
+        return fragment
+
+    return fragment.replace(
+        needle,
+        f'<a class="active" aria-current="page" href="{active_nav}">',
+        1,
+    )
+
+
+def render_mobile_cta(fragment: str, request_href: str, context: str, errors: list[str]) -> str:
+    needle = 'href="#request"'
+    if fragment.count(needle) != 1:
+        errors.append(f"{context}: shared mobile CTA must contain one canonical request target")
+        return fragment
+    return fragment.replace(needle, f'href="{request_href}"', 1)
+
+
+def render_fragment(
+    name: str,
+    fragment: str,
+    profile: dict[str, object],
+    context: str,
+    errors: list[str],
+) -> str:
+    if name == "header":
+        active_nav = profile.get("active_nav")
+        return render_header(
+            fragment,
+            active_nav if isinstance(active_nav, str) else None,
+            context,
+            errors,
+        )
+    if name == "mobile-cta":
+        request_href = profile.get("request_href")
+        if not isinstance(request_href, str) or not request_href:
+            errors.append(f"{context}: shared shell profile must define request_href")
+            return fragment
+        return render_mobile_cta(fragment, request_href, context, errors)
+    return fragment
+
+
 def replace_fragment(
     text: str,
     name: str,
@@ -63,30 +132,65 @@ def replace_fragment(
     return updated
 
 
-def validate_page(text: str, context: str, fragments: dict[str, str], errors: list[str]) -> None:
-    for name, fragment in fragments.items():
+def validate_page(
+    text: str,
+    context: str,
+    rendered: dict[str, str],
+    profile: dict[str, object],
+    errors: list[str],
+) -> None:
+    for name, fragment in rendered.items():
         marker = FRAGMENT_MARKERS[name]
         if text.count(marker) != 1:
             errors.append(f"{context}: expected exactly one {marker}")
         if text.count(fragment) != 1:
-            errors.append(f"{context}: shared {name} fragment differs from the canonical source")
+            errors.append(f"{context}: shared {name} fragment differs from the rendered profile")
+
+    active_nav = profile.get("active_nav")
+    if isinstance(active_nav, str):
+        active_marker = f'class="active" aria-current="page" href="{active_nav}"'
+        if text.count(active_marker) != 1:
+            errors.append(f"{context}: expected one active navigation marker for {active_nav}")
+
+    request_href = profile.get("request_href")
+    if "mobile-cta" in rendered and isinstance(request_href, str):
+        mobile_target = f'<a href="{request_href}">Оценка по фото</a>'
+        if text.count(mobile_target) != 1:
+            errors.append(f"{context}: expected shared mobile CTA target {request_href}")
 
 
 def apply_shared_shell(root: Path, destination: Path, errors: list[str]) -> None:
-    """Render shared shell fragments into the selected generated HTML pages."""
+    """Render shared shell fragments into selected generated HTML pages."""
     fragments = load_fragments(root, errors)
     if len(fragments) != len(FRAGMENTS):
         return
 
-    for relative in PILOT_PAGES:
+    for relative, profile in PAGE_PROFILES.items():
         page = destination / relative
         context = relative.as_posix()
         if not page.is_file():
-            errors.append(f"Shared shell pilot page is missing from public build: {context}")
+            errors.append(f"Shared shell page is missing from public build: {context}")
             continue
 
+        components = profile.get("components")
+        if not isinstance(components, tuple) or not components:
+            errors.append(f"{context}: shared shell profile must define components")
+            continue
+        if len(set(components)) != len(components):
+            errors.append(f"{context}: shared shell profile contains duplicate components")
+            continue
+        unknown = [name for name in components if name not in FRAGMENTS]
+        if unknown:
+            errors.append(f"{context}: unknown shared shell components: {', '.join(unknown)}")
+            continue
+
+        rendered = {
+            name: render_fragment(name, fragments[name], profile, context, errors)
+            for name in components
+        }
+
         text = page.read_text(encoding="utf-8")
-        for name in ("header", "final-cta", "footer", "mobile-cta"):
-            text = replace_fragment(text, name, fragments[name], context, errors)
-        validate_page(text, context, fragments, errors)
+        for name in components:
+            text = replace_fragment(text, name, rendered[name], context, errors)
+        validate_page(text, context, rendered, profile, errors)
         page.write_text(text, encoding="utf-8")
