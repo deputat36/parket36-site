@@ -158,7 +158,7 @@ def update_markup_text(text: str, config: dict[str, object]) -> str:
     if max_url:
         text = MAX_HREF_RE.sub(f'href="{max_url}"', text)
 
-    text = METRIKA_BLOCK_RE.sub("\n", text)
+    text = METRIKA_BLOCK_RE.sub("", text)
     if metrika_id and "</head>" in text:
         text = text.replace("</head>", f"{render_metrika_block(metrika_id)}\n</head>", 1)
 
