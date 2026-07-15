@@ -1,0 +1,44 @@
+name: Apply public source copy migration
+
+on:
+  push:
+    branches: [agent/source-public-copy]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-public-source-copy
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout migration branch
+        uses: actions/checkout@v7
+        with:
+          ref: agent/source-public-copy
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Apply deterministic migration
+        run: python tools/migrate_public_source_copy.py
+      - name: Remove one-time migration files
+        run: rm tools/migrate_public_source_copy.py .github/workflows/apply-public-source-copy.yml
+      - name: Commit migrated public sources
+        shell: bash
+        run: |
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Migration produced no changes" >&2
+            exit 1
+          fi
+          git commit -m "Сделать публичные исходники готовыми"
+          git push origin HEAD:agent/source-public-copy
