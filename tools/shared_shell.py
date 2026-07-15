@@ -29,6 +29,9 @@ PAGE_PROFILES = {
     },
 }
 
+# Backward-compatible name retained for the static workflow guardrail.
+PILOT_PAGES = tuple(PAGE_PROFILES)
+
 FRAGMENTS = {
     "header": Path("data/shared-shell/header.htmlfrag"),
     "final-cta": Path("data/shared-shell/final-cta.htmlfrag"),
