@@ -27,6 +27,8 @@ OG_CARD_TEST = ROOT / "tests" / "e2e" / "og-cards.spec.mjs"
 ACCESSIBILITY_CSS = ROOT / "css" / "accessibility-polish.css"
 HTML_ACCESSIBILITY = ROOT / "tools" / "html_accessibility.py"
 SHARED_SHELL_TOOL = ROOT / "tools" / "shared_shell.py"
+SHARED_SHELL_COVERAGE_TOOL = ROOT / "tools" / "build_shared_shell_coverage.py"
+SHARED_SHELL_COVERAGE_CHECK = ROOT / "tools" / "check_shared_shell_coverage.py"
 CONTENT_INVENTORY_TOOL = ROOT / "tools" / "build_content_inventory.py"
 CONTENT_SIMILARITY_TOOL = ROOT / "tools" / "build_content_similarity_report.py"
 INTERNAL_LINK_MAP_TOOL = ROOT / "tools" / "build_internal_link_map.py"
@@ -74,6 +76,9 @@ EXPECTED_MARKERS = {
         "run: python tools/build_internal_link_map.py --output-dir reports/internal-links",
         "name: internal-link-map",
         "path: reports/internal-links",
+        "run: python tools/build_shared_shell_coverage.py --output-dir reports/shared-shell-coverage",
+        "name: shared-shell-coverage",
+        "path: reports/shared-shell-coverage",
         "run: python tools/build_sitemap.py --source sitemap.xml --output reports/generated-sitemap.xml",
         "name: generated-sitemap",
         "path: reports/generated-sitemap.xml",
@@ -203,6 +208,19 @@ REQUIRED_QUALITY_FILES = {
     ],
     HTML_ACCESSIBILITY: ["SKIP_LINK", "main-content", "site-navigation", "inject_accessibility_html"],
     SHARED_SHELL_TOOL: ["PILOT_PAGES", "data/shared-shell/header.html", "shared-shell:final-cta", "apply_shared_shell"],
+    SHARED_SHELL_COVERAGE_TOOL: [
+        "CoverageRecord",
+        "build_page_profiles",
+        "shared-shell-coverage.csv",
+        "shared-shell-coverage.md",
+        "self_test",
+    ],
+    SHARED_SHELL_COVERAGE_CHECK: [
+        "docs/shared-shell-coverage.csv",
+        "docs/shared-shell-coverage.md",
+        "write_report",
+        "self_test",
+    ],
     CONTENT_INVENTORY_TOOL: [
         "PageRecord",
         "THIN_WORD_LIMIT",
