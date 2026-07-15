@@ -40,7 +40,7 @@ REQUIRED_MARKERS = {
         "Privacy-контракт аналитики Паркет36",
         "Что запрещено передавать",
         "поле `contact`",
-        "поле `location`",
+        "поля `location`",
         "поля `task`",
         "`callback_time`",
         "CustomEvent",
