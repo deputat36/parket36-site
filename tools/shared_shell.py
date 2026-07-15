@@ -110,17 +110,29 @@ PAGE_PROFILES = {
 # Backward-compatible name retained for the static workflow guardrail.
 PILOT_PAGES = tuple(PAGE_PROFILES)
 
-ARTICLE_FAMILY_ROOT = Path("sovety")
-ARTICLE_FAMILY_GLOB = "*/index.html"
-ARTICLE_FAMILY_PROFILE = {
-    "components": ("header", "mobile-cta"),
-    "active_nav": "/sovety/",
-    "request_href": "/zayavka/",
-}
-ARTICLE_META_RE = re.compile(
-    r'<meta\b(?=[^>]*\bproperty=["\']og:type["\'])'
-    r'(?=[^>]*\bcontent=["\']article["\'])[^>]*>',
-    re.IGNORECASE,
+FAMILY_PROFILES = (
+    {
+        "name": "articles",
+        "root": Path("sovety"),
+        "glob": "*/index.html",
+        "required_og_type": "article",
+        "profile": {
+            "components": ("header", "mobile-cta"),
+            "active_nav": "/sovety/",
+            "request_href": "/zayavka/",
+        },
+    },
+    {
+        "name": "solutions",
+        "root": Path("resheniya"),
+        "glob": "*/index.html",
+        "required_og_type": "website",
+        "profile": {
+            "components": ("header", "mobile-cta"),
+            "active_nav": None,
+            "request_href": "/zayavka/",
+        },
+    },
 )
 
 FRAGMENTS = {
@@ -161,40 +173,78 @@ def load_fragments(root: Path, errors: list[str]) -> dict[str, str]:
     return loaded
 
 
-def discover_direct_index_pages(base: Path, root: Path) -> list[Path]:
+def discover_direct_index_pages(base: Path, root: Path, pattern: str) -> list[Path]:
     """Return direct child index pages relative to the supplied tree root."""
     if not base.is_dir():
         return []
     return sorted(
         path.relative_to(root)
-        for path in base.glob(ARTICLE_FAMILY_GLOB)
+        for path in base.glob(pattern)
         if path.is_file()
     )
 
 
-def discover_article_profiles(
+def build_og_type_re(value: str) -> re.Pattern[str]:
+    """Build a strict meta matcher for one expected Open Graph page type."""
+    escaped = re.escape(value)
+    return re.compile(
+        r'<meta\b(?=[^>]*\bproperty=["\']og:type["\'])'
+        rf'(?=[^>]*\bcontent=["\']{escaped}["\'])[^>]*>',
+        re.IGNORECASE,
+    )
+
+
+def discover_family_profiles(
     root: Path,
     destination: Path,
+    family: dict[str, object],
     errors: list[str],
 ) -> dict[Path, dict[str, object]]:
-    """Discover every direct article under /sovety and validate family coverage."""
-    source_root = root / ARTICLE_FAMILY_ROOT
-    destination_root = destination / ARTICLE_FAMILY_ROOT
+    """Discover one direct-page family and validate its source/public contract."""
+    name = family.get("name")
+    family_root = family.get("root")
+    pattern = family.get("glob")
+    required_og_type = family.get("required_og_type")
+    profile = family.get("profile")
+
+    if not isinstance(name, str) or not name.strip():
+        errors.append("Shared shell family must define a non-empty name")
+        return {}
+    label = f"{name.strip()} family"
+
+    if not isinstance(family_root, Path) or not family_root.parts:
+        errors.append(f"{label}: root must be a non-empty relative Path")
+        return {}
+    if family_root.is_absolute() or ".." in family_root.parts:
+        errors.append(f"{label}: root must stay inside the repository")
+        return {}
+    if not isinstance(pattern, str) or pattern != "*/index.html":
+        errors.append(f"{label}: glob must be the safe direct-page pattern */index.html")
+        return {}
+    if not isinstance(required_og_type, str) or not required_og_type.strip():
+        errors.append(f"{label}: required_og_type must be a non-empty string")
+        return {}
+    if not isinstance(profile, dict) or not profile:
+        errors.append(f"{label}: profile must be a non-empty mapping")
+        return {}
+
+    source_root = root / family_root
+    destination_root = destination / family_root
 
     if not source_root.is_dir():
-        errors.append(f"Article family source directory is missing: {ARTICLE_FAMILY_ROOT.as_posix()}")
+        errors.append(f"{label} source directory is missing: {family_root.as_posix()}")
         return {}
     if not destination_root.is_dir():
-        errors.append(f"Article family public directory is missing: {ARTICLE_FAMILY_ROOT.as_posix()}")
+        errors.append(f"{label} public directory is missing: {family_root.as_posix()}")
         return {}
 
-    source_pages = discover_direct_index_pages(source_root, root)
-    destination_pages = discover_direct_index_pages(destination_root, destination)
+    source_pages = discover_direct_index_pages(source_root, root, pattern)
+    destination_pages = discover_direct_index_pages(destination_root, destination, pattern)
 
     if not source_pages:
         errors.append(
-            f"Article family has no direct pages matching "
-            f"{ARTICLE_FAMILY_ROOT.as_posix()}/{ARTICLE_FAMILY_GLOB}"
+            f"{label} has no direct pages matching "
+            f"{family_root.as_posix()}/{pattern}"
         )
         return {}
 
@@ -204,16 +254,16 @@ def discover_article_profiles(
     extra = sorted(destination_set - source_set)
     if missing:
         errors.append(
-            "Article family pages are missing from public build: "
+            f"{label} pages are missing from public build: "
             + ", ".join(path.as_posix() for path in missing)
         )
     if extra:
         errors.append(
-            "Article family public build contains unexpected pages: "
+            f"{label} public build contains unexpected pages: "
             + ", ".join(path.as_posix() for path in extra)
         )
 
-    family_index = ARTICLE_FAMILY_ROOT / "index.html"
+    family_index = family_root / "index.html"
     all_family_indexes = {
         path.relative_to(root)
         for path in source_root.rglob("index.html")
@@ -222,25 +272,23 @@ def discover_article_profiles(
     unsupported = sorted(all_family_indexes - source_set - {family_index})
     if unsupported:
         errors.append(
-            "Article family contains unsupported nested index pages: "
+            f"{label} contains unsupported nested index pages: "
             + ", ".join(path.as_posix() for path in unsupported)
         )
 
+    og_type_re = build_og_type_re(required_og_type.strip())
     profiles: dict[Path, dict[str, object]] = {}
     for relative in source_pages:
-        if relative in PAGE_PROFILES:
-            errors.append(f"{relative.as_posix()}: article family overlaps an explicit page profile")
-            continue
-
         source_text = (root / relative).read_text(encoding="utf-8")
-        article_markers = ARTICLE_META_RE.findall(source_text)
-        if len(article_markers) != 1:
+        markers = og_type_re.findall(source_text)
+        if len(markers) != 1:
             errors.append(
-                f"{relative.as_posix()}: article family requires exactly one og:type=article marker"
+                f"{relative.as_posix()}: {label} requires exactly one "
+                f"og:type={required_og_type.strip()} marker"
             )
             continue
 
-        profiles[relative] = dict(ARTICLE_FAMILY_PROFILE)
+        profiles[relative] = dict(profile)
 
     return profiles
 
@@ -252,17 +300,37 @@ def build_page_profiles(
 ) -> dict[Path, dict[str, object]]:
     """Combine explicit profiles with validated page-family profiles."""
     profiles = {relative: dict(profile) for relative, profile in PAGE_PROFILES.items()}
-    family_profiles = discover_article_profiles(root, destination, errors)
+    seen_names: set[str] = set()
+    seen_roots: set[Path] = set()
 
-    overlaps = sorted(set(profiles) & set(family_profiles))
-    if overlaps:
-        errors.append(
-            "Shared shell profile overlap: "
-            + ", ".join(path.as_posix() for path in overlaps)
-        )
-        return profiles
+    for family in FAMILY_PROFILES:
+        name = family.get("name")
+        family_root = family.get("root")
+        normalized_name = name.strip() if isinstance(name, str) else ""
 
-    profiles.update(family_profiles)
+        if normalized_name in seen_names:
+            errors.append(f"Duplicate shared shell family name: {normalized_name}")
+            continue
+        if normalized_name:
+            seen_names.add(normalized_name)
+
+        if isinstance(family_root, Path) and family_root in seen_roots:
+            errors.append(f"Duplicate shared shell family root: {family_root.as_posix()}")
+            continue
+        if isinstance(family_root, Path):
+            seen_roots.add(family_root)
+
+        family_profiles = discover_family_profiles(root, destination, family, errors)
+        overlaps = sorted(set(profiles) & set(family_profiles))
+        if overlaps:
+            errors.append(
+                "Shared shell profile overlap: "
+                + ", ".join(path.as_posix() for path in overlaps)
+            )
+            continue
+
+        profiles.update(family_profiles)
+
     return profiles
 
 
