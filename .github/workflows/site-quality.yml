@@ -102,6 +102,17 @@ jobs:
           path: reports/internal-links
           if-no-files-found: error
           retention-days: 30
+      - name: Generate shared shell coverage
+        if: always()
+        run: python tools/build_shared_shell_coverage.py --output-dir reports/shared-shell-coverage
+      - name: Upload shared shell coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: shared-shell-coverage
+          path: reports/shared-shell-coverage
+          if-no-files-found: error
+          retention-days: 30
       - name: Generate sitemap candidate
         if: always()
         run: python tools/build_sitemap.py --source sitemap.xml --output reports/generated-sitemap.xml
