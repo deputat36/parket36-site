@@ -83,7 +83,23 @@ def normalize_conclusion(value: str) -> str:
     return normalized
 
 
-def github_context() -> tuple[str, str, str, str, str, str, str]:
+def validate_branch_pair(deploy_branch: str, default_branch: str) -> str:
+    deploy = deploy_branch.strip()
+    default = default_branch.strip()
+    if not deploy:
+        raise RuntimeError("PAGES_DEPLOY_BRANCH must not be empty")
+    if not default:
+        raise RuntimeError("PAGES_DEFAULT_BRANCH must not be empty")
+    if len(deploy) > 255 or len(default) > 255:
+        raise RuntimeError("Pages branch names must not exceed 255 characters")
+    if deploy != default:
+        raise RuntimeError(
+            f"Pages deploy branch {deploy!r} must match repository default branch {default!r}"
+        )
+    return default
+
+
+def github_context() -> tuple[str, str, str, str, str, str, str, str]:
     repository = os.environ.get("GITHUB_REPOSITORY", "").strip()
     token = os.environ.get("GITHUB_TOKEN", "").strip()
     monitoring_run_id = os.environ.get("GITHUB_RUN_ID", "").strip()
@@ -91,6 +107,8 @@ def github_context() -> tuple[str, str, str, str, str, str, str]:
     deploy_run_id = os.environ.get("PAGES_DEPLOY_RUN_ID", "").strip()
     deploy_sha = os.environ.get("PAGES_DEPLOY_SHA", "").strip()
     deploy_conclusion = os.environ.get("PAGES_DEPLOY_CONCLUSION", "").strip()
+    deploy_branch = os.environ.get("PAGES_DEPLOY_BRANCH", "").strip()
+    default_branch = os.environ.get("PAGES_DEFAULT_BRANCH", "").strip()
 
     missing = [
         name
@@ -101,6 +119,8 @@ def github_context() -> tuple[str, str, str, str, str, str, str]:
             ("PAGES_DEPLOY_RUN_ID", deploy_run_id),
             ("PAGES_DEPLOY_SHA", deploy_sha),
             ("PAGES_DEPLOY_CONCLUSION", deploy_conclusion),
+            ("PAGES_DEPLOY_BRANCH", deploy_branch),
+            ("PAGES_DEFAULT_BRANCH", default_branch),
         )
         if not value
     ]
@@ -117,6 +137,7 @@ def github_context() -> tuple[str, str, str, str, str, str, str]:
         validate_run_id("PAGES_DEPLOY_RUN_ID", deploy_run_id),
         validate_sha(deploy_sha),
         normalize_conclusion(deploy_conclusion),
+        validate_branch_pair(deploy_branch, default_branch),
     )
 
 
@@ -126,6 +147,15 @@ def api_base(repository: str) -> str:
 
 def run_url(server: str, repository: str, run_id: str) -> str:
     return f"{server}/{repository}/actions/runs/{run_id}"
+
+
+def workflow_runs_url(repository: str, branch: str) -> str:
+    workflow = quote(WORKFLOW_FILE, safe="")
+    encoded_branch = quote(branch, safe="")
+    return (
+        api_base(repository)
+        + f"/actions/workflows/{workflow}/runs?status=completed&branch={encoded_branch}&per_page=20"
+    )
 
 
 def find_open_issue(repository: str, token: str) -> dict[str, Any] | None:
@@ -144,16 +174,13 @@ def previous_completed_conclusion(
     repository: str,
     token: str,
     current_deploy_run_id: str,
+    branch: str,
 ) -> str:
-    workflow = quote(WORKFLOW_FILE, safe="")
-    response = api_request(
-        "GET",
-        api_base(repository)
-        + f"/actions/workflows/{workflow}/runs?status=completed&per_page=20",
-        token,
-    )
+    response = api_request("GET", workflow_runs_url(repository, branch), token)
     for run in (response or {}).get("workflow_runs", []):
         if str(run.get("id", "")) == current_deploy_run_id:
+            continue
+        if str(run.get("head_branch") or "") != branch:
             continue
         conclusion = str(run.get("conclusion") or "").strip().lower()
         if conclusion:
@@ -173,6 +200,7 @@ def failure_body(
     deploy_sha: str,
     conclusion: str,
     previous: str,
+    branch: str,
 ) -> str:
     generated = datetime.now(timezone.utc).isoformat()
     return "\n".join(
@@ -182,6 +210,7 @@ def failure_body(
             "Repeated deployment failure detected.",
             "",
             f"Checked: `{generated}`",
+            f"Branch: `{branch}`",
             f"Commit: `{deploy_sha}`",
             f"Current conclusion: `{conclusion}`",
             f"Previous completed conclusion: `{previous or 'unavailable'}`",
@@ -191,7 +220,8 @@ def failure_body(
             "The issue body is updated in place after later failed deploys. "
             "A successful Pages deploy adds a recovery comment and closes this issue.",
             "",
-            "This monitor does not deploy the site, change Pages settings or expose workflow logs.",
+            "This monitor only evaluates the repository default branch. It does not deploy the "
+            "site, change Pages settings or expose workflow logs.",
         ]
     )
 
@@ -202,6 +232,7 @@ def recovery_comment(
     monitoring_run_id: str,
     deploy_run_id: str,
     deploy_sha: str,
+    branch: str,
 ) -> str:
     generated = datetime.now(timezone.utc).isoformat()
     return "\n".join(
@@ -209,6 +240,7 @@ def recovery_comment(
             "GitHub Pages deployment recovered.",
             "",
             f"Checked: `{generated}`",
+            f"Branch: `{branch}`",
             f"Commit: `{deploy_sha}`",
             f"Successful Pages deploy: {run_url(server, repository, deploy_run_id)}",
             f"Monitoring run: {run_url(server, repository, monitoring_run_id)}",
@@ -271,6 +303,7 @@ def handle_event() -> int:
         deploy_run_id,
         deploy_sha,
         conclusion,
+        branch,
     ) = github_context()
     open_issue = find_open_issue(repository, token)
 
@@ -283,7 +316,14 @@ def handle_event() -> int:
             repository,
             token,
             issue_number,
-            recovery_comment(repository, server, monitoring_run_id, deploy_run_id, deploy_sha),
+            recovery_comment(
+                repository,
+                server,
+                monitoring_run_id,
+                deploy_run_id,
+                deploy_sha,
+                branch,
+            ),
         )
         print(f"Closed recovered Pages deploy issue #{issue_number}")
         return 0
@@ -292,7 +332,12 @@ def handle_event() -> int:
         print(f"Pages deploy conclusion {conclusion!r} does not change monitoring state")
         return 0
 
-    previous = previous_completed_conclusion(repository, token, deploy_run_id)
+    previous = previous_completed_conclusion(
+        repository,
+        token,
+        deploy_run_id,
+        branch,
+    )
     body = failure_body(
         repository,
         server,
@@ -301,6 +346,7 @@ def handle_event() -> int:
         deploy_sha,
         conclusion,
         previous,
+        branch,
     )
 
     if open_issue:
@@ -339,16 +385,19 @@ def self_test() -> int:
         "a" * 40,
         "failure",
         "timed_out",
+        "main",
     )
     for marker in (
         ISSUE_TITLE.split("] ", 1)[-1],
         "Repeated deployment failure detected.",
+        "Branch: `main`",
         "Commit: `" + "a" * 40 + "`",
         "Current conclusion: `failure`",
         "Previous completed conclusion: `timed_out`",
         "owner/repo/actions/runs/100",
         "owner/repo/actions/runs/200",
         "updated in place",
+        "only evaluates the repository default branch",
     ):
         if marker not in sample:
             findings.append(f"failure body missing marker: {marker}")
@@ -359,9 +408,11 @@ def self_test() -> int:
         "201",
         "101",
         "b" * 40,
+        "main",
     )
     for marker in (
         "deployment recovered",
+        "Branch: `main`",
         "Commit: `" + "b" * 40 + "`",
         "owner/repo/actions/runs/101",
         "owner/repo/actions/runs/201",
@@ -370,10 +421,17 @@ def self_test() -> int:
         if marker not in recovery:
             findings.append(f"recovery comment missing marker: {marker}")
 
+    history_url = workflow_runs_url("owner/repo", "release/test")
+    if "actions/workflows/pages.yml/runs?status=completed" not in history_url:
+        findings.append("workflow history URL is missing the monitored workflow")
+    if "branch=release%2Ftest" not in history_url:
+        findings.append("workflow history URL is not scoped to the encoded default branch")
+
     try:
         validate_run_id("test", "123")
         validate_sha("c" * 40)
         normalize_conclusion("startup_failure")
+        validate_branch_pair("main", "main")
     except RuntimeError as exc:
         findings.append(f"valid identifiers were rejected: {exc}")
 
@@ -381,6 +439,9 @@ def self_test() -> int:
         ("non-numeric run ID", lambda: validate_run_id("test", "abc")),
         ("short SHA", lambda: validate_sha("abc123")),
         ("unknown conclusion", lambda: normalize_conclusion("mystery")),
+        ("empty deploy branch", lambda: validate_branch_pair("", "main")),
+        ("empty default branch", lambda: validate_branch_pair("main", "")),
+        ("non-default deploy branch", lambda: validate_branch_pair("feature/test", "main")),
     ):
         try:
             callback()
