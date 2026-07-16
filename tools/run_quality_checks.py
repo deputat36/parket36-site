@@ -22,6 +22,7 @@ CHECKS = [
     ("Validate live deployment source", ["tools/check_live_deployment.py", "--self-test"]),
     ("Validate post-deploy verification", ["tools/check_post_deploy_verification.py"]),
     ("Validate Pages deploy monitoring", ["tools/check_pages_deploy_monitoring.py"]),
+    ("Validate verified deploy drift watchdog", ["tools/check_verified_deploy_drift_workflow.py"]),
     ("Validate Pages issue completion", ["tools/complete_pages_switch_issue.py", "--self-test"]),
     ("Validate production lead monitoring", ["tools/check_lead_endpoint_monitoring.py"]),
     ("Validate production Edge deploy workflow", ["tools/check_edge_deploy_workflow.py"]),

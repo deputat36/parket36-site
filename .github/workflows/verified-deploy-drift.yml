@@ -1,0 +1,74 @@
+name: Verified deploy drift
+
+on:
+  schedule:
+    - cron: "53 5 * * *"
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Live site health"]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: verified-deploy-drift
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout verification target
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.event.repository.default_branch }}
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Validate drift helpers
+        run: |
+          python tools/check_verified_deploy_drift.py --self-test
+          python tools/manage_verified_deploy_drift_issue.py --self-test
+      - name: Check verified deploy drift
+        id: drift
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CHECK_TARGET_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}
+        run: |
+          TARGET_SHA="${CHECK_TARGET_SHA:-$(git rev-parse HEAD)}"
+          python tools/check_verified_deploy_drift.py \
+            --current-sha "$TARGET_SHA" \
+            --report verified-deploy-drift-report.md
+      - name: Upload verified deploy drift report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: verified-deploy-drift-report
+          path: verified-deploy-drift-report.md
+          if-no-files-found: error
+          retention-days: 30
+      - name: Update repeated drift issue
+        if: steps.drift.outcome == 'failure'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          python tools/manage_verified_deploy_drift_issue.py
+          failure
+          --report verified-deploy-drift-report.md
+      - name: Close recovered drift issue
+        if: steps.drift.outcome == 'success'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_verified_deploy_drift_issue.py success
+      - name: Fail on verified deploy drift
+        if: steps.drift.outcome == 'failure'
+        run: exit 1
