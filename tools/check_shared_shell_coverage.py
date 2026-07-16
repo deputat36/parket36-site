@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Fail CI when the committed shared-shell coverage report is stale."""
+"""Fail CI when the committed shared-shell governance report is stale."""
 
 from __future__ import annotations
 
+import csv
 import difflib
+from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import sys
@@ -13,6 +15,14 @@ from build_shared_shell_coverage import self_test, write_report
 ROOT = Path(__file__).resolve().parents[1]
 COMMITTED_CSV = ROOT / "docs/shared-shell-coverage.csv"
 COMMITTED_MARKDOWN = ROOT / "docs/shared-shell-coverage.md"
+GOVERNANCE_FIELDS = (
+    "source_path",
+    "url_path",
+    "coverage",
+    "profile_source",
+    "exclusion_category",
+    "exclusion_reason",
+)
 
 
 def print_diff(actual: str, expected: str, actual_name: str, expected_name: str) -> None:
@@ -24,6 +34,24 @@ def print_diff(actual: str, expected: str, actual_name: str, expected_name: str)
         lineterm="",
     ):
         print(line)
+
+
+def compact_governance_csv(full_csv: str) -> str:
+    """Keep the committed CSV useful while the artifact retains full profile details."""
+    source = StringIO(full_csv, newline="")
+    destination = StringIO(newline="")
+    reader = csv.DictReader(source)
+    if reader.fieldnames is None:
+        raise ValueError("generated shared-shell CSV is missing a header")
+    missing = [field for field in GOVERNANCE_FIELDS if field not in reader.fieldnames]
+    if missing:
+        raise ValueError("generated shared-shell CSV is missing fields: " + ", ".join(missing))
+
+    writer = csv.DictWriter(destination, fieldnames=GOVERNANCE_FIELDS, lineterminator="\n")
+    writer.writeheader()
+    for row in reader:
+        writer.writerow({field: row.get(field, "") for field in GOVERNANCE_FIELDS})
+    return destination.getvalue()
 
 
 def main() -> int:
@@ -52,7 +80,11 @@ def main() -> int:
             for finding in generation_findings:
                 print(f"  - {finding}")
             return 1
-        expected_csv = generated_csv.read_text(encoding="utf-8")
+        try:
+            expected_csv = compact_governance_csv(generated_csv.read_text(encoding="utf-8"))
+        except ValueError as exc:
+            print(f"Shared shell coverage CSV findings: {exc}")
+            return 1
         expected_markdown = generated_markdown.read_text(encoding="utf-8")
 
     actual_csv = COMMITTED_CSV.read_text(encoding="utf-8")
@@ -76,15 +108,15 @@ def main() -> int:
             actual_csv,
             expected_csv,
             "docs/shared-shell-coverage.csv",
-            "generated/shared-shell-coverage.csv",
+            "generated/shared-shell-governance.csv",
         )
 
     if stale:
         print(
-            "Regenerate with: python tools/build_shared_shell_coverage.py "
+            "Regenerate the full artifact with: python tools/build_shared_shell_coverage.py "
             "--output-dir reports/shared-shell-coverage"
         )
-        print("Then copy both generated files to docs/.")
+        print("Then compact its CSV to GOVERNANCE_FIELDS and copy both committed reports to docs/.")
         return 1
 
     print("Shared shell coverage check passed")

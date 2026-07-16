@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a deterministic report of public HTML coverage by shared-shell profiles."""
+"""Build a deterministic governance report for public shared-shell coverage."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from dataclasses import asdict, dataclass
 from io import StringIO
 from pathlib import Path
 import sys
+from tempfile import TemporaryDirectory
 
 from build_pages import PUBLIC_DIRS, PUBLIC_FILES, is_internal_working_path
 from shared_shell import (
@@ -18,6 +19,10 @@ from shared_shell import (
     PAGE_PROFILES,
     build_page_profiles,
     declared_family_pages,
+)
+from shared_shell_exclusions import (
+    SHARED_SHELL_EXCLUSIONS,
+    validate_exclusion_registry,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +35,8 @@ class CoverageRecord:
     url_path: str
     coverage: str
     profile_source: str
+    exclusion_category: str
+    exclusion_reason: str
     components: str
     active_nav: str
     request_href: str
@@ -99,18 +106,30 @@ def classify_records(
     public_pages: list[Path],
     profiles: dict[Path, dict[str, object]],
     family_by_path: dict[Path, str],
+    exclusions: dict[Path, dict[str, str]],
 ) -> list[CoverageRecord]:
-    """Classify public pages as explicit, family-backed or outside shared shell."""
+    """Classify every public page as profiled, reviewed exclusion or unclassified."""
     records: list[CoverageRecord] = []
     for relative in sorted(public_pages):
         profile = profiles.get(relative)
         if profile is None:
+            exclusion = exclusions.get(relative)
+            if exclusion is None:
+                coverage = "unclassified"
+                exclusion_category = "—"
+                exclusion_reason = "—"
+            else:
+                coverage = "excluded"
+                exclusion_category = exclusion["category"]
+                exclusion_reason = exclusion["reason"]
             records.append(
                 CoverageRecord(
                     source_path=relative.as_posix(),
                     url_path=path_to_url(relative),
-                    coverage="outside",
+                    coverage=coverage,
                     profile_source="—",
+                    exclusion_category=exclusion_category,
+                    exclusion_reason=exclusion_reason,
                     components="—",
                     active_nav="—",
                     request_href="—",
@@ -135,6 +154,8 @@ def classify_records(
                 url_path=path_to_url(relative),
                 coverage="profiled",
                 profile_source=profile_source,
+                exclusion_category="—",
+                exclusion_reason="—",
                 components=", ".join(components) if isinstance(components, tuple) else "—",
                 active_nav=active_nav if isinstance(active_nav, str) else "none",
                 request_href=request_href if isinstance(request_href, str) else "—",
@@ -149,7 +170,7 @@ def classify_records(
 
 
 def collect_coverage(root: Path = ROOT) -> tuple[list[CoverageRecord], list[str]]:
-    """Collect profile coverage and structural findings for the source tree."""
+    """Collect shared-shell governance and fail on any unclassified public HTML."""
     findings: list[str] = []
     profiles = build_page_profiles(root, root, findings)
     family_by_path, family_findings = family_sources(root, profiles)
@@ -164,7 +185,15 @@ def collect_coverage(root: Path = ROOT) -> tuple[list[CoverageRecord], list[str]
             + ", ".join(path.as_posix() for path in orphan_profiles)
         )
 
-    records = classify_records(public_paths, profiles, family_by_path)
+    exclusions, exclusion_findings = validate_exclusion_registry(
+        root,
+        public_paths,
+        set(profiles),
+        SHARED_SHELL_EXCLUSIONS,
+    )
+    findings.extend(exclusion_findings)
+
+    records = classify_records(public_paths, profiles, family_by_path, exclusions)
     if not records:
         findings.append("No public HTML pages were collected for shared shell coverage")
 
@@ -173,6 +202,13 @@ def collect_coverage(root: Path = ROOT) -> tuple[list[CoverageRecord], list[str]
         findings.append(
             "Family-backed pages are missing a declarative family source: "
             + ", ".join(unknown_family)
+        )
+
+    unclassified = [record.source_path for record in records if record.coverage == "unclassified"]
+    if unclassified:
+        findings.append(
+            "Unclassified public HTML pages must have a shared shell profile or reviewed exclusion: "
+            + ", ".join(unclassified)
         )
     return records, findings
 
@@ -188,26 +224,34 @@ def csv_text(records: list[CoverageRecord]) -> str:
     return output.getvalue()
 
 
+def markdown_cell(value: str) -> str:
+    return value.replace("|", "\\|").replace("\n", " ")
+
+
 def markdown_text(records: list[CoverageRecord]) -> str:
     profiled = [record for record in records if record.coverage == "profiled"]
-    outside = [record for record in records if record.coverage == "outside"]
+    excluded = [record for record in records if record.coverage == "excluded"]
+    unclassified = [record for record in records if record.coverage == "unclassified"]
     source_counts = Counter(record.profile_source for record in profiled)
-    coverage_percent = (len(profiled) / len(records) * 100) if records else 0.0
+    shell_percent = (len(profiled) / len(records) * 100) if records else 0.0
+    governed_percent = ((len(profiled) + len(excluded)) / len(records) * 100) if records else 0.0
 
     lines = [
         "# Покрытие shared shell",
         "",
         "Файл генерируется командой `python tools/build_shared_shell_coverage.py --output-dir reports/shared-shell-coverage`.",
-        "Отчёт показывает, какие публичные HTML-страницы используют явный или семейный профиль общей оболочки, а какие пока остаются вне shared shell.",
+        "Отчёт разделяет публичные HTML-страницы на профилированные, проверенные исключения и непросмотренные страницы без контракта.",
         "",
         "## Сводка",
         "",
         f"- публичных HTML-страниц: {len(records)};",
         f"- страниц с профилем shared shell: {len(profiled)};",
-        f"- страниц вне shared shell: {len(outside)};",
-        f"- покрытие: {coverage_percent:.1f}%.",
+        f"- проверенных исключений: {len(excluded)};",
+        f"- непросмотренных страниц: {len(unclassified)};",
+        f"- покрытие shared shell: {shell_percent:.1f}%;",
+        f"- управляемое покрытие: {governed_percent:.1f}%.",
         "",
-        "Страница вне shared shell не считается автоматической ошибкой: отчёт нужен для осознанного выбора следующего однородного семейства и для обнаружения новых непрофилированных страниц.",
+        "Проверенное исключение имеет точную категорию, причину и мета-контракт. Любая новая публичная HTML-страница без профиля или записи в реестре считается `unclassified` и блокирует quality gate.",
         "",
         "## Источники профилей",
         "",
@@ -216,15 +260,27 @@ def markdown_text(records: list[CoverageRecord]) -> str:
     ]
     for source, count in sorted(source_counts.items()):
         lines.append(f"| `{source}` | {count} |")
-    lines.append(f"| вне shared shell | {len(outside)} |")
+    lines.append(f"| проверенные исключения | {len(excluded)} |")
+    lines.append(f"| непросмотренные страницы | {len(unclassified)} |")
 
-    lines.extend(["", "## Страницы вне shared shell", ""])
-    if outside:
+    lines.extend(["", "## Проверенные исключения", ""])
+    if excluded:
+        lines.extend(["| URL | Исходный файл | Категория | Причина |", "|---|---|---|---|"])
+        for record in excluded:
+            lines.append(
+                f"| `{record.url_path}` | `{record.source_path}` | "
+                f"`{record.exclusion_category}` | {markdown_cell(record.exclusion_reason)} |"
+            )
+    else:
+        lines.append("Проверенных исключений нет.")
+
+    lines.extend(["", "## Непросмотренные страницы", ""])
+    if unclassified:
         lines.extend(["| URL | Исходный файл |", "|---|---|"])
-        for record in outside:
+        for record in unclassified:
             lines.append(f"| `{record.url_path}` | `{record.source_path}` |")
     else:
-        lines.append("Все публичные HTML-страницы охвачены shared shell.")
+        lines.append("Непросмотренных публичных HTML-страниц нет.")
 
     lines.extend(
         [
@@ -233,7 +289,7 @@ def markdown_text(records: list[CoverageRecord]) -> str:
             "",
             "Artifact `shared-shell-coverage` содержит:",
             "",
-            "- `shared-shell-coverage.csv` — классификацию каждой публичной HTML-страницы;",
+            "- `shared-shell-coverage.csv` — классификацию каждой публичной HTML-страницы, включая категорию и причину исключения;",
             "- `shared-shell-coverage.md` — этот отчёт с актуальной сводкой.",
             "",
         ]
@@ -249,6 +305,15 @@ def write_report(output_dir: Path, root: Path = ROOT) -> tuple[Path, Path, list[
     csv_path.write_text(csv_text(records), encoding="utf-8")
     markdown_path.write_text(markdown_text(records), encoding="utf-8")
     return csv_path, markdown_path, findings
+
+
+def sample_html(canonical: str, refresh: str | None = None, marker: str = "") -> str:
+    refresh_meta = f'<meta http-equiv="refresh" content="4;url={refresh}">' if refresh else ""
+    return (
+        '<!doctype html><html><head><meta name="robots" content="noindex, follow">'
+        f'<link rel="canonical" href="{canonical}">{refresh_meta}</head>'
+        f'<body>{marker}</body></html>'
+    )
 
 
 def self_test() -> list[str]:
@@ -284,6 +349,12 @@ def self_test() -> list[str]:
             Path("sovety/example/index.html"): "articles",
             Path("uslugi/example/index.html"): "adjacent-services",
         },
+        {
+            Path("404.html"): {
+                "category": "error",
+                "reason": "Reviewed error document",
+            }
+        },
     )
     by_path = {record.source_path: record for record in records}
     if by_path["index.html"].profile_source != "explicit":
@@ -292,12 +363,90 @@ def self_test() -> list[str]:
         findings.append("self-test: glob family profile classification failed")
     if by_path["uslugi/example/index.html"].profile_source != "family:adjacent-services":
         findings.append("self-test: allowlist family profile classification failed")
-    if by_path["politika/index.html"].coverage != "outside":
-        findings.append("self-test: outside-page classification failed")
+    if by_path["404.html"].coverage != "excluded":
+        findings.append("self-test: reviewed-exclusion classification failed")
+    if by_path["politika/index.html"].coverage != "unclassified":
+        findings.append("self-test: unclassified-page classification failed")
     if by_path["404.html"].url_path != "/404.html":
         findings.append("self-test: file URL conversion failed")
     if by_path["sovety/example/index.html"].url_path != "/sovety/example/":
         findings.append("self-test: index URL conversion failed")
+
+    with TemporaryDirectory(prefix="parket-shell-exclusion-test-") as temporary:
+        root = Path(temporary)
+        error_page = Path("404.html")
+        redirect_page = Path("uslugi/legacy/index.html")
+        (root / error_page).write_text(
+            sample_html("https://parket36.ru/404.html"),
+            encoding="utf-8",
+        )
+        (root / redirect_page).parent.mkdir(parents=True)
+        (root / redirect_page).write_text(
+            sample_html(
+                "https://parket36.ru/uslugi/current/",
+                refresh="/uslugi/current/",
+            ),
+            encoding="utf-8",
+        )
+        valid_entry = {
+            "path": error_page,
+            "category": "error",
+            "reason": "Reviewed error document",
+            "required_robots": "noindex, follow",
+            "required_canonical": "https://parket36.ru/404.html",
+        }
+        redirect_entry = {
+            "path": redirect_page,
+            "category": "redirect",
+            "reason": "Reviewed legacy redirect",
+            "required_robots": "noindex, follow",
+            "required_canonical": "https://parket36.ru/uslugi/current/",
+            "required_refresh_target": "/uslugi/current/",
+        }
+        _, valid_findings = validate_exclusion_registry(
+            root,
+            [error_page, redirect_page],
+            set(),
+            (valid_entry, redirect_entry),
+        )
+        if valid_findings:
+            findings.append("self-test: valid exclusion registry was rejected: " + "; ".join(valid_findings))
+
+        _, duplicate_findings = validate_exclusion_registry(
+            root,
+            [error_page],
+            set(),
+            (valid_entry, valid_entry),
+        )
+        if not any("Duplicate shared shell exclusion path" in item for item in duplicate_findings):
+            findings.append("self-test: duplicate exclusion path was not rejected")
+
+        stale_entry = dict(valid_entry)
+        stale_entry["path"] = Path("missing/index.html")
+        _, stale_findings = validate_exclusion_registry(root, [error_page], set(), (stale_entry,))
+        if not any("non-public or missing" in item for item in stale_findings):
+            findings.append("self-test: stale exclusion was not rejected")
+
+        _, overlap_findings = validate_exclusion_registry(
+            root,
+            [error_page],
+            {error_page},
+            (valid_entry,),
+        )
+        if not any("overlaps" in item for item in overlap_findings):
+            findings.append("self-test: profile/exclusion overlap was not rejected")
+
+        broken_redirect = dict(redirect_entry)
+        broken_redirect["required_refresh_target"] = "/wrong/"
+        _, redirect_findings = validate_exclusion_registry(
+            root,
+            [redirect_page],
+            set(),
+            (broken_redirect,),
+        )
+        if not any("meta refresh target" in item for item in redirect_findings):
+            findings.append("self-test: redirect target drift was not rejected")
+
     return findings
 
 
