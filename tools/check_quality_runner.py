@@ -41,6 +41,7 @@ EXPECTED_CHECKS = [
     ["tools/check_og_cards.py"],
     ["tools/check_image_attributes.py"],
     ["tools/check_live_site.py", "--self-test"],
+    ["tools/check_live_health_workflow.py"],
     ["tools/check_live_conversion_workflow.py"],
     ["tools/check_live_public_copy_workflow.py"],
     ["tools/check_supabase_retention.py"],
