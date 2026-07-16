@@ -50,9 +50,9 @@ MANAGER_MARKERS = (
 
 DOC_MARKERS = (
     "Мониторинг GitHub Pages deploy",
-    "первый единичный отказ не создаёт issue".capitalize(),
+    "Первый единичный отказ не создаёт issue",
     "[monitoring] GitHub Pages deploy failure",
-    "тело существующей задачи обновляется на месте",
+    "Тело существующей задачи обновляется на месте",
     "state_reason: completed",
     "tools/manage_pages_deploy_issue.py --self-test",
     "tools/check_pages_deploy_monitoring.py",
