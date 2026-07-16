@@ -10,6 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 README_PATH = ROOT / "README.md"
 SITE_QUALITY_PATH = ROOT / ".github" / "workflows" / "site-quality.yml"
 PAGES_PATH = ROOT / ".github" / "workflows" / "pages.yml"
+LIVE_HEALTH_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "live-site-health.yml"
+LIVE_HEALTH_DOC_PATH = ROOT / "docs" / "live-site-monitoring.md"
+LIVE_VERIFICATION_LEDGER_PATH = ROOT / "tools" / "record_live_verification.py"
 INDEXNOW_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "indexnow.yml"
 INDEXNOW_DOC_PATH = ROOT / "docs" / "indexnow-automation.md"
 INDEXNOW_ISSUE_MANAGER_PATH = ROOT / "tools" / "manage_indexnow_issue.py"
@@ -28,6 +31,9 @@ def main() -> int:
         README_PATH,
         SITE_QUALITY_PATH,
         PAGES_PATH,
+        LIVE_HEALTH_WORKFLOW_PATH,
+        LIVE_HEALTH_DOC_PATH,
+        LIVE_VERIFICATION_LEDGER_PATH,
         INDEXNOW_WORKFLOW_PATH,
         INDEXNOW_DOC_PATH,
         INDEXNOW_ISSUE_MANAGER_PATH,
@@ -42,6 +48,9 @@ def main() -> int:
     readme = read(README_PATH)
     site_quality = read(SITE_QUALITY_PATH)
     pages = read(PAGES_PATH)
+    live_health_workflow = read(LIVE_HEALTH_WORKFLOW_PATH)
+    live_health_doc = read(LIVE_HEALTH_DOC_PATH)
+    live_verification_ledger = read(LIVE_VERIFICATION_LEDGER_PATH)
     indexnow_workflow = read(INDEXNOW_WORKFLOW_PATH)
     indexnow_doc = read(INDEXNOW_DOC_PATH)
 
@@ -71,6 +80,46 @@ def main() -> int:
     for path, text in ((SITE_QUALITY_PATH, site_quality), (PAGES_PATH, pages)):
         if QUALITY_RUNNER not in text:
             findings.append(f"{path.relative_to(ROOT)} must run {QUALITY_RUNNER}")
+
+    required_live_health_doc_markers = (
+        "tools/record_live_verification.py",
+        "Последняя подтверждённая публикация parket36.ru",
+        "parket36-live-verification",
+        "issue #308",
+        "Плановый и ручной monitoring запись не обновляют",
+        "30-дневном artifact",
+        "python tools/record_live_verification.py --self-test",
+    )
+    for marker in required_live_health_doc_markers:
+        if marker not in live_health_doc:
+            findings.append(f"docs/live-site-monitoring.md must mention {marker}")
+
+    required_live_health_workflow_markers = (
+        "- name: Record latest verified deploy",
+        "github.event_name == 'workflow_run' &&",
+        "steps.live_health.outcome == 'success' &&",
+        "steps.live_conversion.outcome == 'success' &&",
+        "steps.live_public_copy.outcome == 'success' &&",
+        "steps.deployment_source.outcome == 'success'",
+        "PAGES_DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}",
+        "PAGES_DEPLOY_RUN_ID: ${{ github.event.workflow_run.id }}",
+        "run: python tools/record_live_verification.py",
+    )
+    for marker in required_live_health_workflow_markers:
+        if marker not in live_health_workflow:
+            findings.append(f"Live health workflow must contain {marker}")
+
+    required_ledger_markers = (
+        "ISSUE_NUMBER = 308",
+        'COMMENT_MARKER = "<!-- parket36-live-verification -->"',
+        'if event_name != "workflow_run"',
+        "multiple live verification ledger comments found",
+        'api_request("PATCH", f"{base}/issues/comments/{comment_id}"',
+        "Live verification ledger self-test passed",
+    )
+    for marker in required_ledger_markers:
+        if marker not in live_verification_ledger:
+            findings.append(f"tools/record_live_verification.py must contain {marker}")
 
     required_indexnow_doc_markers = (
         "Notify IndexNow after deploy",
