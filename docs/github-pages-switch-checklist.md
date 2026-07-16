@@ -7,6 +7,7 @@
 - `CNAME` содержит `parket36.ru`.
 - `robots.txt` указывает sitemap и host для `parket36.ru`.
 - `.github/workflows/pages.yml` собирает сайт и публикует `_site` через GitHub Pages.
+- Ручной Pages deploy разрешён только при выборе основной ветки репозитория.
 - `.github/workflows/site-quality.yml` запускает общий quality gate.
 - `tools/check_guardrails.py` блокирует возврат `WhatsApp` и `wa.me` в публичные текстовые файлы.
 
@@ -18,8 +19,9 @@
 4. Проверить DNS у регистратора домена.
 5. Дождаться проверки домена в GitHub Pages.
 6. Включить Enforce HTTPS.
-7. Запустить Deploy GitHub Pages вручную или дождаться запуска после push в `main`.
-8. Проверить, что `https://parket36.ru/` открывает новую версию сайта.
+7. Запустить `Deploy GitHub Pages` вручную из ветки `main` или дождаться автоматического запуска после push в `main`.
+8. Не использовать feature-ветку для ручной публикации: workflow пропустит build и deploy.
+9. Проверить, что `https://parket36.ru/` открывает новую версию сайта.
 
 ## Результат ручной проверки
 
@@ -28,7 +30,7 @@
 - [ ] DNS у регистратора направлен на GitHub Pages.
 - [ ] GitHub подтвердил домен.
 - [ ] Enforce HTTPS включён.
-- [ ] Deploy GitHub Pages завершился успешно.
+- [ ] Deploy GitHub Pages из `main` завершился успешно.
 - [ ] Новая версия сайта открывается по `https://parket36.ru/`.
 - [ ] Старая версия с WhatsApp больше не показывается на главной странице.
 
