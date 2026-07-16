@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate live call and IndexNow monitoring integration."""
+"""Validate live call, built shell and IndexNow monitoring integration."""
 
 from __future__ import annotations
 
@@ -25,12 +25,25 @@ WORKFLOW_MARKERS = (
 )
 
 HELPER_MARKERS = (
+    "Live call, shared shell and IndexNow checks",
     "Homepage call route",
+    "Homepage built shared shell",
     "IndexNow key HTTP",
     "IndexNow key content",
     'href="tel:{phone_e164}"',
     "Позвонить Ивану",
     "Оценка по фото",
+    "<!-- shared-shell:header -->",
+    "<!-- shared-shell:final-cta -->",
+    "<!-- shared-shell:footer -->",
+    "<!-- shared-shell:mobile-cta -->",
+    'data-css-bundle="true"',
+    "def cache_busted_url",
+    "verify_conversion",
+    "verify_indexnow_key",
+    '"Cache-Control": "no-cache, no-store, max-age=0"',
+    '"Pragma": "no-cache"',
+    "cache_bust_attempt=",
     "def run_with_retries",
     "def append_report",
     "def self_test",
