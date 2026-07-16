@@ -23,6 +23,7 @@ WORKFLOW_MARKERS = (
     "issues: write",
     "group: pages-deploy-monitor",
     "cancel-in-progress: false",
+    "if: github.event.workflow_run.head_branch == github.event.repository.default_branch",
     "ref: ${{ github.event.workflow_run.head_sha }}",
     "uses: actions/checkout@v7",
     "uses: actions/setup-python@v6",
@@ -31,7 +32,16 @@ WORKFLOW_MARKERS = (
     "PAGES_DEPLOY_RUN_ID: ${{ github.event.workflow_run.id }}",
     "PAGES_DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}",
     "PAGES_DEPLOY_CONCLUSION: ${{ github.event.workflow_run.conclusion }}",
+    "PAGES_DEPLOY_BRANCH: ${{ github.event.workflow_run.head_branch }}",
+    "PAGES_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}",
     "run: python tools/manage_pages_deploy_issue.py",
+)
+
+PAGES_WORKFLOW_MARKERS = (
+    "name: Deploy GitHub Pages",
+    "workflow_dispatch:",
+    "if: github.ref_name == github.event.repository.default_branch",
+    "uses: actions/deploy-pages@v5",
 )
 
 MANAGER_MARKERS = (
@@ -39,21 +49,32 @@ MANAGER_MARKERS = (
     'WORKFLOW_FILE = "pages.yml"',
     "FAILURE_CONCLUSIONS = frozenset",
     "NON_ALERTING_CONCLUSIONS = frozenset",
+    "def validate_branch_pair(",
+    "def workflow_runs_url(",
+    "branch={encoded_branch}",
+    "PAGES_DEPLOY_BRANCH",
+    "PAGES_DEFAULT_BRANCH",
+    'run.get("head_branch")',
     "def previous_completed_conclusion(",
     "def should_open_issue(",
     '"PATCH"',
     '"state": "closed", "state_reason": "completed"',
     "First isolated Pages deploy failure",
     "updated in place",
+    "only evaluates the repository default branch",
     "Pages deploy issue manager self-test passed",
 )
 
 DOC_MARKERS = (
     "Мониторинг GitHub Pages deploy",
+    "ручной запуск feature-ветки не публикуется",
+    "только для основной ветки репозитория",
     "Первый единичный отказ не создаёт issue",
     "[monitoring] GitHub Pages deploy failure",
     "Тело существующей задачи обновляется на месте",
     "state_reason: completed",
+    "PAGES_DEPLOY_BRANCH",
+    "PAGES_DEFAULT_BRANCH",
     "tools/manage_pages_deploy_issue.py --self-test",
     "tools/check_pages_deploy_monitoring.py",
     "не повторяет deploy",
@@ -97,9 +118,9 @@ def main() -> int:
     manager_text = MANAGER.read_text(encoding="utf-8")
     doc_text = DOC.read_text(encoding="utf-8")
 
-    if "name: Deploy GitHub Pages" not in pages_text:
-        findings.append("pages.yml must keep the monitored workflow name")
-
+    for marker in PAGES_WORKFLOW_MARKERS:
+        if marker not in pages_text:
+            findings.append(f"pages.yml must contain {marker}")
     for marker in WORKFLOW_MARKERS:
         if marker not in workflow_text:
             findings.append(f"pages-deploy-monitor.yml must contain {marker}")
