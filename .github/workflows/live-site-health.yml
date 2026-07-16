@@ -34,7 +34,14 @@ jobs:
       - name: Run live health check
         id: live_health
         continue-on-error: true
-        run: python tools/check_live_site.py --report live-health-report.md
+        env:
+          LIVE_HEALTH_ATTEMPTS: ${{ github.event_name == 'workflow_run' && '6' || '1' }}
+        run: >-
+          python tools/check_live_site.py
+          --report live-health-report.md
+          --attempts "$LIVE_HEALTH_ATTEMPTS"
+          --retry-delay 10
+          --timeout 20
       - name: Check live call and IndexNow routes
         id: live_conversion
         continue-on-error: true
