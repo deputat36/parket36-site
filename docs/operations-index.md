@@ -10,7 +10,7 @@
 ## Запуск и публикация
 
 - `docs/github-pages-switch-checklist.md` — проверка переключения `parket36.ru` на GitHub Pages.
-- `docs/live-site-monitoring.md` — ежедневный контроль DNS, HTTPS, телефонного маршрута, IndexNow-ключа, robots и sitemap.
+- `docs/live-site-monitoring.md` — ежедневный контроль DNS, HTTPS, телефона, публичной сборки и обновляемая запись последнего подтверждённого deploy в issue #308.
 - `docs/search-discovery-launch.md` — запуск индексации, IndexNow и ручные действия в кабинетах поисковиков.
 - `docs/indexnow-automation.md` — автоматическая post-deploy отправка sitemap URL, диагностический artifact и одно monitoring issue после повторного сбоя.
 - `docs/browser-smoke-tests.md` — Playwright-проверки меню, телефона, формы, fallback и 404.
