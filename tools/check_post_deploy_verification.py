@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,6 +13,7 @@ LIVE_WORKFLOW = ROOT / ".github" / "workflows" / "live-site-health.yml"
 DEPLOYMENT_CHECKER = ROOT / "tools" / "check_live_deployment.py"
 DEPLOYMENT_MANIFEST = ROOT / "tools" / "deployment_manifest.py"
 PAGES_ISSUE_COMPLETER = ROOT / "tools" / "complete_pages_switch_issue.py"
+LIVE_VERIFICATION_LEDGER = ROOT / "tools" / "record_live_verification.py"
 ROOT_MANIFEST = ROOT / "deployment.json"
 
 REQUIRED_MARKERS = {
@@ -34,12 +36,16 @@ REQUIRED_MARKERS = {
         '--expected-run-id "$EXPECTED_DEPLOY_RUN_ID"': "expected run ID argument",
         '--attempts "$DEPLOY_ATTEMPTS"': "retry attempts argument",
         "--retry-delay 10": "propagation retry delay",
+        "- name: Record latest verified deploy": "durable verification ledger step",
+        "run: python tools/record_live_verification.py": "verification ledger invocation",
         "- name: Complete Pages switch issue": "Pages issue completion step",
-        "github.event_name == 'workflow_run' &&": "post-deploy-only issue completion",
+        "github.event_name == 'workflow_run' &&": "post-deploy-only issue actions",
         "steps.live_health.outcome == 'success' &&": "live-health success requirement",
+        "steps.live_conversion.outcome == 'success' &&": "live-conversion success requirement",
+        "steps.live_public_copy.outcome == 'success' &&": "public-copy success requirement",
         "steps.deployment_source.outcome == 'success'": "deployment source success requirement",
-        "PAGES_DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}": "completed deploy SHA for issue comment",
-        "PAGES_DEPLOY_RUN_ID: ${{ github.event.workflow_run.id }}": "completed deploy run ID for issue comment",
+        "PAGES_DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}": "completed deploy SHA for issue evidence",
+        "PAGES_DEPLOY_RUN_ID: ${{ github.event.workflow_run.id }}": "completed deploy run ID for issue evidence",
         "run: python tools/complete_pages_switch_issue.py": "Pages issue completer invocation",
     },
     DEPLOYMENT_CHECKER: {
@@ -78,6 +84,18 @@ REQUIRED_MARKERS = {
         "SHA и run ID live-сборки совпали": "exact deployment completion evidence",
         "Pages switch issue completer self-test passed": "self-test",
     },
+    LIVE_VERIFICATION_LEDGER: {
+        "ISSUE_NUMBER = 308": "fixed roadmap issue",
+        'EXPECTED_TITLE = "Автономная дорожная карта улучшения Паркет36"': "roadmap title guard",
+        'COMMENT_MARKER = "<!-- parket36-live-verification -->"': "unique ledger marker",
+        'if event_name != "workflow_run"': "workflow_run safety guard",
+        "PAGES_DEPLOY_SHA must be a full lowercase 40-character commit SHA": "full SHA validation",
+        "multiple live verification ledger comments found": "duplicate fail-closed behavior",
+        'api_request("PATCH", f"{base}/issues/comments/{comment_id}"': "in-place comment update",
+        'api_request(\n            "POST",\n            f"{base}/issues/{ISSUE_NUMBER}/comments"': "initial comment creation",
+        "Плановый и ручной monitoring эту запись не обновляют": "manual-run exclusion disclosure",
+        "Live verification ledger self-test passed": "ledger self-test",
+    },
 }
 
 
@@ -95,6 +113,18 @@ def main() -> int:
         for marker, label in markers.items():
             if marker not in text:
                 findings.append(f"{path.relative_to(ROOT)}: missing {label}: {marker}")
+
+    if LIVE_VERIFICATION_LEDGER.is_file():
+        completed = subprocess.run(
+            [sys.executable, str(LIVE_VERIFICATION_LEDGER), "--self-test"],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if completed.returncode != 0:
+            detail = (completed.stdout + completed.stderr).strip()
+            findings.append("live verification ledger self-test failed: " + detail)
 
     if findings:
         print("Post-deploy verification findings:")
