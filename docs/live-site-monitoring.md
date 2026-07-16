@@ -2,178 +2,171 @@
 
 Workflow: `.github/workflows/live-site-health.yml`.
 
-Скрипты:
+Основные скрипты:
 
-- `tools/check_live_site.py` — проверка DNS, GitHub Pages и публичного сайта с созданием отчёта;
-- `tools/check_live_conversion.py` — проверка рабочего `tel:`-маршрута, подписей звонка и публичного IndexNow-ключа;
-- `tools/check_live_deployment.py` — проверка источника и точной версии опубликованного Pages artifact;
-- `tools/deployment_manifest.py` — создание `_site/deployment.json` внутри Pages workflow;
-- `tools/manage_live_health_issue.py` — управление одним issue при повторяющемся сбое;
-- `tools/complete_pages_switch_issue.py` — закрытие issue #5 после подтверждённого post-deploy успеха.
+- `tools/check_live_site.py` — DNS, HTTPS, главная, `www`, robots и sitemap;
+- `tools/check_live_health_workflow.py` — статический контракт базовой live-проверки;
+- `tools/check_live_conversion.py` — телефонный маршрут, собранная shared shell и публичный IndexNow-ключ;
+- `tools/check_live_public_copy.py` — отсутствие редакторских заглушек на главной;
+- `tools/check_live_deployment.py` — источник и точная версия Pages artifact;
+- `tools/manage_live_health_issue.py` — единое issue при повторяющемся сбое;
+- `tools/complete_pages_switch_issue.py` — завершение issue #5 после подтверждённого deploy.
 
 ## Что проверяется
 
-### DNS и GitHub Pages
+### DNS и маршрутизация
 
-- корневой домен `parket36.ru` должен разрешаться во все четыре рекомендуемые IPv4 GitHub Pages:
-  - `185.199.108.153`;
-  - `185.199.109.153`;
-  - `185.199.110.153`;
-  - `185.199.111.153`;
-- ожидаемые IPv6 GitHub Pages допускаются дополнительно;
-- посторонние адреса считаются признаком старого хостинга, прокси или ошибочной записи;
-- `www.parket36.ru` должен разрешаться хотя бы в один официальный адрес GitHub Pages и не содержать посторонних адресов;
-- HTTPS-запрос к `www.parket36.ru` должен завершаться на корневом `https://parket36.ru/`.
+Корневой домен `parket36.ru` должен разрешаться во все четыре рекомендуемые IPv4 GitHub Pages:
 
-Проверка `www` подтверждает фактическую маршрутизацию на инфраструктуру GitHub Pages. Она не извлекает саму CNAME-запись, поэтому правильное значение `www → deputat36.github.io` дополнительно проверяется в панели DNS при настройке issue #5.
+- `185.199.108.153`;
+- `185.199.109.153`;
+- `185.199.110.153`;
+- `185.199.111.153`.
 
-### Публичный сайт
+Ожидаемые IPv6 GitHub Pages допускаются дополнительно. Посторонние адреса считаются признаком старого хостинга, прокси или ошибочной DNS-записи.
 
-- доступность сайта по HTTPS с проверкой сертификата;
-- HTTP-код главной страницы;
-- наличие на главной маркеров новой версии: бренд, телефон и оценка по фото;
-- отсутствие `WhatsApp` и `wa.me` на главной;
+`www.parket36.ru` должен разрешаться хотя бы в один официальный адрес GitHub Pages, а HTTPS-запрос должен завершаться на корневом `https://parket36.ru/`.
+
+DNS проверяется один раз за запуск. Cache-busting к DNS неприменим.
+
+### Базовый HTTP-контур
+
+Одной попыткой проверяются:
+
+- HTTPS и HTTP 200 главной;
+- бренд, отображаемый телефон и действие `Оценка по фото`;
+- отсутствие `WhatsApp` и `wa.me`;
+- HTTPS-переход `www` на корневой домен;
 - доступность `robots.txt`;
-- правильные строки Sitemap и Host в `robots.txt`;
-- доступность и корректность XML в `sitemap.xml`;
-- минимальное количество URL и единый домен в sitemap.
+- строки `Sitemap` и `Host` в robots;
+- доступность и XML-корректность `sitemap.xml`;
+- минимальное количество sitemap URL и единый домен.
 
-### Звонок и IndexNow
+Каждый запрос получает уникальные параметры:
 
-Отдельный live-check повторно читает боевую главную и требует одновременно:
+- `verify_live_health`;
+- `check`;
+- `attempt`.
+
+Также отправляются заголовки:
+
+- `Cache-Control: no-cache, no-store, max-age=0`;
+- `Pragma: no-cache`.
+
+Это не даёт нескольким попыткам повторно получить один устаревший CDN-объект. Query nonce не записывается в отчёт: сохраняются чистый публичный URL и `cache_bust_attempt`.
+
+В post-deploy режиме выполняется до шести полных HTTP-попыток с интервалом 10 секунд. Ежедневный и ручной запуск выполняют одну попытку.
+
+### Звонок, shared shell и IndexNow-ключ
+
+Отдельная проверка требует одновременно:
 
 - точную ссылку `href="tel:+79009267929"`, сформированную из `data/site.json`;
-- отображаемый номер телефона из общих настроек;
-- понятную подпись `Позвонить Ивану`;
-- действие `Оценка по фото`.
+- отображаемый номер телефона;
+- подпись `Позвонить Ивану`;
+- действие `Оценка по фото`;
+- четыре build-маркера shared shell;
+- признак собранного CSS bundle;
+- HTTP 200 публичного IndexNow-файла;
+- точное совпадение файла с ключом из `data/indexnow.json`.
 
-Это защищает от ситуации, когда номер остаётся видимым текстом, но кликабельный телефонный маршрут исчезает из опубликованного HTML.
+Этот контур также использует cache-busting и до шести попыток после deploy.
 
-Также проверяется:
+### Клиентский текст главной
 
-- HTTP 200 для `https://parket36.ru/indexnow-key.txt`;
-- точное совпадение содержимого файла с ключом из `data/indexnow.json`.
-
-В post-deploy режиме выполняется до шести попыток с интервалом 10 секунд, чтобы краткая задержка CDN не создавала ложный сбой. Ежедневный и ручной запуск выполняют одну попытку.
+`tools/check_live_public_copy.py` блокирует редакторские формулировки и требует клиентские инструкции по фотографиям пола. Проверка выполняется с уникальным query URL на каждой попытке.
 
 ### Источник и версия публикации
 
-Workflow `Deploy GitHub Pages` после успешного quality gate создаёт `_site/deployment.json` непосредственно перед загрузкой Pages artifact.
+Workflow `Deploy GitHub Pages` создаёт `_site/deployment.json` перед загрузкой artifact.
 
 Manifest содержит:
 
 - `publisher: github-actions`;
 - `artifact: _site`;
 - SHA опубликованного коммита;
-- ID запуска workflow публикации.
+- ID запуска deploy workflow.
 
-Файл не хранится в корне репозитория. Поэтому:
-
-- HTTP 200 и правильные поля подтверждают публикацию Actions artifact `_site`;
-- HTTP 404 означает публикацию из `main / root`, старый хостинг или незавершённый deploy;
-- неправильный publisher или artifact означает неверный источник;
-- несовпадающий SHA или run ID означает, что домен ещё отдаёт предыдущую сборку.
-
-После события `workflow_run` monitoring получает SHA и ID завершившегося `Deploy GitHub Pages` и требует точного совпадения с live manifest. Проверка выполняет до шести попыток с интервалом 10 секунд, чтобы краткая задержка GitHub Pages CDN не создавала ложный сбой.
+Post-deploy monitoring требует точного совпадения live SHA и run ID с завершившимся `Deploy GitHub Pages`. Плановый и ручной запуск проверяют manifest без требования конкретной версии.
 
 ## Когда запускается
 
 Проверка запускается:
 
-1. сразу после каждого успешно завершённого workflow `Deploy GitHub Pages`;
+1. после каждого успешно завершённого `Deploy GitHub Pages`;
 2. ежедневно по расписанию;
 3. вручную через `workflow_dispatch`.
 
-После deploy workflow checkout выполняется на `head_sha` опубликованной сборки. Проверка после неуспешного Pages workflow не запускается: красный deploy уже является отдельным сигналом ошибки.
-
-Ежедневный и ручной запуск проверяют корректность manifest без требования конкретного SHA. Post-deploy запуск дополнительно требует точного SHA и run ID.
-
-## Автоматическое завершение issue #5
-
-Issue `#5 Переключить parket36.ru на GitHub Pages` закрывается автоматически только когда одновременно выполнены все условия:
-
-1. workflow запущен событием `workflow_run` после успешного `Deploy GitHub Pages`;
-2. DNS, HTTPS, главная, телефонный маршрут, IndexNow-ключ, `robots.txt` и `sitemap.xml` прошли live-проверку;
-3. `/deployment.json` подтверждает Actions artifact `_site`;
-4. live `commit` совпадает с `workflow_run.head_sha`;
-5. live `run_id` совпадает с ID завершившегося Pages deploy.
-
-Плановый и ручной monitoring не закрывают issue #5, даже если сайт работает. Это защищает задачу от завершения без привязки к конкретному опубликованному deploy.
-
-Перед закрытием скрипт проверяет номер и точный заголовок issue. Затем добавляет комментарий с опубликованным SHA, ссылкой на Pages deploy и ссылкой на live verification и закрывает задачу со статусом `completed`.
-
-Если issue уже закрыт, шаг завершается без изменений. Ошибка GitHub API не делает сам live-health запуск красным: автозавершение является служебным действием с `continue-on-error`, а доказательством публикации остаётся artifact-отчёт.
+После deploy checkout выполняется по `workflow_run.head_sha`. Неуспешный Pages workflow не запускает live-health: красный deploy уже является отдельным сигналом ошибки.
 
 ## Диагностический отчёт
 
-После каждого запуска создаётся artifact `live-health-report` с файлом `live-health-report.md`. Artifact хранится 30 дней.
+Каждый запуск создаёт artifact `live-health-report` с файлом `live-health-report.md`. Срок хранения — 30 дней.
 
-Отчёт показывает отдельно:
+Отчёт показывает:
 
-- фактические адреса корневого домена;
-- отсутствующие IPv4 GitHub Pages;
-- посторонние DNS-адреса;
-- результат разрешения `www`;
-- конечный адрес HTTPS-перехода с `www`;
-- состояние главной, robots и sitemap;
-- наличие точного `tel:`-маршрута и подписей звонка;
-- доступность и точность IndexNow-ключа;
-- наличие `/deployment.json`;
-- publisher и artifact;
-- опубликованный SHA и workflow run ID;
-- ожидаемый SHA/run ID post-deploy проверки;
-- количество попыток при задержке распространения.
+- DNS-адреса и отклонения;
+- чистые конечные HTTP URL;
+- номер cache-busted попытки;
+- общее количество использованных HTTP-попыток;
+- состояние главной, `www`, robots и sitemap;
+- телефонный маршрут и build-маркеры;
+- клиентский текст главной;
+- доступность IndexNow-ключа;
+- опубликованный SHA и workflow run ID.
 
-Если хотя бы одна проверка не прошла, отчёт всё равно загружается, после чего workflow завершается с ошибкой. Так диагностика не теряется даже при недоступном домене.
+Если хотя бы одна проверка не прошла, artifact всё равно загружается, после чего workflow завершается ошибкой.
 
-## Автоматическое issue при повторном сбое
+## Monitoring issue
 
-Механизм не создаёт issue после первого единичного сбоя.
+Первый единичный сбой сохраняет красный workflow и artifact без создания задачи.
 
-Порядок:
+Если следующий завершённый запуск этого workflow также неуспешен, создаётся одно issue:
 
-1. Первый неуспешный запуск сохраняет artifact и завершается с ошибкой.
-2. Если следующий завершённый запуск этого же workflow тоже был неуспешным, создаётся одно issue с заголовком `[monitoring] parket36.ru live health failure`.
-3. Следующие неуспешные запуски добавляют комментарий в уже открытое issue вместо создания новых задач.
-4. Первый успешный запуск после восстановления добавляет комментарий и закрывает monitoring issue.
+`[monitoring] parket36.ru live health failure`
 
-Monitoring issue и issue #5 имеют разные роли: первое отражает повторный технический сбой, второе — одноразовую задачу переключения домена на правильную публикацию.
+Следующие сбои добавляют комментарии в открытую задачу. Первый успешный запуск после восстановления добавляет recovery-комментарий и закрывает issue.
 
-В issue попадают ссылка на workflow run и содержимое диагностического отчёта. Secrets и персональные данные туда не передаются. Значение IndexNow-ключа в отчёт не выводится.
+Issue #5 и monitoring issue имеют разные роли: issue #5 подтверждает первоначальное переключение на Pages, monitoring issue отражает текущий повторный технический сбой.
 
 ## Права workflow
 
-Workflow использует минимально необходимые разрешения:
+Используются минимальные разрешения:
 
-- `contents: read` — чтение репозитория и checkout точного опубликованного SHA;
-- `actions: read` — проверка результата предыдущего workflow run;
-- `issues: write` — создание, обновление и закрытие monitoring issue и issue #5.
+- `contents: read`;
+- `actions: read`;
+- `issues: write`.
 
-`permissions: write-all` запрещён проверкой конфигурации.
+`permissions: write-all` запрещён CI-проверками. Ошибка GitHub API в служебном issue-шаге не подменяет результат фактической live-проверки.
 
-Ошибки GitHub API при управлении issue не подменяют результат проверки сайта: issue-шаги имеют `continue-on-error`, а итоговый workflow всё равно завершается согласно результату live health check.
+## Ручные команды
 
-## Ручной запуск скриптов
-
-Проверка сайта:
+Одна базовая проверка:
 
 ```bash
-python tools/check_live_site.py --report live-health-report.md
+python tools/check_live_site.py \
+  --report live-health-report.md \
+  --attempts 1 \
+  --timeout 20
 ```
 
-Проверка живого звонка и IndexNow-ключа:
+Проверка с post-deploy retries:
+
+```bash
+python tools/check_live_site.py \
+  --report live-health-report.md \
+  --attempts 6 \
+  --retry-delay 10 \
+  --timeout 20
+```
+
+Проверка звонка и IndexNow-ключа:
 
 ```bash
 python tools/check_live_conversion.py \
   --report live-health-report.md \
   --attempts 1 \
   --timeout 20
-```
-
-Проверка опубликованного Actions artifact без требования версии:
-
-```bash
-python tools/check_live_deployment.py --report live-health-report.md
 ```
 
 Проверка конкретного deploy:
@@ -187,16 +180,17 @@ python tools/check_live_deployment.py \
   --retry-delay 10
 ```
 
-Офлайн self-tests:
+Офлайн-проверки:
 
 ```bash
-python tools/deployment_manifest.py --self-test
+python tools/check_live_site.py --self-test
+python tools/check_live_health_workflow.py
+python tools/check_live_conversion.py --self-test
+python tools/check_live_conversion_workflow.py
+python tools/check_live_public_copy_workflow.py
 python tools/check_live_deployment.py --self-test
 python tools/check_post_deploy_verification.py
 python tools/complete_pages_switch_issue.py --self-test
-python tools/check_live_site.py --self-test
-python tools/check_live_conversion.py --self-test
-python tools/check_live_conversion_workflow.py
 python tools/manage_live_health_issue.py --self-test
 ```
 
@@ -204,6 +198,6 @@ python tools/manage_live_health_issue.py --self-test
 
 ## Ограничения
 
-Проверка не меняет DNS, Pages settings или сертификат. Она фиксирует фактическое состояние публичного сайта, телефонного маршрута, IndexNow-ключа и точную опубликованную версию. Настройка DNS, Custom domain и Enforce HTTPS остаётся ручным действием до первого успешного post-deploy подтверждения.
+Проверка не меняет DNS, Pages settings, сертификат или содержимое сайта. Она фиксирует фактическое состояние публичного домена и опубликованной версии.
 
-Issue создаётся только после двух последовательных неуспешных запусков. Если GitHub API временно недоступен, artifact и красный статус workflow сохраняются, но issue может быть создан или закрыт только при следующем подходящем запуске.
+Успешная live-проверка не подтверждает production-готовность Supabase Edge Function, доставку заявок, поисковую индексацию или наличие трафика. Эти контуры проверяются отдельно.
