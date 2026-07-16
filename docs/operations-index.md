@@ -12,6 +12,7 @@
 - `docs/github-pages-switch-checklist.md` — проверка переключения `parket36.ru` на GitHub Pages.
 - `docs/live-site-monitoring.md` — ежедневный контроль DNS, HTTPS, телефона, публичной сборки и обновляемая запись последнего подтверждённого deploy в issue #308.
 - `docs/pages-deploy-monitoring.md` — одно issue после двух последовательных отказов `Deploy GitHub Pages` и автоматическое закрытие после восстановления.
+- `docs/verified-deploy-drift.md` — сверка текущего `main` с долговечным ledger подтверждённой публикации и одно issue после повторного расхождения.
 - `docs/search-discovery-launch.md` — запуск индексации, IndexNow и ручные действия в кабинетах поисковиков.
 - `docs/indexnow-automation.md` — автоматическая post-deploy отправка sitemap URL, диагностический artifact и одно monitoring issue после повторного сбоя.
 - `docs/browser-smoke-tests.md` — Playwright-проверки меню, телефона, формы, fallback и 404.
@@ -22,7 +23,7 @@
 - `docs/shared-shell-pilot.md` — общий header, footer и CTA для главной и формы оценки.
 - `docs/edge-function-ci.md` — Deno type-check Edge Function в PR и перед Pages-деплоем.
 - `docs/sitemap-automation.md` — генерация sitemap из indexable canonical и структурированных дат страниц.
-- `docs/raster-og-cards.md` — индивидуальные PNG-карточки 1200×630 для соцсетей и мессенджеров.
+- `docs/raster-og-cards.md` — индивидуальные PNG-карточки 1200×630 для всех публичных страниц.
 - `docs/image-delivery.md` — реальные размеры, alt и правила загрузки контентных изображений в публичной сборке.
 - `docs/public-placeholder-policy.md` — замена служебных фото-заглушек на клиентские схемы и типовые задачи.
 
