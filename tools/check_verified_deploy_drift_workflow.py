@@ -73,7 +73,7 @@ DOC_MARKERS = (
     "Live site health",
     "текущий `main`",
     "Последняя подтверждённая публикация parket36.ru",
-    "первый единичный drift не создаёт issue",
+    "Первый единичный drift не создаёт issue",
     "[monitoring] verified deploy drift",
     "verified-deploy-drift-report",
     "tools/check_verified_deploy_drift.py --self-test",
