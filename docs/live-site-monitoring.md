@@ -9,6 +9,7 @@ Workflow: `.github/workflows/live-site-health.yml`.
 - `tools/check_live_conversion.py` — телефонный маршрут, собранная shared shell и публичный IndexNow-ключ;
 - `tools/check_live_public_copy.py` — отсутствие редакторских заглушек на главной;
 - `tools/check_live_deployment.py` — источник и точная версия Pages artifact;
+- `tools/record_live_verification.py` — обновляемая запись последней подтверждённой публикации в issue #308;
 - `tools/manage_live_health_issue.py` — единое issue при повторяющемся сбое;
 - `tools/complete_pages_switch_issue.py` — завершение issue #5 после подтверждённого deploy.
 
@@ -117,6 +118,35 @@ Post-deploy monitoring требует точного совпадения live S
 
 Если хотя бы одна проверка не прошла, artifact всё равно загружается, после чего workflow завершается ошибкой.
 
+## Долговечная запись подтверждённого deploy
+
+После полного успешного post-deploy запуска `tools/record_live_verification.py` создаёт или обновляет один marker-комментарий в issue #308 `Автономная дорожная карта улучшения Паркет36`.
+
+Заголовок записи:
+
+`Последняя подтверждённая публикация parket36.ru`
+
+Запись содержит:
+
+- время проверки в UTC;
+- полный SHA опубликованного коммита;
+- ссылку на конкретный `Deploy GitHub Pages` run;
+- ссылку на соответствующий `Live site health` run;
+- краткий перечень одновременно подтверждённых контрактов.
+
+Комментарий содержит скрытый marker `parket36-live-verification`. Новый успешный deploy обновляет существующий комментарий через GitHub API вместо создания нового. Ноль или один marker-комментарий является допустимым состоянием; несколько таких комментариев считаются ошибкой и обрабатываются fail-closed.
+
+Запись обновляется только когда:
+
+1. событие имеет тип `workflow_run`;
+2. Pages deploy завершён успешно;
+3. базовый live-health, звонок/shared shell, публичный текст и deployment source прошли;
+4. `/deployment.json` точно совпал по SHA и run ID с завершившимся deploy.
+
+Плановый и ручной monitoring запись не обновляют. В комментарий не передаются query nonce, IndexNow-ключ, содержимое отчёта или secrets. Подробная диагностика остаётся в 30-дневном artifact.
+
+Ошибка GitHub API при обновлении служебного комментария не подменяет результат проверки домена: шаг использует `continue-on-error`. Artifact и статус основных live-checks остаются источником истины.
+
 ## Monitoring issue
 
 Первый единичный сбой сохраняет красный workflow и artifact без создания задачи.
@@ -127,7 +157,11 @@ Post-deploy monitoring требует точного совпадения live S
 
 Следующие сбои добавляют комментарии в открытую задачу. Первый успешный запуск после восстановления добавляет recovery-комментарий и закрывает issue.
 
-Issue #5 и monitoring issue имеют разные роли: issue #5 подтверждает первоначальное переключение на Pages, monitoring issue отражает текущий повторный технический сбой.
+Issue #5, issue #308 и monitoring issue имеют разные роли:
+
+- issue #5 подтверждает первоначальное переключение на Pages;
+- issue #308 хранит обновляемое доказательство последней успешной публикации;
+- monitoring issue отражает текущий повторный технический сбой.
 
 ## Права workflow
 
@@ -190,6 +224,7 @@ python tools/check_live_conversion_workflow.py
 python tools/check_live_public_copy_workflow.py
 python tools/check_live_deployment.py --self-test
 python tools/check_post_deploy_verification.py
+python tools/record_live_verification.py --self-test
 python tools/complete_pages_switch_issue.py --self-test
 python tools/manage_live_health_issue.py --self-test
 ```
