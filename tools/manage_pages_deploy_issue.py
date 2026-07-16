@@ -177,7 +177,7 @@ def failure_body(
     generated = datetime.now(timezone.utc).isoformat()
     return "\n".join(
         [
-            "## GitHub Pages deployment failure",
+            "## GitHub Pages deploy failure",
             "",
             "Repeated deployment failure detected.",
             "",
