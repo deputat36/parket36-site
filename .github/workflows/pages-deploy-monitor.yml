@@ -1,0 +1,38 @@
+name: Monitor Pages deploy
+
+on:
+  workflow_run:
+    workflows: ["Deploy GitHub Pages"]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: pages-deploy-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout monitored revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Validate Pages deploy issue manager
+        run: python tools/manage_pages_deploy_issue.py --self-test
+      - name: Update Pages deploy monitoring issue
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PAGES_DEPLOY_RUN_ID: ${{ github.event.workflow_run.id }}
+          PAGES_DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
+          PAGES_DEPLOY_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: python tools/manage_pages_deploy_issue.py
