@@ -1,108 +1,108 @@
-source_path,url_path,coverage,profile_source,components,active_nav,request_href,request_label
-404.html,/404.html,outside,—,—,—,—,—
-ceny/index.html,/ceny/,profiled,explicit,"header, footer, mobile-cta",/ceny/,/zayavka/,Оценка по фото
-index.html,/,profiled,explicit,"header, final-cta, footer, mobile-cta",none,#request,Оценка по фото
-kak-rabotaem/index.html,/kak-rabotaem/,profiled,explicit,"header, footer, mobile-cta",none,/zayavka/,Оценка по фото
-kontakty/index.html,/kontakty/,profiled,explicit,"header, footer, mobile-cta",/kontakty/,#callback,Обратный звонок
-o-mastere/index.html,/o-mastere/,profiled,explicit,"header, footer, mobile-cta",/o-mastere/,/zayavka/,Оценка по фото
-politika/index.html,/politika/,outside,—,—,—,—,—
-portfolio/index.html,/portfolio/,profiled,explicit,"header, footer, mobile-cta",/portfolio/,/zayavka/,Оценка по фото
-pozvonit-ivanu/index.html,/pozvonit-ivanu/,outside,—,—,—,—,—
-resheniya/dlya-rieltorov-i-sobstvennikov/index.html,/resheniya/dlya-rieltorov-i-sobstvennikov/,profiled,family:solutions,"header, mobile-cta",none,/zayavka/,Оценка по фото
-resheniya/index.html,/resheniya/,profiled,explicit,"header, footer, mobile-cta",none,/zayavka/,Оценка по фото
-resheniya/obnovit-pol-posle-arendatorov/index.html,/resheniya/obnovit-pol-posle-arendatorov/,profiled,family:solutions,"header, mobile-cta",none,/zayavka/,Оценка по фото
-resheniya/podgotovit-parket-k-prodazhe-kvartiry/index.html,/resheniya/podgotovit-parket-k-prodazhe-kvartiry/,profiled,family:solutions,"header, mobile-cta",none,/zayavka/,Оценка по фото
-resheniya/podgotovka-kvartiry-k-prodazhe/index.html,/resheniya/podgotovka-kvartiry-k-prodazhe/,profiled,family:solutions,"header, mobile-cta",none,/zayavka/,Оценка по фото
-resheniya/remont-posle-arendatorov/index.html,/resheniya/remont-posle-arendatorov/,profiled,family:solutions,"header, mobile-cta",none,/zayavka/,Оценка по фото
-sovety/belye-pyatna-na-parkete/index.html,/sovety/belye-pyatna-na-parkete/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/carapiny-na-parkete-chto-delat/index.html,/sovety/carapiny-na-parkete-chto-delat/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/ciklevka-ili-zamena-parketa/index.html,/sovety/ciklevka-ili-zamena-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/ciklevka-parketa-do-ili-posle-remonta/index.html,/sovety/ciklevka-parketa-do-ili-posle-remonta/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/index.html,/sovety/,profiled,explicit,"header, footer, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-podgotovit-komnatu-k-ciklevke/index.html,/sovety/kak-podgotovit-komnatu-k-ciklevke/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-ponyat-chto-parket-mozhno-lakirovat/index.html,/sovety/kak-ponyat-chto-parket-mozhno-lakirovat/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-prinyat-rabotu-posle-ciklevki-parketa/index.html,/sovety/kak-prinyat-rabotu-posle-ciklevki-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-proverit-shlifovku-parketa-pered-lakom/index.html,/sovety/kak-proverit-shlifovku-parketa-pered-lakom/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-provetrivat-komnatu-posle-lakirovki-parketa/index.html,/sovety/kak-provetrivat-komnatu-posle-lakirovki-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-sfotografirovat-pol-dlya-ocenki/index.html,/sovety/kak-sfotografirovat-pol-dlya-ocenki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-ubrat-pyl-posle-ciklevki-pered-lakom/index.html,/sovety/kak-ubrat-pyl-posle-ciklevki-pered-lakom/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-uhazhivat-za-parketom-letom/index.html,/sovety/kak-uhazhivat-za-parketom-letom/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-uhazhivat-za-parketom-osenyu/index.html,/sovety/kak-uhazhivat-za-parketom-osenyu/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-uhazhivat-za-parketom-vesnoy/index.html,/sovety/kak-uhazhivat-za-parketom-vesnoy/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-uhazhivat-za-parketom-zimoy/index.html,/sovety/kak-uhazhivat-za-parketom-zimoy/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-vybrat-mastera-po-parketu/index.html,/sovety/kak-vybrat-mastera-po-parketu/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kak-zashchitit-parket-ot-mebeli/index.html,/sovety/kak-zashchitit-parket-ot-mebeli/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kakoy-lak-vybrat-dlya-parketa/index.html,/sovety/kakoy-lak-vybrat-dlya-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kogda-mozhno-hodit-po-parketu-posle-lakirovki/index.html,/sovety/kogda-mozhno-hodit-po-parketu-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kogda-mozhno-myt-parket-posle-lakirovki/index.html,/sovety/kogda-mozhno-myt-parket-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kogda-mozhno-stavit-mebel-posle-lakirovki-parketa/index.html,/sovety/kogda-mozhno-stavit-mebel-posle-lakirovki-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kogda-mozhno-stelit-kover-posle-lakirovki-parketa/index.html,/sovety/kogda-mozhno-stelit-kover-posle-lakirovki-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/kogda-nuzhen-osmotr-parketa/index.html,/sovety/kogda-nuzhen-osmotr-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/lak-ili-maslo-dlya-parketa/index.html,/sovety/lak-ili-maslo-dlya-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/lak-na-parkete-otslaivaetsya/index.html,/sovety/lak-na-parkete-otslaivaetsya/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/lokalnyy-remont-parketnyh-planok/index.html,/sovety/lokalnyy-remont-parketnyh-planok/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/matovyy-ili-glyancevyy-lak-dlya-parketa/index.html,/sovety/matovyy-ili-glyancevyy-lak-dlya-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/mozhno-li-ciklevat-krashenyy-derevyannyy-pol/index.html,/sovety/mozhno-li-ciklevat-krashenyy-derevyannyy-pol/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/mozhno-li-ciklevat-parketnuyu-dosku/index.html,/sovety/mozhno-li-ciklevat-parketnuyu-dosku/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/mozhno-li-pokryt-parket-lakom-bez-ciklevki/index.html,/sovety/mozhno-li-pokryt-parket-lakom-bez-ciklevki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/mozhno-li-vosstanovit-staryy-parket/index.html,/sovety/mozhno-li-vosstanovit-staryy-parket/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/mozhno-li-zhit-v-kvartire-vo-vremya-ciklevki-parketa/index.html,/sovety/mozhno-li-zhit-v-kvartire-vo-vremya-ciklevki-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/nuzhna-li-mezhsloynaya-shlifovka-laka-na-parkete/index.html,/sovety/nuzhna-li-mezhsloynaya-shlifovka-laka-na-parkete/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/nuzhno-li-gruntovat-parket-pered-lakom/index.html,/sovety/nuzhno-li-gruntovat-parket-pered-lakom/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/nuzhno-li-snimat-plintusy-pered-ciklevkoy-parketa/index.html,/sovety/nuzhno-li-snimat-plintusy-pered-ciklevkoy-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/ot-chego-zavisit-stoimost-ciklevki-parketa/index.html,/sovety/ot-chego-zavisit-stoimost-ciklevki-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/parket-doska-ili-laminat-kak-ponyat/index.html,/sovety/parket-doska-ili-laminat-kak-ponyat/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/parket-otoshel-ot-osnovaniya/index.html,/sovety/parket-otoshel-ot-osnovaniya/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/parket-posle-vody/index.html,/sovety/parket-posle-vody/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/parket-potemnel-posle-laka/index.html,/sovety/parket-potemnel-posle-laka/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/pochemu-lak-na-parkete-beleet-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-beleet-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/pochemu-lak-na-parkete-lipnet-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-lipnet-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/pochemu-lak-na-parkete-puzyritsya-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-puzyritsya-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/pochemu-lak-na-parkete-pyatnami-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-pyatnami-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/pochemu-lak-na-parkete-shelushitsya-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-shelushitsya-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/pochemu-lak-na-parkete-shershavyy-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-shershavyy-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/pochemu-lak-na-parkete-treskaetsya-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-treskaetsya-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/pochemu-parket-stal-skolzkim-posle-lakirovki/index.html,/sovety/pochemu-parket-stal-skolzkim-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/pochemu-skripit-parket/index.html,/sovety/pochemu-skripit-parket/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/polosy-ot-valika-na-parkete-posle-lakirovki/index.html,/sovety/polosy-ot-valika-na-parkete-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/pyl-i-zapah-pri-ciklevke-parketa/index.html,/sovety/pyl-i-zapah-pri-ciklevke-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/pyl-pod-lakom-na-parkete-posle-lakirovki/index.html,/sovety/pyl-pod-lakom-na-parkete-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/rassohsya-parket-chto-delat/index.html,/sovety/rassohsya-parket-chto-delat/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/raznyy-blesk-laka-na-parkete-posle-lakirovki/index.html,/sovety/raznyy-blesk-laka-na-parkete-posle-lakirovki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/shcheli-posle-ciklevki-parketa/index.html,/sovety/shcheli-posle-ciklevki-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/shcheli-v-parkete/index.html,/sovety/shcheli-v-parkete/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/skolko-derzhitsya-zapah-laka-na-parkete/index.html,/sovety/skolko-derzhitsya-zapah-laka-na-parkete/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/skolko-dlitsya-ciklevka-parketa/index.html,/sovety/skolko-dlitsya-ciklevka-parketa/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/skolko-raz-mozhno-ciklevat-parket/index.html,/sovety/skolko-raz-mozhno-ciklevat-parket/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/skolko-sloev-laka-nanosit-na-parket/index.html,/sovety/skolko-sloev-laka-nanosit-na-parket/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/skolko-sohnet-lak-na-parkete/index.html,/sovety/skolko-sohnet-lak-na-parkete/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/skoly-na-parkete-chto-delat/index.html,/sovety/skoly-na-parkete-chto-delat/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/skripit-parket-posle-ciklevki/index.html,/sovety/skripit-parket-posle-ciklevki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/sledy-ot-zhivotnyh-na-parkete/index.html,/sovety/sledy-ot-zhivotnyh-na-parkete/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/staryy-lak-na-parkete/index.html,/sovety/staryy-lak-na-parkete/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/temnye-pyatna-na-parkete/index.html,/sovety/temnye-pyatna-na-parkete/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/tonirovka-parketa-posle-ciklevki/index.html,/sovety/tonirovka-parketa-posle-ciklevki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/uhod-za-parketom-posle-ciklevki/index.html,/sovety/uhod-za-parketom-posle-ciklevki/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/vmyatiny-na-parkete-chto-delat/index.html,/sovety/vmyatiny-na-parkete-chto-delat/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-sovety/vzdulsya-parket-chto-delat/index.html,/sovety/vzdulsya-parket-chto-delat/,profiled,family:articles,"header, mobile-cta",/sovety/,/zayavka/,Оценка по фото
-uslugi/ciklevka-parketa/index.html,/uslugi/ciklevka-parketa/,profiled,explicit,"header, mobile-cta",/uslugi/,/zayavka/,Оценка по фото
-uslugi/demontazh/index.html,/uslugi/demontazh/,profiled,family:adjacent-services,"header, mobile-cta",none,/zayavka/,Оценка по фото
-uslugi/elektrika/index.html,/uslugi/elektrika/,profiled,family:adjacent-services,"header, mobile-cta",none,/zayavka/,Оценка по фото
-uslugi/index.html,/uslugi/,profiled,explicit,"header, footer, mobile-cta",/uslugi/,/zayavka/,Оценка по фото
-uslugi/master-na-chas/index.html,/uslugi/master-na-chas/,outside,—,—,—,—,—
-uslugi/melkiy-remont/index.html,/uslugi/melkiy-remont/,profiled,family:adjacent-services,"header, mobile-cta",none,/zayavka/,Оценка по фото
-uslugi/muzh-na-chas/index.html,/uslugi/muzh-na-chas/,profiled,family:adjacent-services,"header, mobile-cta",none,/zayavka/,Оценка по фото
-uslugi/otdelka/index.html,/uslugi/otdelka/,profiled,family:adjacent-services,"header, mobile-cta",none,/zayavka/,Оценка по фото
-uslugi/parket-i-poly/index.html,/uslugi/parket-i-poly/,profiled,explicit,"header, mobile-cta",/uslugi/,/zayavka/,Оценка по фото
-uslugi/pereezdy/index.html,/uslugi/pereezdy/,profiled,family:adjacent-services,"header, mobile-cta",none,/zayavka/,Оценка по фото
-uslugi/pokrytie-lakom-i-maslom/index.html,/uslugi/pokrytie-lakom-i-maslom/,profiled,explicit,"header, mobile-cta",/uslugi/,/zayavka/,Оценка по фото
-uslugi/restavraciya-parketa/index.html,/uslugi/restavraciya-parketa/,profiled,explicit,"header, mobile-cta",/uslugi/,/zayavka/,Оценка по фото
-uslugi/santehnika/index.html,/uslugi/santehnika/,profiled,family:adjacent-services,"header, mobile-cta",none,/zayavka/,Оценка по фото
-uslugi/sborka-mebeli/index.html,/uslugi/sborka-mebeli/,profiled,family:adjacent-services,"header, mobile-cta",none,/zayavka/,Оценка по фото
-uslugi/shlifovka-doshchatogo-pola/index.html,/uslugi/shlifovka-doshchatogo-pola/,profiled,explicit,"header, mobile-cta",/uslugi/,/zayavka/,Оценка по фото
-uslugi/terrasy-i-derevyannye-poly/index.html,/uslugi/terrasy-i-derevyannye-poly/,profiled,explicit,"header, mobile-cta",/uslugi/,/zayavka/,Оценка по фото
-uslugi/ukladka-laminata/index.html,/uslugi/ukladka-laminata/,profiled,explicit,"header, mobile-cta",/uslugi/,/zayavka/,Оценка по фото
-uslugi/ukladka-parketa/index.html,/uslugi/ukladka-parketa/,profiled,explicit,"header, mobile-cta",/uslugi/,/zayavka/,Оценка по фото
-uslugi/vyvoz-musora/index.html,/uslugi/vyvoz-musora/,profiled,family:adjacent-services,"header, mobile-cta",none,/zayavka/,Оценка по фото
-voprosy-i-otvety/index.html,/voprosy-i-otvety/,profiled,explicit,"header, footer, mobile-cta",none,/zayavka/,Оценка по фото
-zayavka/index.html,/zayavka/,profiled,explicit,"header, final-cta, footer, mobile-cta",none,#request,Оценка по фото
+source_path,url_path,coverage,profile_source,exclusion_category,exclusion_reason
+404.html,/404.html,excluded,—,error,Специальный документ ошибки сохраняет компактный recovery-интерфейс и сокращённый footer вместо стандартной общей оболочки.
+ceny/index.html,/ceny/,profiled,explicit,—,—
+index.html,/,profiled,explicit,—,—
+kak-rabotaem/index.html,/kak-rabotaem/,profiled,explicit,—,—
+kontakty/index.html,/kontakty/,profiled,explicit,—,—
+o-mastere/index.html,/o-mastere/,profiled,explicit,—,—
+politika/index.html,/politika/,excluded,—,legal,"Юридическая страница использует сокращённую навигацию и минимальный footer, чтобы не смешивать политику обработки данных с коммерческим сценарием."
+portfolio/index.html,/portfolio/,profiled,explicit,—,—
+pozvonit-ivanu/index.html,/pozvonit-ivanu/,excluded,—,campaign,Noindex-памятка звонка сохраняет отдельные call-first CTA и собственные data-call-source маркеры для атрибуции звонков.
+resheniya/dlya-rieltorov-i-sobstvennikov/index.html,/resheniya/dlya-rieltorov-i-sobstvennikov/,profiled,family:solutions,—,—
+resheniya/index.html,/resheniya/,profiled,explicit,—,—
+resheniya/obnovit-pol-posle-arendatorov/index.html,/resheniya/obnovit-pol-posle-arendatorov/,profiled,family:solutions,—,—
+resheniya/podgotovit-parket-k-prodazhe-kvartiry/index.html,/resheniya/podgotovit-parket-k-prodazhe-kvartiry/,profiled,family:solutions,—,—
+resheniya/podgotovka-kvartiry-k-prodazhe/index.html,/resheniya/podgotovka-kvartiry-k-prodazhe/,profiled,family:solutions,—,—
+resheniya/remont-posle-arendatorov/index.html,/resheniya/remont-posle-arendatorov/,profiled,family:solutions,—,—
+sovety/belye-pyatna-na-parkete/index.html,/sovety/belye-pyatna-na-parkete/,profiled,family:articles,—,—
+sovety/carapiny-na-parkete-chto-delat/index.html,/sovety/carapiny-na-parkete-chto-delat/,profiled,family:articles,—,—
+sovety/ciklevka-ili-zamena-parketa/index.html,/sovety/ciklevka-ili-zamena-parketa/,profiled,family:articles,—,—
+sovety/ciklevka-parketa-do-ili-posle-remonta/index.html,/sovety/ciklevka-parketa-do-ili-posle-remonta/,profiled,family:articles,—,—
+sovety/index.html,/sovety/,profiled,explicit,—,—
+sovety/kak-podgotovit-komnatu-k-ciklevke/index.html,/sovety/kak-podgotovit-komnatu-k-ciklevke/,profiled,family:articles,—,—
+sovety/kak-ponyat-chto-parket-mozhno-lakirovat/index.html,/sovety/kak-ponyat-chto-parket-mozhno-lakirovat/,profiled,family:articles,—,—
+sovety/kak-prinyat-rabotu-posle-ciklevki-parketa/index.html,/sovety/kak-prinyat-rabotu-posle-ciklevki-parketa/,profiled,family:articles,—,—
+sovety/kak-proverit-shlifovku-parketa-pered-lakom/index.html,/sovety/kak-proverit-shlifovku-parketa-pered-lakom/,profiled,family:articles,—,—
+sovety/kak-provetrivat-komnatu-posle-lakirovki-parketa/index.html,/sovety/kak-provetrivat-komnatu-posle-lakirovki-parketa/,profiled,family:articles,—,—
+sovety/kak-sfotografirovat-pol-dlya-ocenki/index.html,/sovety/kak-sfotografirovat-pol-dlya-ocenki/,profiled,family:articles,—,—
+sovety/kak-ubrat-pyl-posle-ciklevki-pered-lakom/index.html,/sovety/kak-ubrat-pyl-posle-ciklevki-pered-lakom/,profiled,family:articles,—,—
+sovety/kak-uhazhivat-za-parketom-letom/index.html,/sovety/kak-uhazhivat-za-parketom-letom/,profiled,family:articles,—,—
+sovety/kak-uhazhivat-za-parketom-osenyu/index.html,/sovety/kak-uhazhivat-za-parketom-osenyu/,profiled,family:articles,—,—
+sovety/kak-uhazhivat-za-parketom-vesnoy/index.html,/sovety/kak-uhazhivat-za-parketom-vesnoy/,profiled,family:articles,—,—
+sovety/kak-uhazhivat-za-parketom-zimoy/index.html,/sovety/kak-uhazhivat-za-parketom-zimoy/,profiled,family:articles,—,—
+sovety/kak-vybrat-mastera-po-parketu/index.html,/sovety/kak-vybrat-mastera-po-parketu/,profiled,family:articles,—,—
+sovety/kak-zashchitit-parket-ot-mebeli/index.html,/sovety/kak-zashchitit-parket-ot-mebeli/,profiled,family:articles,—,—
+sovety/kakoy-lak-vybrat-dlya-parketa/index.html,/sovety/kakoy-lak-vybrat-dlya-parketa/,profiled,family:articles,—,—
+sovety/kogda-mozhno-hodit-po-parketu-posle-lakirovki/index.html,/sovety/kogda-mozhno-hodit-po-parketu-posle-lakirovki/,profiled,family:articles,—,—
+sovety/kogda-mozhno-myt-parket-posle-lakirovki/index.html,/sovety/kogda-mozhno-myt-parket-posle-lakirovki/,profiled,family:articles,—,—
+sovety/kogda-mozhno-stavit-mebel-posle-lakirovki-parketa/index.html,/sovety/kogda-mozhno-stavit-mebel-posle-lakirovki-parketa/,profiled,family:articles,—,—
+sovety/kogda-mozhno-stelit-kover-posle-lakirovki-parketa/index.html,/sovety/kogda-mozhno-stelit-kover-posle-lakirovki-parketa/,profiled,family:articles,—,—
+sovety/kogda-nuzhen-osmotr-parketa/index.html,/sovety/kogda-nuzhen-osmotr-parketa/,profiled,family:articles,—,—
+sovety/lak-ili-maslo-dlya-parketa/index.html,/sovety/lak-ili-maslo-dlya-parketa/,profiled,family:articles,—,—
+sovety/lak-na-parkete-otslaivaetsya/index.html,/sovety/lak-na-parkete-otslaivaetsya/,profiled,family:articles,—,—
+sovety/lokalnyy-remont-parketnyh-planok/index.html,/sovety/lokalnyy-remont-parketnyh-planok/,profiled,family:articles,—,—
+sovety/matovyy-ili-glyancevyy-lak-dlya-parketa/index.html,/sovety/matovyy-ili-glyancevyy-lak-dlya-parketa/,profiled,family:articles,—,—
+sovety/mozhno-li-ciklevat-krashenyy-derevyannyy-pol/index.html,/sovety/mozhno-li-ciklevat-krashenyy-derevyannyy-pol/,profiled,family:articles,—,—
+sovety/mozhno-li-ciklevat-parketnuyu-dosku/index.html,/sovety/mozhno-li-ciklevat-parketnuyu-dosku/,profiled,family:articles,—,—
+sovety/mozhno-li-pokryt-parket-lakom-bez-ciklevki/index.html,/sovety/mozhno-li-pokryt-parket-lakom-bez-ciklevki/,profiled,family:articles,—,—
+sovety/mozhno-li-vosstanovit-staryy-parket/index.html,/sovety/mozhno-li-vosstanovit-staryy-parket/,profiled,family:articles,—,—
+sovety/mozhno-li-zhit-v-kvartire-vo-vremya-ciklevki-parketa/index.html,/sovety/mozhno-li-zhit-v-kvartire-vo-vremya-ciklevki-parketa/,profiled,family:articles,—,—
+sovety/nuzhna-li-mezhsloynaya-shlifovka-laka-na-parkete/index.html,/sovety/nuzhna-li-mezhsloynaya-shlifovka-laka-na-parkete/,profiled,family:articles,—,—
+sovety/nuzhno-li-gruntovat-parket-pered-lakom/index.html,/sovety/nuzhno-li-gruntovat-parket-pered-lakom/,profiled,family:articles,—,—
+sovety/nuzhno-li-snimat-plintusy-pered-ciklevkoy-parketa/index.html,/sovety/nuzhno-li-snimat-plintusy-pered-ciklevkoy-parketa/,profiled,family:articles,—,—
+sovety/ot-chego-zavisit-stoimost-ciklevki-parketa/index.html,/sovety/ot-chego-zavisit-stoimost-ciklevki-parketa/,profiled,family:articles,—,—
+sovety/parket-doska-ili-laminat-kak-ponyat/index.html,/sovety/parket-doska-ili-laminat-kak-ponyat/,profiled,family:articles,—,—
+sovety/parket-otoshel-ot-osnovaniya/index.html,/sovety/parket-otoshel-ot-osnovaniya/,profiled,family:articles,—,—
+sovety/parket-posle-vody/index.html,/sovety/parket-posle-vody/,profiled,family:articles,—,—
+sovety/parket-potemnel-posle-laka/index.html,/sovety/parket-potemnel-posle-laka/,profiled,family:articles,—,—
+sovety/pochemu-lak-na-parkete-beleet-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-beleet-posle-lakirovki/,profiled,family:articles,—,—
+sovety/pochemu-lak-na-parkete-lipnet-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-lipnet-posle-lakirovki/,profiled,family:articles,—,—
+sovety/pochemu-lak-na-parkete-puzyritsya-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-puzyritsya-posle-lakirovki/,profiled,family:articles,—,—
+sovety/pochemu-lak-na-parkete-pyatnami-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-pyatnami-posle-lakirovki/,profiled,family:articles,—,—
+sovety/pochemu-lak-na-parkete-shelushitsya-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-shelushitsya-posle-lakirovki/,profiled,family:articles,—,—
+sovety/pochemu-lak-na-parkete-shershavyy-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-shershavyy-posle-lakirovki/,profiled,family:articles,—,—
+sovety/pochemu-lak-na-parkete-treskaetsya-posle-lakirovki/index.html,/sovety/pochemu-lak-na-parkete-treskaetsya-posle-lakirovki/,profiled,family:articles,—,—
+sovety/pochemu-parket-stal-skolzkim-posle-lakirovki/index.html,/sovety/pochemu-parket-stal-skolzkim-posle-lakirovki/,profiled,family:articles,—,—
+sovety/pochemu-skripit-parket/index.html,/sovety/pochemu-skripit-parket/,profiled,family:articles,—,—
+sovety/polosy-ot-valika-na-parkete-posle-lakirovki/index.html,/sovety/polosy-ot-valika-na-parkete-posle-lakirovki/,profiled,family:articles,—,—
+sovety/pyl-i-zapah-pri-ciklevke-parketa/index.html,/sovety/pyl-i-zapah-pri-ciklevke-parketa/,profiled,family:articles,—,—
+sovety/pyl-pod-lakom-na-parkete-posle-lakirovki/index.html,/sovety/pyl-pod-lakom-na-parkete-posle-lakirovki/,profiled,family:articles,—,—
+sovety/rassohsya-parket-chto-delat/index.html,/sovety/rassohsya-parket-chto-delat/,profiled,family:articles,—,—
+sovety/raznyy-blesk-laka-na-parkete-posle-lakirovki/index.html,/sovety/raznyy-blesk-laka-na-parkete-posle-lakirovki/,profiled,family:articles,—,—
+sovety/shcheli-posle-ciklevki-parketa/index.html,/sovety/shcheli-posle-ciklevki-parketa/,profiled,family:articles,—,—
+sovety/shcheli-v-parkete/index.html,/sovety/shcheli-v-parkete/,profiled,family:articles,—,—
+sovety/skolko-derzhitsya-zapah-laka-na-parkete/index.html,/sovety/skolko-derzhitsya-zapah-laka-na-parkete/,profiled,family:articles,—,—
+sovety/skolko-dlitsya-ciklevka-parketa/index.html,/sovety/skolko-dlitsya-ciklevka-parketa/,profiled,family:articles,—,—
+sovety/skolko-raz-mozhno-ciklevat-parket/index.html,/sovety/skolko-raz-mozhno-ciklevat-parket/,profiled,family:articles,—,—
+sovety/skolko-sloev-laka-nanosit-na-parket/index.html,/sovety/skolko-sloev-laka-nanosit-na-parket/,profiled,family:articles,—,—
+sovety/skolko-sohnet-lak-na-parkete/index.html,/sovety/skolko-sohnet-lak-na-parkete/,profiled,family:articles,—,—
+sovety/skoly-na-parkete-chto-delat/index.html,/sovety/skoly-na-parkete-chto-delat/,profiled,family:articles,—,—
+sovety/skripit-parket-posle-ciklevki/index.html,/sovety/skripit-parket-posle-ciklevki/,profiled,family:articles,—,—
+sovety/sledy-ot-zhivotnyh-na-parkete/index.html,/sovety/sledy-ot-zhivotnyh-na-parkete/,profiled,family:articles,—,—
+sovety/staryy-lak-na-parkete/index.html,/sovety/staryy-lak-na-parkete/,profiled,family:articles,—,—
+sovety/temnye-pyatna-na-parkete/index.html,/sovety/temnye-pyatna-na-parkete/,profiled,family:articles,—,—
+sovety/tonirovka-parketa-posle-ciklevki/index.html,/sovety/tonirovka-parketa-posle-ciklevki/,profiled,family:articles,—,—
+sovety/uhod-za-parketom-posle-ciklevki/index.html,/sovety/uhod-za-parketom-posle-ciklevki/,profiled,family:articles,—,—
+sovety/vmyatiny-na-parkete-chto-delat/index.html,/sovety/vmyatiny-na-parkete-chto-delat/,profiled,family:articles,—,—
+sovety/vzdulsya-parket-chto-delat/index.html,/sovety/vzdulsya-parket-chto-delat/,profiled,family:articles,—,—
+uslugi/ciklevka-parketa/index.html,/uslugi/ciklevka-parketa/,profiled,explicit,—,—
+uslugi/demontazh/index.html,/uslugi/demontazh/,profiled,family:adjacent-services,—,—
+uslugi/elektrika/index.html,/uslugi/elektrika/,profiled,family:adjacent-services,—,—
+uslugi/index.html,/uslugi/,profiled,explicit,—,—
+uslugi/master-na-chas/index.html,/uslugi/master-na-chas/,excluded,—,redirect,Legacy noindex-переходник ведёт на канонический адрес /uslugi/muzh-na-chas/ и не должен выглядеть как самостоятельная услуга.
+uslugi/melkiy-remont/index.html,/uslugi/melkiy-remont/,profiled,family:adjacent-services,—,—
+uslugi/muzh-na-chas/index.html,/uslugi/muzh-na-chas/,profiled,family:adjacent-services,—,—
+uslugi/otdelka/index.html,/uslugi/otdelka/,profiled,family:adjacent-services,—,—
+uslugi/parket-i-poly/index.html,/uslugi/parket-i-poly/,profiled,explicit,—,—
+uslugi/pereezdy/index.html,/uslugi/pereezdy/,profiled,family:adjacent-services,—,—
+uslugi/pokrytie-lakom-i-maslom/index.html,/uslugi/pokrytie-lakom-i-maslom/,profiled,explicit,—,—
+uslugi/restavraciya-parketa/index.html,/uslugi/restavraciya-parketa/,profiled,explicit,—,—
+uslugi/santehnika/index.html,/uslugi/santehnika/,profiled,family:adjacent-services,—,—
+uslugi/sborka-mebeli/index.html,/uslugi/sborka-mebeli/,profiled,family:adjacent-services,—,—
+uslugi/shlifovka-doshchatogo-pola/index.html,/uslugi/shlifovka-doshchatogo-pola/,profiled,explicit,—,—
+uslugi/terrasy-i-derevyannye-poly/index.html,/uslugi/terrasy-i-derevyannye-poly/,profiled,explicit,—,—
+uslugi/ukladka-laminata/index.html,/uslugi/ukladka-laminata/,profiled,explicit,—,—
+uslugi/ukladka-parketa/index.html,/uslugi/ukladka-parketa/,profiled,explicit,—,—
+uslugi/vyvoz-musora/index.html,/uslugi/vyvoz-musora/,profiled,family:adjacent-services,—,—
+voprosy-i-otvety/index.html,/voprosy-i-otvety/,profiled,explicit,—,—
+zayavka/index.html,/zayavka/,profiled,explicit,—,—
