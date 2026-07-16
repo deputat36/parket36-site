@@ -22,6 +22,7 @@ EXPECTED_CHECKS = [
     ["tools/deployment_manifest.py", "--self-test"],
     ["tools/check_live_deployment.py", "--self-test"],
     ["tools/check_post_deploy_verification.py"],
+    ["tools/check_pages_deploy_monitoring.py"],
     ["tools/complete_pages_switch_issue.py", "--self-test"],
     ["tools/check_lead_endpoint_monitoring.py"],
     ["tools/check_edge_deploy_workflow.py"],
