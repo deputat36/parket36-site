@@ -40,7 +40,9 @@
 
 ## Полные данные
 
-Artifact `shared-shell-coverage` содержит:
+CI artifact `shared-shell-coverage` содержит:
 
-- `shared-shell-coverage.csv` — классификацию каждой публичной HTML-страницы, включая категорию и причину исключения;
+- `shared-shell-coverage.csv` — полный технический профиль каждой публичной HTML-страницы, включая компоненты и CTA;
 - `shared-shell-coverage.md` — этот отчёт с актуальной сводкой.
+
+В репозитории `docs/shared-shell-coverage.csv` хранится компактный governance-реестр всех страниц: путь, статус, источник профиля, категория и причина исключения.
