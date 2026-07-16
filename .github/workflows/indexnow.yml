@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  issues: write
 
 concurrency:
   group: indexnow-${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
@@ -30,6 +32,7 @@ jobs:
         run: |
           python tools/submit_indexnow.py --self-test
           python tools/submit_indexnow.py --check
+          python tools/manage_indexnow_issue.py --self-test
       - name: Notify IndexNow
         id: indexnow
         continue-on-error: true
@@ -51,6 +54,18 @@ jobs:
       - name: Add IndexNow result to summary
         if: always() && hashFiles('indexnow-report.md') != ''
         run: cat indexnow-report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Update repeated IndexNow failure issue
+        if: steps.indexnow.outcome == 'failure'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_indexnow_issue.py failure --report indexnow-report.md
+      - name: Close recovered IndexNow issue
+        if: steps.indexnow.outcome == 'success'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_indexnow_issue.py success
       - name: Fail on IndexNow notification error
         if: steps.indexnow.outcome == 'failure'
         run: exit 1
