@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check live call conversion markers and the deployed IndexNow ownership key."""
+"""Check live call conversion, built shared shell and the deployed IndexNow key."""
 
 from __future__ import annotations
 
@@ -11,14 +11,23 @@ import ssl
 import sys
 import time
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from site_settings import load_config
 from submit_indexnow import key_location, load_indexnow_config
 
 ROOT = Path(__file__).resolve().parents[1]
-USER_AGENT = "Parket36-Live-Conversion/1.0"
+USER_AGENT = "Parket36-Live-Conversion/1.1"
 MAX_RESPONSE_BYTES = 2_000_000
+
+SHARED_SHELL_MARKERS = (
+    "<!-- shared-shell:header -->",
+    "<!-- shared-shell:final-cta -->",
+    "<!-- shared-shell:footer -->",
+    "<!-- shared-shell:mobile-cta -->",
+    'data-css-bundle="true"',
+)
 
 
 @dataclass(frozen=True)
@@ -28,8 +37,22 @@ class CheckResult:
     detail: str
 
 
+def cache_busted_url(url: str, attempt: int, purpose: str, nonce: int | None = None) -> str:
+    token = time.time_ns() if nonce is None else nonce
+    separator = "&" if "?" in url else "?"
+    query = urlencode({f"verify_{purpose}": str(token), "attempt": str(attempt)})
+    return url + separator + query
+
+
 def fetch_text(url: str, timeout: float) -> tuple[int, str, str]:
-    request = Request(url, headers={"User-Agent": USER_AGENT})
+    request = Request(
+        url,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Cache-Control": "no-cache, no-store, max-age=0",
+            "Pragma": "no-cache",
+        },
+    )
     context = ssl.create_default_context()
     with urlopen(request, timeout=timeout, context=context) as response:
         body = response.read(MAX_RESPONSE_BYTES + 1)
@@ -56,21 +79,32 @@ def exact_result(name: str, actual: str, expected: str) -> CheckResult:
     )
 
 
-def request_result(name: str, url: str, timeout: float) -> tuple[CheckResult, str]:
+def request_result(
+    name: str,
+    url: str,
+    timeout: float,
+    attempt: int,
+    purpose: str,
+) -> tuple[CheckResult, str]:
+    request_url = cache_busted_url(url, attempt, purpose)
     try:
-        status, final_url, body = fetch_text(url, timeout)
+        status, final_url, body = fetch_text(request_url, timeout)
     except HTTPError as exc:
-        return CheckResult(name, False, f"HTTP {exc.code}: {exc.reason}"), ""
+        return CheckResult(name, False, f"HTTP {exc.code}: {exc.reason}; cache_bust_attempt={attempt}"), ""
     except (URLError, TimeoutError, ssl.SSLError, ValueError) as exc:
-        return CheckResult(name, False, str(exc)), ""
+        return CheckResult(name, False, f"{exc}; cache_bust_attempt={attempt}"), ""
 
     return (
-        CheckResult(name, status == 200, f"HTTP {status}, final URL: {final_url}"),
+        CheckResult(
+            name,
+            status == 200,
+            f"HTTP {status}, final URL: {final_url}; cache_bust_attempt={attempt}",
+        ),
         body,
     )
 
 
-def run_once(timeout: float) -> tuple[str, list[CheckResult]]:
+def run_once(timeout: float, attempt: int) -> tuple[str, list[CheckResult]]:
     site = load_config()
     indexnow = load_indexnow_config()
     domain = str(site["domain"]).rstrip("/")
@@ -78,7 +112,13 @@ def run_once(timeout: float) -> tuple[str, list[CheckResult]]:
     phone_display = str(site["phone_display"])
 
     results: list[CheckResult] = []
-    home_result, home = request_result("Homepage conversion HTTP", domain + "/", timeout)
+    home_result, home = request_result(
+        "Homepage conversion HTTP",
+        domain + "/",
+        timeout,
+        attempt,
+        "conversion",
+    )
     results.append(home_result)
     if home_result.ok:
         results.append(
@@ -93,9 +133,22 @@ def run_once(timeout: float) -> tuple[str, list[CheckResult]]:
                 ),
             )
         )
+        results.append(
+            marker_result(
+                "Homepage built shared shell",
+                home,
+                SHARED_SHELL_MARKERS,
+            )
+        )
 
     live_key_url = key_location(domain, indexnow)
-    key_http, key_body = request_result("IndexNow key HTTP", live_key_url, timeout)
+    key_http, key_body = request_result(
+        "IndexNow key HTTP",
+        live_key_url,
+        timeout,
+        attempt,
+        "indexnow_key",
+    )
     results.append(key_http)
     if key_http.ok:
         results.append(exact_result("IndexNow key content", key_body, indexnow["key"]))
@@ -108,7 +161,7 @@ def run_with_retries(timeout: float, attempts: int, retry_delay: float) -> tuple
     results: list[CheckResult] = []
     for attempt in range(1, attempts + 1):
         try:
-            domain, results = run_once(timeout)
+            domain, results = run_once(timeout, attempt)
         except (OSError, ValueError) as exc:
             results = [CheckResult("Live conversion config", False, str(exc))]
         if results and all(result.ok for result in results):
@@ -122,7 +175,7 @@ def append_report(path: Path, domain: str, results: list[CheckResult], attempts_
     generated = datetime.now(timezone.utc).isoformat()
     lines = [
         "",
-        "## Live call and IndexNow checks",
+        "## Live call, shared shell and IndexNow checks",
         "",
         f"Generated: `{generated}`",
         f"Domain: `{domain or 'unavailable'}`",
@@ -158,16 +211,35 @@ def self_test() -> int:
         ('href="tel:+79009267929"', "8 (900) 926-79-29", "Позвонить Ивану", "Оценка по фото"),
     )
     missing = marker_result("Homepage call route", "Позвонить Ивану", ('href="tel:+79009267929"',))
+    shell_ok = marker_result("Homepage built shared shell", " ".join(SHARED_SHELL_MARKERS), SHARED_SHELL_MARKERS)
+    shell_bad = marker_result("Homepage built shared shell", SHARED_SHELL_MARKERS[0], SHARED_SHELL_MARKERS)
     key_ok = exact_result("IndexNow key content", "abc12345\n", "abc12345")
     key_bad = exact_result("IndexNow key content", "wrong", "abc12345")
+    home_url = cache_busted_url("https://example.test/", 3, "conversion", nonce=123456)
+    key_url = cache_busted_url("https://example.test/indexnow-key.txt", 4, "indexnow_key", nonce=654321)
     findings: list[str] = []
 
     if not passing.ok:
         findings.append("complete homepage call markers must pass")
     if missing.ok or 'href="tel:+79009267929"' not in missing.detail:
         findings.append("missing tel href must fail with marker detail")
+    if not shell_ok.ok:
+        findings.append("complete built shared-shell markers must pass")
+    if shell_bad.ok or "missing:" not in shell_bad.detail:
+        findings.append("incomplete built shared-shell markers must fail")
     if not key_ok.ok or key_bad.ok:
         findings.append("IndexNow key must require exact content")
+
+    for marker in ("https://example.test/?", "verify_conversion=123456", "attempt=3"):
+        if marker not in home_url:
+            findings.append(f"cache-busted homepage URL missing marker: {marker}")
+    for marker in (
+        "https://example.test/indexnow-key.txt?",
+        "verify_indexnow_key=654321",
+        "attempt=4",
+    ):
+        if marker not in key_url:
+            findings.append(f"cache-busted IndexNow key URL missing marker: {marker}")
 
     try:
         validate_args(20, 6, 10)
