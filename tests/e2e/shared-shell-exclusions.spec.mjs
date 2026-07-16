@@ -48,7 +48,7 @@ test('памятка звонка сохраняет собственную ат
 
   await expect(page.locator('[data-call-source="phone-helper-hero"]')).toHaveCount(1);
   await expect(page.locator('[data-call-source="phone-helper-final"]')).toHaveCount(1);
-  await expect(page.locator('a[href="tel:+79009267929"]')).toHaveCount(7);
+  await expect(page.locator('a[href="tel:+79009267929"]')).toHaveCount(8);
 });
 
 test('legacy master-na-chas остаётся переходником на каноническую страницу', async ({ page }) => {
