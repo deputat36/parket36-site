@@ -12,6 +12,7 @@ SITE_QUALITY_PATH = ROOT / ".github" / "workflows" / "site-quality.yml"
 PAGES_PATH = ROOT / ".github" / "workflows" / "pages.yml"
 INDEXNOW_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "indexnow.yml"
 INDEXNOW_DOC_PATH = ROOT / "docs" / "indexnow-automation.md"
+INDEXNOW_ISSUE_MANAGER_PATH = ROOT / "tools" / "manage_indexnow_issue.py"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 OLD_LOCAL_CHECK_BLOCK = "python tools/site_settings.py --check\npython tools/check_site.py"
 
@@ -29,6 +30,7 @@ def main() -> int:
         PAGES_PATH,
         INDEXNOW_WORKFLOW_PATH,
         INDEXNOW_DOC_PATH,
+        INDEXNOW_ISSUE_MANAGER_PATH,
     )
     missing = [path.relative_to(ROOT).as_posix() for path in required_files if not path.is_file()]
     if missing:
@@ -75,7 +77,9 @@ def main() -> int:
         "workflow_dispatch",
         "tools/submit_indexnow.py --self-test",
         "tools/submit_indexnow.py --check",
+        "tools/manage_indexnow_issue.py --self-test",
         "tools/check_indexnow_workflow.py",
+        "[monitoring] IndexNow notification failure",
         "indexnow-report",
         "Ответ `200` или `202`",
         "не гарантирует",
@@ -84,10 +88,17 @@ def main() -> int:
         if marker not in indexnow_doc:
             findings.append(f"docs/indexnow-automation.md must mention {marker}")
 
-    if 'workflows: ["Deploy GitHub Pages"]' not in indexnow_workflow:
-        findings.append("IndexNow workflow must run after Deploy GitHub Pages")
-    if "--report indexnow-report.md" not in indexnow_workflow:
-        findings.append("IndexNow workflow must preserve a Markdown report")
+    required_indexnow_workflow_markers = (
+        'workflows: ["Deploy GitHub Pages"]',
+        "--report indexnow-report.md",
+        "actions: read",
+        "issues: write",
+        "python tools/manage_indexnow_issue.py failure --report indexnow-report.md",
+        "python tools/manage_indexnow_issue.py success",
+    )
+    for marker in required_indexnow_workflow_markers:
+        if marker not in indexnow_workflow:
+            findings.append(f"IndexNow workflow must contain {marker}")
 
     if findings:
         print("Documentation findings:")
