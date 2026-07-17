@@ -16,6 +16,8 @@ LIVE_VERIFICATION_LEDGER_PATH = ROOT / "tools" / "record_live_verification.py"
 INDEXNOW_WORKFLOW_PATH = ROOT / ".github" / "workflows" / "indexnow.yml"
 INDEXNOW_DOC_PATH = ROOT / "docs" / "indexnow-automation.md"
 INDEXNOW_ISSUE_MANAGER_PATH = ROOT / "tools" / "manage_indexnow_issue.py"
+DOWNSTREAM_GUARD_DOC_PATH = ROOT / "docs" / "downstream-default-branch-guard.md"
+OPERATIONS_INDEX_PATH = ROOT / "docs" / "operations-index.md"
 QUALITY_RUNNER = "python tools/run_quality_checks.py"
 OLD_LOCAL_CHECK_BLOCK = "python tools/site_settings.py --check\npython tools/check_site.py"
 
@@ -37,6 +39,8 @@ def main() -> int:
         INDEXNOW_WORKFLOW_PATH,
         INDEXNOW_DOC_PATH,
         INDEXNOW_ISSUE_MANAGER_PATH,
+        DOWNSTREAM_GUARD_DOC_PATH,
+        OPERATIONS_INDEX_PATH,
     )
     missing = [path.relative_to(ROOT).as_posix() for path in required_files if not path.is_file()]
     if missing:
@@ -53,6 +57,8 @@ def main() -> int:
     live_verification_ledger = read(LIVE_VERIFICATION_LEDGER_PATH)
     indexnow_workflow = read(INDEXNOW_WORKFLOW_PATH)
     indexnow_doc = read(INDEXNOW_DOC_PATH)
+    downstream_guard_doc = read(DOWNSTREAM_GUARD_DOC_PATH)
+    operations_index = read(OPERATIONS_INDEX_PATH)
 
     required_readme_markers = [
         QUALITY_RUNNER,
@@ -148,6 +154,24 @@ def main() -> int:
     for marker in required_indexnow_workflow_markers:
         if marker not in indexnow_workflow:
             findings.append(f"IndexNow workflow must contain {marker}")
+
+    required_downstream_guard_markers = (
+        "Live site health",
+        "IndexNow",
+        "github.event.repository.default_branch",
+        "workflow_run.head_branch",
+        "Feature-ветка",
+        "не может отправить поисковым системам",
+        "python tools/check_live_health_workflow.py",
+        "python tools/check_indexnow_workflow.py",
+        "не публикует сайт",
+    )
+    for marker in required_downstream_guard_markers:
+        if marker not in downstream_guard_doc:
+            findings.append(f"docs/downstream-default-branch-guard.md must mention {marker}")
+
+    if "docs/downstream-default-branch-guard.md" not in operations_index:
+        findings.append("docs/operations-index.md must link downstream-default-branch-guard.md")
 
     if findings:
         print("Documentation findings:")
