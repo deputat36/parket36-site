@@ -30,6 +30,19 @@ REQUIRED_MARKERS = {
         "доставку уведомления Ивану подтвердить не удалось",
         "автоматическое уведомление Ивану не подтверждено",
         "8 (900) 926-79-29",
+        "const PHONE_HREF = 'tel:+79009267929'",
+        "const ASSESSMENT_HREF = '/zayavka/'",
+        "const emitFallbackPhoneClick = (link, formKind) =>",
+        "event: 'parket36_phone_click'",
+        "source: 'lead-fallback'",
+        "const clearFallbackActions = form =>",
+        "const ensureFallbackActions = (form, callback) =>",
+        "actions.dataset.leadFallbackActions = 'true'",
+        "aria-label', 'Быстрая связь с Иваном'",
+        "Позвонить Ивану",
+        "Открыть оценку по фото",
+        "['request-submit', 'request-copy'].includes(detail.type)",
+        "detail.type === 'request-copy'",
         "parket36:lead-notification",
         "parket36_lead_notification",
         "notification_state",
@@ -59,9 +72,13 @@ REQUIRED_MARKERS = {
     ),
     E2E: (
         "sent подтверждает отправку Ивану",
-        "disabled сообщает, что заявка сохранена",
-        "partial_failure в callback не обещает звонок",
+        "disabled сообщает, что заявка сохранена, и показывает прямую кнопку звонка",
+        "partial_failure в callback не обещает звонок и показывает два безопасных действия",
         "старый backend без notification считается unknown",
+        "ошибка backend сохраняет текстовый fallback и показывает кнопку звонка",
+        "data-lead-fallback-actions",
+        "tel:+79009267929",
+        "Открыть оценку по фото",
         "notificationConfirmed: true",
         "notificationConfirmed: false",
         "parket36_lead_notification",
@@ -79,6 +96,11 @@ REQUIRED_MARKERS = {
         "parket36_lead_notification",
         "lead-notification",
         "контролируемая заявка",
+        "data-lead-fallback-actions",
+        "Позвонить Ивану",
+        "Открыть оценку по фото",
+        "request-copy",
+        "parket36_phone_click",
     ),
     CALLBACK_DOC: (
         "HTTP 200 подтверждает сохранение заявки, но не всегда подтверждает автоматическое уведомление Ивану",
@@ -142,6 +164,13 @@ def main() -> int:
     for marker in FORBIDDEN_FRONTEND_MARKERS:
         if marker in frontend:
             findings.append(f"frontend must not turn an unknown notification into sent: {marker}")
+
+    if frontend.count("actions.dataset.leadFallbackActions = 'true'") != 1:
+        findings.append("frontend must create exactly one reusable fallback action container")
+    if frontend.count("clearFallbackActions(event.target)") != 1:
+        findings.append("frontend must clear stale fallback actions at the start of each form submission")
+    if frontend.find("detail.type === 'request-copy'") > frontend.find("const notificationDetail ="):
+        findings.append("request-copy fallback actions must be handled before notification analytics")
 
     for path, markers in FORBIDDEN_DOC_MARKERS.items():
         text = texts.get(path, "")
