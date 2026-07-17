@@ -14,6 +14,7 @@ EXPECTED_CHECKS = [
     ["tools/site_settings.py", "--check"],
     ["tools/check_domain_settings.py"],
     ["tools/check_workflows.py"],
+    ["tools/check_production_default_branch_guards.py"],
     ["tools/check_quality_runner.py"],
     ["tools/check_docs.py"],
     ["tools/build_campaign_links.py", "--check"],
