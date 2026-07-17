@@ -147,9 +147,13 @@
     clearFallbackActions(event.target);
   }, true);
 
-  const warningText = (notification, callback, fallbackVisible) => {
-    const subject = callback ? 'Номер сохранён' : 'Заявка сохранена';
-    const delivery = notification === 'disabled'
+  const warningText = (notification, callback, fallbackVisible, duplicate) => {
+    const subject = duplicate
+      ? callback ? 'Номер уже был сохранён' : 'Заявка уже была сохранена'
+      : callback ? 'Номер сохранён' : 'Заявка сохранена';
+    const delivery = duplicate && notification === 'unknown'
+      ? 'повторная отправка не подтверждает автоматическое уведомление Ивану'
+      : notification === 'disabled'
       ? 'автоматическое уведомление Ивану пока не настроено'
       : notification === 'partial_failure'
       ? 'доставку уведомления Ивану подтвердить не удалось'
@@ -160,8 +164,8 @@
     }
 
     const copyAction = fallbackVisible
-      ? `Скопируйте готовый текст ниже, приложите фотографии и позвоните Ивану по номеру ${PHONE_DISPLAY}.`
-      : `Текст скопирован — приложите фотографии и позвоните Ивану по номеру ${PHONE_DISPLAY}.`;
+      ? `${duplicate ? 'Скопируйте готовый текст ниже ещё раз' : 'Скопируйте готовый текст ниже'}, приложите фотографии и позвоните Ивану по номеру ${PHONE_DISPLAY}.`
+      : `${duplicate ? 'Текст снова скопирован' : 'Текст скопирован'} — приложите фотографии и позвоните Ивану по номеру ${PHONE_DISPLAY}.`;
     return `${subject}, но ${delivery}. ${copyAction}`;
   };
 
@@ -195,8 +199,13 @@
 
     const fallbackVisible = Boolean(form?.querySelector('[data-request-fallback]'));
 
-    if (status && !detail.duplicate && detail.notification !== 'sent') {
-      status.textContent = warningText(detail.notification, callback, fallbackVisible);
+    if (status && detail.notification !== 'sent') {
+      status.textContent = warningText(
+        detail.notification,
+        callback,
+        fallbackVisible,
+        Boolean(detail.duplicate)
+      );
       ensureFallbackActions(form, callback);
     } else if (detail.notification === 'sent') {
       clearFallbackActions(form);
