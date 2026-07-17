@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   health:
+    if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
