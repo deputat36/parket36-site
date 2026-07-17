@@ -26,6 +26,9 @@ REQUIRED_MARKERS = {
         "notificationConfirmed = delivery.notification === 'sent'",
         "Заявка сохранена",
         "Номер сохранён",
+        "Заявка уже была сохранена",
+        "Номер уже был сохранён",
+        "повторная отправка не подтверждает автоматическое уведомление Ивану",
         "автоматическое уведомление Ивану пока не настроено",
         "доставку уведомления Ивану подтвердить не удалось",
         "автоматическое уведомление Ивану не подтверждено",
@@ -43,6 +46,8 @@ REQUIRED_MARKERS = {
         "Открыть оценку по фото",
         "['request-submit', 'request-copy'].includes(detail.type)",
         "detail.type === 'request-copy'",
+        "const warningText = (notification, callback, fallbackVisible, duplicate) =>",
+        "Boolean(detail.duplicate)",
         "parket36:lead-notification",
         "parket36_lead_notification",
         "notification_state",
@@ -69,18 +74,21 @@ REQUIRED_MARKERS = {
         ': "sent"',
         ': "partial_failure"',
         "notification: notificationState",
+        "duplicate: true",
     ),
     E2E: (
         "sent подтверждает отправку Ивану",
         "disabled сообщает, что заявка сохранена, и показывает прямую кнопку звонка",
         "partial_failure в callback не обещает звонок и показывает два безопасных действия",
         "старый backend без notification считается unknown",
+        "duplicate без notification восстанавливает аварийный путь после повторной отправки",
         "ошибка backend сохраняет текстовый fallback и показывает кнопку звонка",
         "data-lead-fallback-actions",
         "tel:+79009267929",
         "Открыть оценку по фото",
         "notificationConfirmed: true",
         "notificationConfirmed: false",
+        "duplicate: true",
         "parket36_lead_notification",
     ),
     DOC: (
@@ -101,6 +109,8 @@ REQUIRED_MARKERS = {
         "Открыть оценку по фото",
         "request-copy",
         "parket36_phone_click",
+        "duplicate: true",
+        "повторная отправка не подтверждает",
     ),
     CALLBACK_DOC: (
         "HTTP 200 подтверждает сохранение заявки, но не всегда подтверждает автоматическое уведомление Ивану",
@@ -132,6 +142,7 @@ FORBIDDEN_FRONTEND_MARKERS = (
     "notification !== 'sent' ? false : true",
     "notification || 'sent'",
     "payload?.notification || 'sent'",
+    "!detail.duplicate && detail.notification !== 'sent'",
 )
 
 FORBIDDEN_DOC_MARKERS = {
@@ -163,7 +174,7 @@ def main() -> int:
     frontend = texts.get(FRONTEND, "")
     for marker in FORBIDDEN_FRONTEND_MARKERS:
         if marker in frontend:
-            findings.append(f"frontend must not turn an unknown notification into sent: {marker}")
+            findings.append(f"frontend contains unsafe notification fallback marker: {marker}")
 
     if frontend.count("actions.dataset.leadFallbackActions = 'true'") != 1:
         findings.append("frontend must create exactly one reusable fallback action container")
@@ -171,6 +182,13 @@ def main() -> int:
         findings.append("frontend must clear stale fallback actions at the start of each form submission")
     if frontend.find("detail.type === 'request-copy'") > frontend.find("const notificationDetail ="):
         findings.append("request-copy fallback actions must be handled before notification analytics")
+    warning_position = frontend.find("const warningText = (notification, callback, fallbackVisible, duplicate) =>")
+    duplicate_position = frontend.find("Boolean(detail.duplicate)", warning_position)
+    ensure_position = frontend.find("ensureFallbackActions(form, callback)", duplicate_position)
+    if min(warning_position, duplicate_position, ensure_position) < 0 or not (
+        warning_position < duplicate_position < ensure_position
+    ):
+        findings.append("duplicate state must reach warning text before fallback actions are restored")
 
     for path, markers in FORBIDDEN_DOC_MARKERS.items():
         text = texts.get(path, "")
