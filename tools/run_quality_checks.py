@@ -53,6 +53,7 @@ CHECKS = [
     ("Validate conversion paths", ["tools/check_conversion_paths.py"]),
     ("Validate commercial pages", ["tools/check_commercial_pages.py"]),
     ("Validate callback topic context", ["tools/check_callback_topic_context.py"]),
+    ("Validate callback status history", ["tools/check_callback_status_history.py"]),
     ("Validate homepage callback paths", ["tools/check_home_callback_links.py"]),
     ("Validate lead paths", ["tools/check_lead_paths.py"]),
     ("Validate lead reliability", ["tools/check_lead_reliability.py"]),
