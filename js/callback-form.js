@@ -6,6 +6,7 @@
   if (!status) return;
 
   const ATTRIBUTION_KEY = 'parket36_attribution';
+  const PHONE_DISPLAY = '8 (900) 926-79-29';
   const UTM_KEYS = Object.freeze([
     'utm_source',
     'utm_medium',
@@ -216,6 +217,23 @@
     };
   };
 
+  const callbackStatusText = delivery => {
+    if (delivery.notification === 'sent') {
+      return 'Заявка на обратный звонок отправлена Ивану. Он свяжется по указанному номеру.';
+    }
+
+    const subject = delivery.duplicate ? 'Номер уже был сохранён' : 'Номер сохранён';
+    const deliveryText = delivery.duplicate && delivery.notification === 'unknown'
+      ? 'повторная отправка не подтверждает автоматическое уведомление Ивану'
+      : delivery.notification === 'disabled'
+      ? 'автоматическое уведомление Ивану пока не настроено'
+      : delivery.notification === 'partial_failure'
+      ? 'доставку уведомления Ивану подтвердить не удалось'
+      : 'автоматическое уведомление Ивану не подтверждено';
+
+    return `${subject}, но ${deliveryText}. Чтобы не ждать, позвоните Ивану по номеру ${PHONE_DISPLAY}.`;
+  };
+
   const emitCallbackRequest = leadDetail => {
     const topic = applyTopicContext();
     const delivery = readLeadDelivery(leadDetail);
@@ -267,8 +285,9 @@
     if (!event.detail || !['request-submit', 'request-copy'].includes(event.detail.type)) return;
 
     if (event.detail.type === 'request-submit') {
-      status.textContent = 'Заявка на обратный звонок отправлена Ивану. Он свяжется по указанному номеру.';
-      emitCallbackRequest(event.detail);
+      const delivery = readLeadDelivery(event.detail);
+      status.textContent = callbackStatusText(delivery);
+      emitCallbackRequest({ ...event.detail, ...delivery });
       return;
     }
 
