@@ -13,6 +13,7 @@ CHECKS = [
     ("Validate shared settings", ["tools/site_settings.py", "--check"]),
     ("Validate domain settings", ["tools/check_domain_settings.py"]),
     ("Validate workflow configuration", ["tools/check_workflows.py"]),
+    ("Validate production default-branch guards", ["tools/check_production_default_branch_guards.py"]),
     ("Validate quality runner", ["tools/check_quality_runner.py"]),
     ("Validate operational docs", ["tools/check_docs.py"]),
     ("Validate campaign links", ["tools/build_campaign_links.py", "--check"]),
