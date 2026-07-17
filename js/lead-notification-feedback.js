@@ -2,6 +2,8 @@
   const LEAD_ENDPOINT_PATH = '/functions/v1/parket-public-lead';
   const KNOWN_NOTIFICATION_STATES = new Set(['sent', 'disabled', 'partial_failure']);
   const PHONE_DISPLAY = '8 (900) 926-79-29';
+  const PHONE_HREF = 'tel:+79009267929';
+  const ASSESSMENT_HREF = '/zayavka/';
   const originalFetch = window.fetch.bind(window);
   let lastDelivery = null;
   window.parket36LastLeadDelivery = null;
@@ -37,6 +39,100 @@
     window.parket36LastLeadDelivery = delivery ? Object.freeze({ ...delivery }) : null;
   };
 
+  const readAttribution = () => ({ ...(window.parket36Attribution || {}) });
+
+  const emitFallbackPhoneClick = (link, formKind) => {
+    const payload = {
+      href: link.getAttribute('href') || PHONE_HREF,
+      page: location.pathname,
+      attribution: readAttribution(),
+      source: 'lead-fallback',
+      formKind
+    };
+
+    window.dispatchEvent(new CustomEvent('parket36:phone-click', { detail: payload }));
+
+    if (Array.isArray(window.dataLayer)) {
+      window.dataLayer.push({
+        event: 'parket36_phone_click',
+        phone_href: payload.href,
+        page: payload.page,
+        attribution: payload.attribution,
+        source: payload.source,
+        form_kind: payload.formKind
+      });
+    }
+
+    if (typeof window.ym === 'function' && window.parket36MetrikaId) {
+      try {
+        window.ym(window.parket36MetrikaId, 'reachGoal', 'phone-click', payload);
+      } catch {
+        // Analytics must never affect the fallback call action.
+      }
+    }
+  };
+
+  const emitAssessmentOpen = (link, formKind) => {
+    const payload = {
+      type: 'request-open',
+      href: link.getAttribute('href') || ASSESSMENT_HREF,
+      page: location.pathname,
+      attribution: readAttribution(),
+      source: 'lead-fallback',
+      formKind
+    };
+
+    window.dispatchEvent(new CustomEvent('parket36:lead', { detail: payload }));
+
+    if (typeof window.ym === 'function' && window.parket36MetrikaId) {
+      try {
+        window.ym(window.parket36MetrikaId, 'reachGoal', 'request-open', payload);
+      } catch {
+        // Analytics must never affect navigation to the full assessment form.
+      }
+    }
+  };
+
+  const clearFallbackActions = form => {
+    form?.querySelector('[data-lead-fallback-actions]')?.remove();
+  };
+
+  const ensureFallbackActions = (form, callback) => {
+    if (!form) return null;
+
+    const existing = form.querySelector('[data-lead-fallback-actions]');
+    if (existing) return existing;
+
+    const formKind = callback ? 'callback' : 'assessment';
+    const actions = document.createElement('div');
+    actions.className = 'hero__actions lead-fallback-actions';
+    actions.dataset.leadFallbackActions = 'true';
+    actions.setAttribute('role', 'group');
+    actions.setAttribute('aria-label', 'Быстрая связь с Иваном');
+
+    const call = document.createElement('a');
+    call.className = 'btn btn--primary';
+    call.href = PHONE_HREF;
+    call.textContent = 'Позвонить Ивану';
+    call.addEventListener('click', () => emitFallbackPhoneClick(call, formKind));
+    actions.appendChild(call);
+
+    if (callback) {
+      const assessment = document.createElement('a');
+      assessment.className = 'btn btn--ghost';
+      assessment.href = ASSESSMENT_HREF;
+      assessment.textContent = 'Открыть оценку по фото';
+      assessment.addEventListener('click', () => emitAssessmentOpen(assessment, formKind));
+      actions.appendChild(assessment);
+    }
+
+    const status = form.querySelector('#request-status');
+    if (status) status.insertAdjacentElement('afterend', actions);
+    else form.appendChild(actions);
+
+    return actions;
+  };
+
   window.fetch = async (input, init = {}) => {
     const response = await originalFetch(input, init);
     if (!requestUrl(input).includes(LEAD_ENDPOINT_PATH)) return response;
@@ -46,7 +142,9 @@
   };
 
   document.addEventListener('submit', event => {
-    if (event.target?.id === 'request-form') publishDelivery(null);
+    if (event.target?.id !== 'request-form') return;
+    publishDelivery(null);
+    clearFallbackActions(event.target);
   }, true);
 
   const warningText = (notification, callback, fallbackVisible) => {
@@ -84,15 +182,24 @@
 
   window.addEventListener('parket36:lead', event => {
     const detail = event.detail;
-    if (!detail || detail.type !== 'request-submit') return;
+    if (!detail || !['request-submit', 'request-copy'].includes(detail.type)) return;
 
     const form = document.getElementById('request-form');
     const status = form?.querySelector('#request-status');
     const callback = form?.dataset.formKind === 'callback';
+
+    if (detail.type === 'request-copy') {
+      ensureFallbackActions(form, callback);
+      return;
+    }
+
     const fallbackVisible = Boolean(form?.querySelector('[data-request-fallback]'));
 
     if (status && !detail.duplicate && detail.notification !== 'sent') {
       status.textContent = warningText(detail.notification, callback, fallbackVisible);
+      ensureFallbackActions(form, callback);
+    } else if (detail.notification === 'sent') {
+      clearFallbackActions(form);
     }
 
     const notificationDetail = {
