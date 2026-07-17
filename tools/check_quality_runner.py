@@ -58,6 +58,7 @@ EXPECTED_CHECKS = [
     ["tools/check_lead_paths.py"],
     ["tools/check_lead_reliability.py"],
     ["tools/check_lead_notification_feedback.py"],
+    ["tools/check_request_status_tones.py"],
     ["tools/check_payload_shape.py"],
     ["tools/check_indexnow_workflow.py"],
     ["tools/submit_indexnow.py", "--check"],

@@ -29,6 +29,35 @@
   line-height: 1.45;
 }
 
+.form-status:not(:empty) {
+  border: 1px solid transparent;
+  color: #3a2416;
+}
+
+.form-status[data-status-tone="info"]:not(:empty) {
+  border-color: rgba(49, 95, 136, .2);
+  background: #edf5fb;
+  color: #244b6a;
+}
+
+.form-status[data-status-tone="success"]:not(:empty) {
+  border-color: rgba(47, 106, 78, .22);
+  background: #e6f2ea;
+  color: #24553f;
+}
+
+.form-status[data-status-tone="warning"]:not(:empty) {
+  border-color: rgba(155, 104, 61, .24);
+  background: #fff1d6;
+  color: #684711;
+}
+
+.form-status[data-status-tone="error"]:not(:empty) {
+  border-color: rgba(160, 64, 42, .24);
+  background: #fde9e6;
+  color: #7a2f23;
+}
+
 .person-card .muted {
   color: var(--muted) !important;
 }
