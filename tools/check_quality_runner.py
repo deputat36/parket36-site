@@ -54,6 +54,7 @@ EXPECTED_CHECKS = [
     ["tools/check_conversion_paths.py"],
     ["tools/check_commercial_pages.py"],
     ["tools/check_callback_topic_context.py"],
+    ["tools/check_callback_status_history.py"],
     ["tools/check_home_callback_links.py"],
     ["tools/check_lead_paths.py"],
     ["tools/check_lead_reliability.py"],
