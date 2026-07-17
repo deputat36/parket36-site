@@ -54,6 +54,21 @@ function mockSuccess(page, notification, leadId) {
   });
 }
 
+function mockDuplicate(page) {
+  return page.route(leadEndpoint, async route => {
+    const payload = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        duplicate: true,
+        request_id: payload.request_id
+      })
+    });
+  });
+}
+
 function fallbackActions(page) {
   return page.locator('[data-lead-fallback-actions]');
 }
@@ -143,6 +158,28 @@ test('старый backend без notification считается unknown и н�
     notification: 'unknown',
     notificationConfirmed: false,
     formKind: 'callback'
+  });
+});
+
+test('duplicate без notification восстанавливает аварийный путь после повторной отправки', async ({ page }) => {
+  await mockDuplicate(page);
+  await prepareSignals(page);
+  await page.goto('/zayavka/');
+  await fillAssessment(page);
+  await page.getByRole('button', { name: 'Отправить заявку и скопировать текст' }).click();
+
+  const status = page.locator('#request-status');
+  await expect(status).toContainText('Заявка уже была сохранена');
+  await expect(status).toContainText('повторная отправка не подтверждает автоматическое уведомление Ивану');
+  await expect(status).toContainText('Текст снова скопирован');
+  const actions = fallbackActions(page);
+  await expect(actions).toBeVisible();
+  await expect(actions.getByRole('link', { name: 'Позвонить Ивану' })).toHaveAttribute('href', 'tel:+79009267929');
+  await expect.poll(() => page.evaluate(() => window.__parketLeadNotification)).toMatchObject({
+    notification: 'unknown',
+    notificationConfirmed: false,
+    duplicate: true,
+    formKind: 'assessment'
   });
 });
 
