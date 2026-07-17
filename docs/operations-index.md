@@ -13,6 +13,7 @@
 - `docs/live-site-monitoring.md` — ежедневный контроль DNS, HTTPS, телефона, публичной сборки и обновляемая запись последнего подтверждённого deploy в issue #308.
 - `docs/pages-deploy-monitoring.md` — одно issue после двух последовательных отказов `Deploy GitHub Pages` и автоматическое закрытие после восстановления.
 - `docs/verified-deploy-drift.md` — сверка текущего `main` с долговечным ledger подтверждённой публикации и одно issue после повторного расхождения.
+- `docs/downstream-default-branch-guard.md` — независимая защита Live site health и IndexNow от запуска из feature-веток.
 - `docs/search-discovery-launch.md` — запуск индексации, IndexNow и ручные действия в кабинетах поисковиков.
 - `docs/indexnow-automation.md` — автоматическая post-deploy отправка sitemap URL, диагностический artifact и одно monitoring issue после повторного сбоя.
 - `docs/browser-smoke-tests.md` — Playwright-проверки меню, телефона, формы, fallback и 404.

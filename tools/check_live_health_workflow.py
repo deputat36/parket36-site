@@ -13,6 +13,11 @@ HELPER = ROOT / "tools" / "check_live_site.py"
 
 WORKFLOW_MARKERS = (
     "id: live_health",
+    "github.event_name != 'workflow_run'",
+    "github.ref_name == github.event.repository.default_branch",
+    "github.event.workflow_run.conclusion == 'success'",
+    "github.event.workflow_run.head_branch == github.event.repository.default_branch",
+    "ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.event.repository.default_branch }}",
     "LIVE_HEALTH_ATTEMPTS: ${{ github.event_name == 'workflow_run' && '6' || '1' }}",
     "python tools/check_live_site.py --report live-health-report.md",
     '--attempts "$LIVE_HEALTH_ATTEMPTS"',
@@ -41,6 +46,8 @@ FORBIDDEN_MARKERS = (
     "permissions: write-all",
     "uses: actions/checkout@v4",
     "uses: actions/upload-artifact@v4",
+    "|| github.sha",
+    "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
 )
 
 

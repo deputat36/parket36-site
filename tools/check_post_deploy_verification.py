@@ -26,9 +26,12 @@ REQUIRED_MARKERS = {
         "workflow_run:": "post-deploy trigger",
         'workflows: ["Deploy GitHub Pages"]': "Pages workflow dependency",
         "types: [completed]": "completed deploy trigger",
-        "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'": "successful deploy condition",
+        "github.event_name != 'workflow_run'": "non-workflow event branch guard",
+        "github.ref_name == github.event.repository.default_branch": "manual and scheduled default branch guard",
+        "github.event.workflow_run.conclusion == 'success'": "successful deploy condition",
+        "github.event.workflow_run.head_branch == github.event.repository.default_branch": "post-deploy default branch guard",
         "group: live-site-health": "monitoring concurrency group",
-        "ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}": "deployed SHA checkout",
+        "ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.event.repository.default_branch }}": "deployed SHA or default branch checkout",
         "EXPECTED_DEPLOY_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}": "expected deployment SHA",
         "EXPECTED_DEPLOY_RUN_ID: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || '' }}": "expected deployment run ID",
         "DEPLOY_ATTEMPTS: ${{ github.event_name == 'workflow_run' && '6' || '1' }}": "post-deploy retry count",
@@ -98,6 +101,11 @@ REQUIRED_MARKERS = {
     },
 }
 
+FORBIDDEN_LIVE_MARKERS = (
+    "if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'",
+    "|| github.sha",
+)
+
 
 def main() -> int:
     findings: list[str] = []
@@ -113,6 +121,12 @@ def main() -> int:
         for marker, label in markers.items():
             if marker not in text:
                 findings.append(f"{path.relative_to(ROOT)}: missing {label}: {marker}")
+
+    if LIVE_WORKFLOW.is_file():
+        live_text = LIVE_WORKFLOW.read_text(encoding="utf-8", errors="ignore")
+        for marker in FORBIDDEN_LIVE_MARKERS:
+            if marker in live_text:
+                findings.append(f"{LIVE_WORKFLOW.relative_to(ROOT)}: forbidden legacy marker: {marker}")
 
     if LIVE_VERIFICATION_LEDGER.is_file():
         completed = subprocess.run(
