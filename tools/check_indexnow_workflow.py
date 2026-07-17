@@ -21,9 +21,12 @@ WORKFLOW_MARKERS = (
     "contents: read",
     "actions: read",
     "issues: write",
+    "github.event_name == 'workflow_dispatch'",
+    "github.ref_name == github.event.repository.default_branch",
     "github.event.workflow_run.conclusion == 'success'",
+    "github.event.workflow_run.head_branch == github.event.repository.default_branch",
     "uses: actions/checkout@v7",
-    "ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}",
+    "ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.event.repository.default_branch }}",
     "uses: actions/setup-python@v6",
     'python-version: "3.12"',
     "python tools/submit_indexnow.py --self-test",
@@ -78,6 +81,8 @@ FORBIDDEN_WORKFLOW_MARKERS = (
     "uses: actions/upload-artifact@v4",
     "ready=false",
     "submission skipped",
+    "|| github.sha",
+    "if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'",
 )
 
 
