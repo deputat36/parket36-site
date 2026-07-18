@@ -98,6 +98,10 @@
     form?.querySelector('[data-lead-fallback-actions]')?.remove();
   };
 
+  const clearFallbackText = form => {
+    form?.querySelector('[data-request-fallback]')?.remove();
+  };
+
   const shouldMoveFallbackFocus = form => {
     if (!form) return false;
     const active = document.activeElement;
@@ -185,6 +189,7 @@
     if (event.target?.id !== 'request-form') return;
     publishDelivery(null);
     clearFallbackActions(event.target);
+    clearFallbackText(event.target);
   }, true);
 
   const warningText = (notification, callback, fallbackVisible, duplicate) => {
