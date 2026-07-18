@@ -4,6 +4,7 @@
   const PHONE_DISPLAY = '8 (900) 926-79-29';
   const PHONE_HREF = 'tel:+79009267929';
   const ASSESSMENT_HREF = '/zayavka/';
+  const MOBILE_CTA_CLEARANCE_PX = 16;
   const originalFetch = window.fetch.bind(window);
   let lastDelivery = null;
   window.parket36LastLeadDelivery = null;
@@ -108,9 +109,30 @@
     return active === submit || active === status;
   };
 
+  const keepFallbackAboveMobileCta = actions => {
+    window.requestAnimationFrame(() => {
+      if (!actions.isConnected) return;
+
+      const mobileCta = document.querySelector('.mobile-cta');
+      if (!(mobileCta instanceof HTMLElement)) return;
+
+      const style = window.getComputedStyle(mobileCta);
+      if (style.display === 'none' || style.visibility === 'hidden') return;
+
+      const actionsRect = actions.getBoundingClientRect();
+      const ctaRect = mobileCta.getBoundingClientRect();
+      const overlap = actionsRect.bottom - (ctaRect.top - MOBILE_CTA_CLEARANCE_PX);
+      if (overlap <= 0) return;
+
+      window.scrollBy({ top: overlap, left: 0, behavior: 'auto' });
+    });
+  };
+
   const focusFallbackActions = (actions, form) => {
     if (!(actions instanceof HTMLElement) || !shouldMoveFallbackFocus(form)) return;
-    actions.focus();
+    actions.focus({ preventScroll: true });
+    actions.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
+    keepFallbackAboveMobileCta(actions);
   };
 
   const ensureFallbackActions = (form, callback) => {

@@ -15,6 +15,7 @@ E2E = ROOT / "tests" / "e2e" / "lead-notification-feedback.spec.mjs"
 FOCUS_E2E = ROOT / "tests" / "e2e" / "lead-fallback-focus.spec.mjs"
 DOC = ROOT / "docs" / "lead-notification-feedback.md"
 FOCUS_DOC = ROOT / "docs" / "lead-fallback-focus.md"
+MOBILE_VISIBILITY_DOC = ROOT / "docs" / "lead-fallback-mobile-visibility.md"
 CALLBACK_DOC = ROOT / "docs" / "callback-form.md"
 ANALYTICS_DOC = ROOT / "docs" / "analytics-events.md"
 
@@ -37,14 +38,24 @@ REQUIRED_MARKERS = {
         "8 (900) 926-79-29",
         "const PHONE_HREF = 'tel:+79009267929'",
         "const ASSESSMENT_HREF = '/zayavka/'",
+        "const MOBILE_CTA_CLEARANCE_PX = 16",
         "const emitFallbackPhoneClick = (link, formKind) =>",
         "event: 'parket36_phone_click'",
         "source: 'lead-fallback'",
         "const clearFallbackActions = form =>",
         "const shouldMoveFallbackFocus = form =>",
         "active.matches('[data-request-fallback]')",
+        "const keepFallbackAboveMobileCta = actions =>",
+        "window.requestAnimationFrame(() =>",
+        "document.querySelector('.mobile-cta')",
+        "window.getComputedStyle(mobileCta)",
+        "actions.getBoundingClientRect()",
+        "mobileCta.getBoundingClientRect()",
+        "window.scrollBy({ top: overlap, left: 0, behavior: 'auto' })",
         "const focusFallbackActions = (actions, form) =>",
-        "actions.focus()",
+        "actions.focus({ preventScroll: true })",
+        "actions.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' })",
+        "keepFallbackAboveMobileCta(actions)",
         "const ensureFallbackActions = (form, callback) =>",
         "actions.dataset.leadFallbackActions = 'true'",
         "aria-label', 'Быстрая связь с Иваном'",
@@ -101,7 +112,13 @@ REQUIRED_MARKERS = {
     ),
     FOCUS_E2E: (
         "неподтверждённое уведомление переводит фокус к аварийным действиям",
+        "на мобильном аварийные действия остаются выше фиксированной CTA-панели",
         "ручной текстовый fallback сохраняет фокус при ошибке clipboard",
+        "page.setViewportSize({ width: 390, height: 780 })",
+        "page.locator('.mobile-cta')",
+        "actions.boundingBox()",
+        "mobileCta.boundingBox()",
+        "ctaBox.y - 12",
         "toBeFocused()",
         "not.toBeFocused()",
         "toHaveAttribute('tabindex', '-1')",
@@ -141,6 +158,19 @@ REQUIRED_MARKERS = {
         "lead-fallback-focus.spec.mjs",
         "check_lead_notification_feedback.py",
     ),
+    MOBILE_VISIBILITY_DOC: (
+        "Видимость аварийных действий на мобильном",
+        "preventScroll: true",
+        "scrollIntoView",
+        "getBoundingClientRect()",
+        ".mobile-cta",
+        "плюс 16 px",
+        "behavior: 'auto'",
+        "390 × 780",
+        "минимум на 12 px выше",
+        "не читает поля заявки",
+        "check_lead_notification_feedback.py",
+    ),
     CALLBACK_DOC: (
         "HTTP 200 подтверждает сохранение заявки, но не всегда подтверждает автоматическое уведомление Ивану",
         "notification: sent",
@@ -172,6 +202,8 @@ FORBIDDEN_FRONTEND_MARKERS = (
     "notification || 'sent'",
     "payload?.notification || 'sent'",
     "!detail.duplicate && detail.notification !== 'sent'",
+    "actions.focus()",
+    "behavior: 'smooth'",
 )
 
 FORBIDDEN_DOC_MARKERS = {
@@ -223,9 +255,35 @@ def main() -> int:
         findings.append("duplicate state must reach warning text before fallback actions are restored")
 
     manual_fallback_guard = frontend.find("active.matches('[data-request-fallback]')")
-    focus_method = frontend.find("actions.focus()", manual_fallback_guard)
+    focus_method = frontend.find("actions.focus({ preventScroll: true })", manual_fallback_guard)
     if min(manual_fallback_guard, focus_method) < 0 or manual_fallback_guard > focus_method:
         findings.append("manual textarea focus guard must run before fallback actions receive focus")
+
+    mobile_helper = frontend.find("const keepFallbackAboveMobileCta = actions =>")
+    mobile_measurement = frontend.find("actions.getBoundingClientRect()", mobile_helper)
+    mobile_scroll = frontend.find("window.scrollBy({ top: overlap, left: 0, behavior: 'auto' })", mobile_measurement)
+    focus_helper = frontend.find("const focusFallbackActions = (actions, form) =>", mobile_scroll)
+    prevent_scroll = frontend.find("actions.focus({ preventScroll: true })", focus_helper)
+    scroll_into_view = frontend.find("actions.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' })", prevent_scroll)
+    mobile_call = frontend.find("keepFallbackAboveMobileCta(actions)", scroll_into_view)
+    if min(
+        mobile_helper,
+        mobile_measurement,
+        mobile_scroll,
+        focus_helper,
+        prevent_scroll,
+        scroll_into_view,
+        mobile_call,
+    ) < 0 or not (
+        mobile_helper
+        < mobile_measurement
+        < mobile_scroll
+        < focus_helper
+        < prevent_scroll
+        < scroll_into_view
+        < mobile_call
+    ):
+        findings.append("mobile CTA compensation must measure overlap after safe focus and ordinary scroll")
 
     request_copy_position = frontend.find("if (detail.type === 'request-copy')")
     request_copy_ensure = frontend.find("const actions = ensureFallbackActions(form, callback)", request_copy_position)

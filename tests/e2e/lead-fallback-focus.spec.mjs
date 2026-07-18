@@ -57,6 +57,30 @@ test('неподтверждённое уведомление переводит
   await expect(actions.getByRole('link', { name: 'Позвонить Ивану' })).toBeFocused();
 });
 
+test('на мобильном аварийные действия остаются выше фиксированной CTA-панели', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 780 });
+  await prepareClipboard(page);
+  await mockSavedLead(page, 'disabled');
+  await page.goto('/zayavka/');
+  await fillAssessment(page);
+
+  await page.getByRole('button', { name: 'Отправить заявку и скопировать текст' }).click();
+
+  const actions = page.locator('[data-lead-fallback-actions]');
+  const mobileCta = page.locator('.mobile-cta');
+  await expect(actions).toBeFocused();
+  await expect(mobileCta).toBeVisible();
+
+  await expect.poll(async () => {
+    const [actionsBox, ctaBox] = await Promise.all([
+      actions.boundingBox(),
+      mobileCta.boundingBox()
+    ]);
+    if (!actionsBox || !ctaBox) return false;
+    return actionsBox.y + actionsBox.height <= ctaBox.y - 12;
+  }).toBe(true);
+});
+
 test('ручной текстовый fallback сохраняет фокус при ошибке clipboard', async ({ page }) => {
   await prepareClipboard(page, { reject: true });
   await mockSavedLead(page, 'partial_failure');
