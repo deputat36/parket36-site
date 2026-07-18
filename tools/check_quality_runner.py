@@ -32,6 +32,7 @@ EXPECTED_CHECKS = [
     ["tools/check_production_lead_launch_readiness.py"],
     ["tools/check_production_lead_readiness_staleness.py"],
     ["tools/check_analytics_privacy.py"],
+    ["tools/check_lead_copy_honesty.py"],
     ["tools/check_js_assets.py"],
     ["tools/check_shared_shell_coverage.py"],
     ["tools/check_content_inventory.py"],
