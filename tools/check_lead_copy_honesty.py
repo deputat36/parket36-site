@@ -29,6 +29,11 @@ SOURCE_PATHS = (
 )
 
 REQUIRED_NORMALIZED_MARKERS = {
+    ROOT / "index.html": (
+        "Форма попробует сохранить заявку в защищённой системе",
+        "Если уведомление Ивану не подтвердится",
+        "сразу появится кнопка звонка",
+    ),
     ROOT / "zayavka" / "index.html": (
         "сервис попробует сохранить заявку",
         "Заполните форму — получите понятный следующий шаг",
@@ -69,6 +74,7 @@ REQUIRED_FILE_MARKERS = {
         "Normalize lead copy, fingerprint every public JS file",
     ),
     E2E: (
+        "главная не обещает доставку без подтверждения",
         "страница оценки различает сохранение и уведомление",
         "callback не обещает получение заявки без подтверждения",
         "политика описывает хранение отдельно от уведомления",
@@ -115,7 +121,7 @@ def main() -> int:
             if marker not in text:
                 findings.append(f"{path.relative_to(ROOT)}: missing marker: {marker}")
 
-    if len(REPLACEMENTS) < 8:
+    if len(REPLACEMENTS) < 10:
         findings.append("lead copy normalizer must keep the complete approved replacement set")
 
     for source_path in SOURCE_PATHS:
