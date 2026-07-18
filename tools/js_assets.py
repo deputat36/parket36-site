@@ -11,6 +11,8 @@ import shutil
 import sys
 import tempfile
 
+from lead_copy import normalize_lead_copy
+
 HASH_LENGTH = 12
 HASHED_NAME_RE = re.compile(r"^(?P<stem>.+)\.(?P<hash>[0-9a-f]{12})\.js$")
 SCRIPT_SRC_RE = re.compile(
@@ -113,10 +115,14 @@ def validate_public_javascript(destination: Path, errors: list[str]) -> None:
 
 
 def prepare_js_assets(destination: Path, errors: list[str]) -> dict[str, str]:
-    """Fingerprint every public JS file and update built HTML script references."""
+    """Normalize lead copy, fingerprint every public JS file and update built HTML references."""
     js_dir = destination / "js"
     if not js_dir.is_dir():
         errors.append("Public JavaScript directory is missing")
+        return {}
+
+    normalize_lead_copy(destination, errors)
+    if errors:
         return {}
 
     mapping = build_mapping(js_dir, errors)

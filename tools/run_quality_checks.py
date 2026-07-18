@@ -31,6 +31,7 @@ CHECKS = [
     ("Validate production lead launch readiness", ["tools/check_production_lead_launch_readiness.py"]),
     ("Validate production lead readiness staleness", ["tools/check_production_lead_readiness_staleness.py"]),
     ("Validate analytics privacy", ["tools/check_analytics_privacy.py"]),
+    ("Validate lead copy honesty", ["tools/check_lead_copy_honesty.py"]),
     ("Validate JavaScript assets", ["tools/check_js_assets.py"]),
     ("Validate shared shell coverage", ["tools/check_shared_shell_coverage.py"]),
     ("Validate content inventory", ["tools/check_content_inventory.py"]),
