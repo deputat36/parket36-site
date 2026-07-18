@@ -12,7 +12,9 @@ CALLBACK = ROOT / "js" / "callback-form.js"
 BUILD = ROOT / "tools" / "build_pages.py"
 BACKEND = ROOT / "supabase" / "functions" / "parket-public-lead" / "index.ts"
 E2E = ROOT / "tests" / "e2e" / "lead-notification-feedback.spec.mjs"
+FOCUS_E2E = ROOT / "tests" / "e2e" / "lead-fallback-focus.spec.mjs"
 DOC = ROOT / "docs" / "lead-notification-feedback.md"
+FOCUS_DOC = ROOT / "docs" / "lead-fallback-focus.md"
 CALLBACK_DOC = ROOT / "docs" / "callback-form.md"
 ANALYTICS_DOC = ROOT / "docs" / "analytics-events.md"
 
@@ -39,9 +41,15 @@ REQUIRED_MARKERS = {
         "event: 'parket36_phone_click'",
         "source: 'lead-fallback'",
         "const clearFallbackActions = form =>",
+        "const shouldMoveFallbackFocus = form =>",
+        "active.matches('[data-request-fallback]')",
+        "const focusFallbackActions = (actions, form) =>",
+        "actions.focus()",
         "const ensureFallbackActions = (form, callback) =>",
         "actions.dataset.leadFallbackActions = 'true'",
         "aria-label', 'Быстрая связь с Иваном'",
+        "actions.tabIndex = -1",
+        "actions.setAttribute('aria-describedby', status.id)",
         "Позвонить Ивану",
         "Открыть оценку по фото",
         "['request-submit', 'request-copy'].includes(detail.type)",
@@ -91,6 +99,17 @@ REQUIRED_MARKERS = {
         "duplicate: true",
         "parket36_lead_notification",
     ),
+    FOCUS_E2E: (
+        "неподтверждённое уведомление переводит фокус к аварийным действиям",
+        "ручной текстовый fallback сохраняет фокус при ошибке clipboard",
+        "toBeFocused()",
+        "not.toBeFocused()",
+        "toHaveAttribute('tabindex', '-1')",
+        "toHaveAttribute('aria-describedby', 'request-status')",
+        "page.keyboard.press('Tab')",
+        "data-request-fallback",
+        "Позвонить Ивану",
+    ),
     DOC: (
         "Факт сохранения заявки и подтверждение уведомления не смешиваются",
         "notification: sent",
@@ -111,6 +130,16 @@ REQUIRED_MARKERS = {
         "parket36_phone_click",
         "duplicate: true",
         "повторная отправка не подтверждает",
+    ),
+    FOCUS_DOC: (
+        "Фокус аварийных действий заявки",
+        "tabindex=\"-1\"",
+        "aria-describedby=\"request-status\"",
+        "data-request-fallback",
+        "Следующее нажатие Tab",
+        "не создаёт аварийный блок и не меняет фокус",
+        "lead-fallback-focus.spec.mjs",
+        "check_lead_notification_feedback.py",
     ),
     CALLBACK_DOC: (
         "HTTP 200 подтверждает сохранение заявки, но не всегда подтверждает автоматическое уведомление Ивану",
@@ -180,8 +209,11 @@ def main() -> int:
         findings.append("frontend must create exactly one reusable fallback action container")
     if frontend.count("clearFallbackActions(event.target)") != 1:
         findings.append("frontend must clear stale fallback actions at the start of each form submission")
+    if frontend.count("focusFallbackActions(actions, form)") != 2:
+        findings.append("frontend must focus fallback actions in exactly request-copy and warning paths")
     if frontend.find("detail.type === 'request-copy'") > frontend.find("const notificationDetail ="):
         findings.append("request-copy fallback actions must be handled before notification analytics")
+
     warning_position = frontend.find("const warningText = (notification, callback, fallbackVisible, duplicate) =>")
     duplicate_position = frontend.find("Boolean(detail.duplicate)", warning_position)
     ensure_position = frontend.find("ensureFallbackActions(form, callback)", duplicate_position)
@@ -189,6 +221,27 @@ def main() -> int:
         warning_position < duplicate_position < ensure_position
     ):
         findings.append("duplicate state must reach warning text before fallback actions are restored")
+
+    manual_fallback_guard = frontend.find("active.matches('[data-request-fallback]')")
+    focus_method = frontend.find("actions.focus()", manual_fallback_guard)
+    if min(manual_fallback_guard, focus_method) < 0 or manual_fallback_guard > focus_method:
+        findings.append("manual textarea focus guard must run before fallback actions receive focus")
+
+    request_copy_position = frontend.find("if (detail.type === 'request-copy')")
+    request_copy_ensure = frontend.find("const actions = ensureFallbackActions(form, callback)", request_copy_position)
+    request_copy_focus = frontend.find("focusFallbackActions(actions, form)", request_copy_ensure)
+    if min(request_copy_position, request_copy_ensure, request_copy_focus) < 0 or not (
+        request_copy_position < request_copy_ensure < request_copy_focus
+    ):
+        findings.append("request-copy path must create fallback actions before moving focus")
+
+    warning_branch = frontend.find("if (status && detail.notification !== 'sent')")
+    warning_ensure = frontend.find("const actions = ensureFallbackActions(form, callback)", warning_branch)
+    warning_focus = frontend.find("focusFallbackActions(actions, form)", warning_ensure)
+    if min(warning_branch, warning_ensure, warning_focus) < 0 or not (
+        warning_branch < warning_ensure < warning_focus
+    ):
+        findings.append("warning path must update status and create actions before moving focus")
 
     for path, markers in FORBIDDEN_DOC_MARKERS.items():
         text = texts.get(path, "")

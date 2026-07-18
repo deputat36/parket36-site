@@ -97,6 +97,22 @@
     form?.querySelector('[data-lead-fallback-actions]')?.remove();
   };
 
+  const shouldMoveFallbackFocus = form => {
+    if (!form) return false;
+    const active = document.activeElement;
+    if (!active || active === document.body || active === form) return true;
+    if (active instanceof HTMLElement && active.matches('[data-request-fallback]')) return false;
+
+    const submit = form.querySelector('button[type="submit"]');
+    const status = form.querySelector('#request-status');
+    return active === submit || active === status;
+  };
+
+  const focusFallbackActions = (actions, form) => {
+    if (!(actions instanceof HTMLElement) || !shouldMoveFallbackFocus(form)) return;
+    actions.focus();
+  };
+
   const ensureFallbackActions = (form, callback) => {
     if (!form) return null;
 
@@ -109,6 +125,7 @@
     actions.dataset.leadFallbackActions = 'true';
     actions.setAttribute('role', 'group');
     actions.setAttribute('aria-label', 'Быстрая связь с Иваном');
+    actions.tabIndex = -1;
 
     const call = document.createElement('a');
     call.className = 'btn btn--primary';
@@ -127,6 +144,7 @@
     }
 
     const status = form.querySelector('#request-status');
+    if (status?.id) actions.setAttribute('aria-describedby', status.id);
     if (status) status.insertAdjacentElement('afterend', actions);
     else form.appendChild(actions);
 
@@ -193,7 +211,8 @@
     const callback = form?.dataset.formKind === 'callback';
 
     if (detail.type === 'request-copy') {
-      ensureFallbackActions(form, callback);
+      const actions = ensureFallbackActions(form, callback);
+      focusFallbackActions(actions, form);
       return;
     }
 
@@ -206,7 +225,8 @@
         fallbackVisible,
         Boolean(detail.duplicate)
       );
-      ensureFallbackActions(form, callback);
+      const actions = ensureFallbackActions(form, callback);
+      focusFallbackActions(actions, form);
     } else if (detail.notification === 'sent') {
       clearFallbackActions(form);
     }
