@@ -11,7 +11,9 @@ STATUS_SCRIPT = ROOT / "js" / "request-status-tone.js"
 CSS = ROOT / "css" / "accessibility-polish.css"
 BUILD = ROOT / "tools" / "build_pages.py"
 E2E = ROOT / "tests" / "e2e" / "request-status-tone.spec.mjs"
+HISTORY_E2E = ROOT / "tests" / "e2e" / "assessment-status-history.spec.mjs"
 DOC = ROOT / "docs" / "request-status-tones.md"
+HISTORY_DOC = ROOT / "docs" / "assessment-status-history.md"
 RUNNER = ROOT / "tools" / "run_quality_checks.py"
 QUALITY_CHECKER = ROOT / "tools" / "check_quality_runner.py"
 
@@ -20,6 +22,14 @@ REQUIRED_MARKERS = {
         "const form = document.getElementById('request-form')",
         "const status = form.querySelector('#request-status')",
         "new Set(['info', 'success', 'warning', 'error'])",
+        "const assessmentWarningText = (delivery, fallbackVisible) => {",
+        "const installAssessmentStatusGuard = () => {",
+        "form.dataset.formKind === 'callback'",
+        "Object.getOwnPropertyDescriptor(Node.prototype, 'textContent')",
+        "window.parket36LastLeadDelivery",
+        "delivery.notification !== 'sent'",
+        "Boolean(form.querySelector('[data-request-fallback]'))",
+        "installAssessmentStatusGuard();",
         "status.dataset.statusTone = tone",
         "status.setAttribute('role', 'status')",
         "status.setAttribute('aria-live', 'polite')",
@@ -61,6 +71,16 @@ REQUIRED_MARKERS = {
         "aria-live",
         "aria-atomic",
     ),
+    HISTORY_E2E: (
+        "подробная форма не показывает ложный успех при отключённом уведомлении",
+        "ручной текстовый fallback не показывает ложный успех при partial failure",
+        "window.__parketAssessmentStatusHistory",
+        "value.startsWith('Заявка отправлена Ивану')",
+        "notification: 'disabled'",
+        "notification: 'partial_failure'",
+        "data-status-tone",
+        "[data-request-fallback]",
+    ),
     DOC: (
         "Тоны статуса формы заявки",
         "data-status-tone",
@@ -74,6 +94,18 @@ REQUIRED_MARKERS = {
         "не читает контакт",
         "не вызывает `fetch`",
         "не пишет в `dataLayer`",
+        "check_request_status_tones.py",
+    ),
+    HISTORY_DOC: (
+        "История статуса подробной заявки",
+        "`/zayavka/`",
+        "`window.parket36LastLeadDelivery`",
+        "`notification: sent`",
+        "`notification: disabled`",
+        "`notification: partial_failure`",
+        "заменяется до записи в DOM",
+        "не вызывает `fetch`",
+        "assessment-status-history.spec.mjs",
         "check_request_status_tones.py",
     ),
     RUNNER: (
@@ -121,6 +153,14 @@ def main() -> int:
     for marker in FORBIDDEN_SCRIPT_MARKERS:
         if marker in script:
             findings.append(f"status-tone module must remain presentation-only: {marker}")
+
+    if "window.parket36LastLeadDelivery =" in script:
+        findings.append("status-tone module may read but must not overwrite lead delivery state")
+
+    guard_position = script.find("installAssessmentStatusGuard();")
+    observer_position = script.find("new MutationObserver(syncToneFromText)")
+    if min(guard_position, observer_position) < 0 or guard_position > observer_position:
+        findings.append("assessment status guard must be installed before the tone observer")
 
     for tone in ("info", "success", "warning", "error"):
         selector = f'.form-status[data-status-tone="{tone}"]:not(:empty)'
