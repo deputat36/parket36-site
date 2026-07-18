@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 const staleClaims = [
   'заявка уйдёт Ивану',
   'сайт отправит заявку Ивану',
+  'Форма отправит заявку Ивану через защищённую форму',
   'заявка передаётся Ивану через защищённую форму',
   'Заявка отправляется Ивану через защищённую форму',
   'Иван получит заявку через ту же защищённую систему'
@@ -12,6 +13,16 @@ async function expectNoStaleClaims(page) {
   const text = await page.locator('body').innerText();
   for (const claim of staleClaims) expect(text).not.toContain(claim);
 }
+
+test('главная не обещает доставку без подтверждения', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.locator('#request')).toContainText('Форма попробует сохранить заявку в защищённой системе');
+  await expect(page.locator('#request')).toContainText('Если уведомление Ивану не подтвердится');
+  const disclosure = page.locator('#request-form .form-help').last();
+  await expect(disclosure).toContainText('сразу появится кнопка звонка');
+  await expectNoStaleClaims(page);
+});
 
 test('страница оценки различает сохранение и уведомление', async ({ page }) => {
   await page.goto('/zayavka/');
