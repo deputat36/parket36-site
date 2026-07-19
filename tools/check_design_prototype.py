@@ -10,9 +10,10 @@ import sys
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
-PROTOTYPE = ROOT / "design" / "prototypes" / "homepage-v1.html"
+PROTOTYPE_DIR = ROOT / "design" / "prototypes"
+PROTOTYPE = PROTOTYPE_DIR / "homepage-v1.htm"
 CSS_FILES = tuple(
-    ROOT / "design" / "prototypes" / f"homepage-v1-{name}.css"
+    PROTOTYPE_DIR / f"homepage-v1-{name}.css"
     for name in ("base", "hero", "content", "responsive")
 )
 GENERATED_CSS = ROOT / "design" / "generated" / "parket36-tokens.css"
@@ -35,6 +36,11 @@ REQUIRED_CSS = (
     "@media (max-width:640px)",
     "@media (prefers-reduced-motion:reduce)",
     ":focus-visible",
+)
+REQUIRED_DOC = (
+    "design/prototypes/homepage-v1.htm",
+    "публичный контентный инвентарь",
+    "запрещены файлы `*.html`",
 )
 FORBIDDEN = ("#6f4628", "#9b683d", "#d7a86e", "supabase", "parket-public-lead", "<script", "<form")
 
@@ -60,6 +66,13 @@ class PrototypeParser(HTMLParser):
 
 def main() -> int:
     findings: list[str] = []
+
+    for public_preview in sorted(PROTOTYPE_DIR.glob("*.html")):
+        findings.append(
+            "design prototype must use .htm to stay outside public inventory: "
+            f"{public_preview.relative_to(ROOT)}"
+        )
+
     required_files = (PROTOTYPE, *CSS_FILES, GENERATED_CSS, DOC, *LOGOS)
     for path in required_files:
         if not path.is_file():
@@ -81,6 +94,7 @@ def main() -> int:
 
     html = PROTOTYPE.read_text(encoding="utf-8")
     css = "\n".join(path.read_text(encoding="utf-8") for path in CSS_FILES)
+    doc = DOC.read_text(encoding="utf-8")
     lowered = f"{html}\n{css}".lower()
 
     for marker in REQUIRED_HTML:
@@ -89,6 +103,9 @@ def main() -> int:
     for marker in REQUIRED_CSS:
         if marker not in css:
             findings.append(f"prototype CSS is missing marker: {marker}")
+    for marker in REQUIRED_DOC:
+        if marker not in doc:
+            findings.append(f"prototype documentation is missing marker: {marker}")
     for marker in FORBIDDEN:
         if marker in lowered:
             findings.append(f"isolated prototype contains forbidden marker: {marker}")
