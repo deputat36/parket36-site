@@ -16,6 +16,7 @@ CHECKS = [
     ("Validate production default-branch guards", ["tools/check_production_default_branch_guards.py"]),
     ("Validate quality runner", ["tools/check_quality_runner.py"]),
     ("Validate operational docs", ["tools/check_docs.py"]),
+    ("Validate design tokens", ["tools/check_design_tokens.py"]),
     ("Validate campaign links", ["tools/build_campaign_links.py", "--check"]),
     ("Validate local profile kit", ["tools/build_local_profile_kit.py", "--check"]),
     ("Validate direct callback campaign", ["tools/check_direct_callback_campaign.py"]),
