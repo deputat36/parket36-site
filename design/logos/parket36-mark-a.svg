@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">Паркет36 — концепция Плашка</title>
+  <desc id="desc">Геометрический знак из паркетных планок и числа 36.</desc>
+  <rect width="160" height="160" rx="38" fill="#102A20"/>
+  <path d="M35 43 65 25l20 12-30 18z" fill="#C9943E"/>
+  <path d="m35 64 20-12 30 18-20 12z" fill="#F7F7F4"/>
+  <path d="m65 82 20-12 40 24-20 12z" fill="#C9943E"/>
+  <path d="m35 85 20-12 50 30-20 12z" fill="#F7F7F4" opacity=".92"/>
+  <path d="m35 106 20-12 30 18-20 12z" fill="#C9943E"/>
+  <text x="112" y="62" fill="#F7F7F4" font-family="Manrope,Arial,sans-serif" font-size="27" font-weight="800" text-anchor="middle">36</text>
+</svg>

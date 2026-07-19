@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">Паркет36 — концепция Кольцо</title>
+  <desc id="desc">Знак в форме торцевого среза дерева с цифровым модулем 36.</desc>
+  <circle cx="80" cy="80" r="72" fill="#F7F7F4" stroke="#1E4A37" stroke-width="8"/>
+  <path d="M44 88c-8-35 18-58 48-53 25 4 39 27 31 50-7 21-31 31-51 23-15-6-22-23-16-37 5-12 19-18 31-13 9 4 13 14 9 23" fill="none" stroke="#C9943E" stroke-width="8" stroke-linecap="round"/>
+  <path d="M38 110c22 25 62 31 91 8" fill="none" stroke="#1E4A37" stroke-width="6" stroke-linecap="round"/>
+  <rect x="62" y="67" width="66" height="38" rx="19" fill="#102A20"/>
+  <text x="95" y="94" fill="#FFFFFF" font-family="Manrope,Arial,sans-serif" font-size="26" font-weight="800" text-anchor="middle">36</text>
+</svg>
