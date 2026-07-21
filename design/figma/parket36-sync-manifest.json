@@ -10,6 +10,8 @@
     "tokenSource": "design/parket36-tokens.json",
     "foundationSource": "design/foundations/parket36-foundations.json",
     "componentSource": "design/components/parket36-components.json",
+    "screenSource": "design/screens/homepage-v1.json",
+    "screenPrototype": "design/prototypes/homepage-v1.htm",
     "verificationBlocked": true,
     "verificationBlocker": "Figma MCP Starter plan tool call limit",
     "productionImpact": "none"
@@ -87,8 +89,18 @@
     "Input": {"nodeId": null, "status": "pending"}
   },
   "screens": {
-    "Homepage/Desktop/1440": {"nodeId": null, "status": "pending"},
-    "Homepage/Mobile/390": {"nodeId": null, "status": "pending"}
+    "Homepage/Desktop/1440": {
+      "nodeId": null,
+      "status": "pending",
+      "width": 1440,
+      "source": "design/screens/homepage-v1.json"
+    },
+    "Homepage/Mobile/390": {
+      "nodeId": null,
+      "status": "pending",
+      "width": 390,
+      "source": "design/screens/homepage-v1.json"
+    }
   },
   "nextVerification": [
     "Read all pages and confirm node IDs",
@@ -96,6 +108,7 @@
     "Audit local text and effect styles",
     "Create or update foundations documentation frames",
     "Create components sequentially and write returned node IDs",
+    "Build Homepage/Desktop/1440 and Homepage/Mobile/390 on page 2:5",
     "Capture metadata and screenshots for every created section"
   ]
 }
