@@ -42,12 +42,17 @@
 - признаки доверия `.trust span`, соответствующие компоненту Badge;
 - четыре ссылки `.quick-choice__grid a`, соответствующие компоненту Problem Card.
 
+Второй разрешённый потребитель — `css/typography-polish.css`.
+
+В нём на токены переведён общий компонент Section Header: `.section__head`, eyebrow, heading, description, разделитель и модификатор `.section__head--center`.
+
 Остальные production CSS-модули пока продолжают использовать прежние значения и не должны обращаться к `var(--p36-...)`.
 
 Fail-closed guardrail разрешает следующий набор потребителей:
 
 ```text
 css/cta-polish.css
+css/typography-polish.css
 ```
 
 Новый потребитель нельзя добавлять скрытно. Для каждого следующего компонента нужно обновить список, отдельную спецификацию и автоматическую проверку.
@@ -62,11 +67,13 @@ css/cta-polish.css
 - интервалы;
 - тень;
 - состояния, когда они предусмотрены контрактом;
-- декоративная нумерация Problem Card через CSS counter.
+- декоративная нумерация Problem Card через CSS counter;
+- максимальная ширина и выравнивание Section Header.
 
 Не изменяются:
 
 - HTML и тексты;
+- уровни заголовков;
 - ссылки и телефон;
 - обработчики JavaScript;
 - формы и payload;
@@ -83,6 +90,7 @@ python tools/check_production_design_token_layer.py
 python tools/check_button_token_migration.py
 python tools/check_badge_token_migration.py
 python tools/check_problem_card_token_migration.py
+python tools/check_section_header_token_migration.py
 python tools/build_pages.py
 ```
 
@@ -91,6 +99,6 @@ python tools/build_pages.py
 - обе CSS-копии совпадают;
 - объявлено ровно 80 переменных;
 - `design-tokens.css` расположен первым модулем;
-- токены использует только утверждённый список CSS-файлов;
-- Button, Badge и Problem Card соответствуют контракту компонентов;
+- токены используют только утверждённые CSS-файлы;
+- Button, Badge, Problem Card и Section Header соответствуют контракту компонентов;
 - публичная сборка содержит один cache-busted CSS-бандл.

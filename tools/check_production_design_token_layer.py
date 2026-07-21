@@ -19,7 +19,7 @@ DOC = ROOT / "docs" / "design" / "parket36-production-token-layer-v1.md"
 TOKEN_DECLARATION_RE = re.compile(r"^\s*(--p36-[a-z0-9-]+):", re.MULTILINE)
 TOKEN_USAGE_RE = re.compile(r"var\((--p36-[a-z0-9-]+)\)")
 EXPECTED_DECLARATION_COUNT = 80
-APPROVED_CONSUMERS = {"css/cta-polish.css"}
+APPROVED_CONSUMERS = {"css/cta-polish.css", "css/typography-polish.css"}
 
 
 def load_literal_assignment(path: Path, name: str) -> object:
@@ -111,6 +111,7 @@ def main() -> int:
         "80 css-переменных",
         "первый визуальный потребитель",
         "css/cta-polish.css",
+        "css/typography-polish.css",
         "следующий компонентный pr",
     ):
         if marker not in doc_lower:
