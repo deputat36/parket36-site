@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the no-op production design-token layer before visual migration starts."""
+"""Validate the production design-token layer and its approved CSS consumers."""
 
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ DOC = ROOT / "docs" / "design" / "parket36-production-token-layer-v1.md"
 TOKEN_DECLARATION_RE = re.compile(r"^\s*(--p36-[a-z0-9-]+):", re.MULTILINE)
 TOKEN_USAGE_RE = re.compile(r"var\((--p36-[a-z0-9-]+)\)")
 EXPECTED_DECLARATION_COUNT = 80
+APPROVED_CONSUMERS = {"css/cta-polish.css"}
 
 
 def load_literal_assignment(path: Path, name: str) -> object:
@@ -89,26 +90,28 @@ def main() -> int:
         if css_modules.count("design-tokens.css") != 1:
             findings.append("design-tokens.css must appear exactly once in CSS_MODULES")
 
-    consumers: list[str] = []
+    consumers: set[str] = set()
     for css_file in sorted((ROOT / "css").glob("*.css")):
         if css_file == PRODUCTION_CSS:
             continue
         text = css_file.read_text(encoding="utf-8")
         if TOKEN_USAGE_RE.search(text):
-            consumers.append(css_file.relative_to(ROOT).as_posix())
-    if consumers:
+            consumers.add(css_file.relative_to(ROOT).as_posix())
+    if consumers != APPROVED_CONSUMERS:
         findings.append(
-            "stage v1 must remain visually inert; unexpected token consumers: " + ", ".join(consumers)
+            "production token consumers differ from the approved set: "
+            f"expected {sorted(APPROVED_CONSUMERS)}, found {sorted(consumers)}"
         )
 
     doc = DOC.read_text(encoding="utf-8")
     doc_lower = doc.lower()
     for marker in (
-        "визуально нейтральный",
         "css/design-tokens.css",
         "первым модулем",
         "80 css-переменных",
-        "следующий визуальный pr",
+        "первый визуальный потребитель",
+        "css/cta-polish.css",
+        "следующий компонентный pr",
     ):
         if marker not in doc_lower:
             findings.append(f"production token layer documentation is missing marker: {marker}")
