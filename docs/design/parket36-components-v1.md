@@ -24,7 +24,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 
 Состояния: `default`, `hover`, `focus`, `pressed`, `disabled`.
 
-Размеры: 48 и 56 px. Минимальная зона взаимодействия — 44 px. Focus-state обязателен и не зависит только от цвета.
+Размеры: 48 и 56 px; минимальная зона взаимодействия — 44 px. Focus-state обязателен и не зависит только от цвета.
 
 ### Badge
 
