@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "meta": {
+    "name": "Parket36 Figma sync manifest",
+    "version": "1.0.0-draft",
+    "status": "partial-unverified",
+    "fileKey": "2ovBluMs8xOKkkUIPevLaH",
+    "fileUrl": "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH",
+    "repository": "deputat36/parket36-site",
+    "tokenSource": "design/parket36-tokens.json",
+    "foundationSource": "design/foundations/parket36-foundations.json",
+    "componentSource": "design/components/parket36-components.json",
+    "verificationBlocked": true,
+    "verificationBlocker": "Figma MCP Starter plan tool call limit",
+    "productionImpact": "none"
+  },
+  "pages": {
+    "cover": {
+      "name": "Cover + Brand — Паркет36",
+      "nodeId": "0:1",
+      "status": "known-from-prior-session"
+    },
+    "foundationsAndComponents": {
+      "name": "Foundations + Components — Дизайн-система",
+      "nodeId": "2:4",
+      "status": "known-from-prior-session"
+    },
+    "screens": {
+      "name": "Screens — Desktop и Mobile сайт",
+      "nodeId": "2:5",
+      "status": "known-from-prior-session"
+    }
+  },
+  "variableCollections": {
+    "primitives": {
+      "name": "P36 / Primitives",
+      "collectionId": "5:2",
+      "modeIds": ["5:0"],
+      "knownVariableIdRange": ["5:3", "5:22"],
+      "knownVariableCount": 20,
+      "status": "known-from-prior-session"
+    },
+    "semantic": {
+      "name": "P36 / Semantic",
+      "collectionId": "5:23",
+      "modeIds": ["5:1"],
+      "knownVariableIdRange": ["5:24", "5:45"],
+      "knownVariableCount": 22,
+      "status": "known-from-prior-session"
+    },
+    "dimensions": {
+      "name": "P36 / Dimensions",
+      "collectionId": "5:46",
+      "modeIds": ["5:2"],
+      "knownVariableIdRange": ["5:47", "5:66"],
+      "knownVariableCount": 20,
+      "status": "known-from-prior-session"
+    }
+  },
+  "styles": {
+    "text": {
+      "expected": [
+        "Type/Display",
+        "Type/H1",
+        "Type/H2",
+        "Type/H3",
+        "Type/Lead",
+        "Type/Body",
+        "Type/Body Strong",
+        "Type/Small",
+        "Type/Eyebrow"
+      ],
+      "nodeIds": {},
+      "status": "pending"
+    },
+    "effects": {
+      "expected": ["Effect/Card", "Effect/Floating"],
+      "nodeIds": {},
+      "status": "pending"
+    }
+  },
+  "components": {
+    "Button": {"nodeId": null, "status": "pending"},
+    "Badge": {"nodeId": null, "status": "pending"},
+    "Problem Card": {"nodeId": null, "status": "pending"},
+    "Section Header": {"nodeId": null, "status": "pending"},
+    "Input": {"nodeId": null, "status": "pending"}
+  },
+  "screens": {
+    "Homepage/Desktop/1440": {"nodeId": null, "status": "pending"},
+    "Homepage/Mobile/390": {"nodeId": null, "status": "pending"}
+  },
+  "nextVerification": [
+    "Read all pages and confirm node IDs",
+    "Audit all local variable names, scopes, aliases and web code syntax",
+    "Audit local text and effect styles",
+    "Create or update foundations documentation frames",
+    "Create components sequentially and write returned node IDs",
+    "Capture metadata and screenshots for every created section"
+  ]
+}
