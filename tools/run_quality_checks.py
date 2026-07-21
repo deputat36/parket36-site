@@ -22,6 +22,7 @@ CHECKS = [
     ("Validate design foundations", ["tools/check_design_foundations.py"]),
     ("Validate homepage screen contract", ["tools/check_homepage_screen_contract.py"]),
     ("Validate production design token layer", ["tools/check_production_design_token_layer.py"]),
+    ("Validate button token migration", ["tools/check_button_token_migration.py"]),
     ("Validate campaign links", ["tools/build_campaign_links.py", "--check"]),
     ("Validate local profile kit", ["tools/build_local_profile_kit.py", "--check"]),
     ("Validate direct callback campaign", ["tools/check_direct_callback_campaign.py"]),
