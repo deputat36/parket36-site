@@ -14,6 +14,7 @@ from shared_shell import apply_shared_shell
 from site_settings import load_config
 
 CSS_MODULES = (
+    "design-tokens.css",
     "style.css",
     "enhancements.css",
     "photo-brief.css",
