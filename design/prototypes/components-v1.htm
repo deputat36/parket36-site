@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Паркет36 — каталог компонентов v1</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="../generated/parket36-tokens.css">
+  <link rel="stylesheet" href="./components-v1.css">
+</head>
+<body>
+  <main class="catalog" data-design-component-catalog>
+    <header class="catalog__header">
+      <div>
+        <p class="eyebrow">Parket36 design system</p>
+        <h1>Базовые компоненты нового сайта</h1>
+        <p>Изолированный визуальный каталог для переноса в Figma. Не является опубликованной страницей и не отправляет данные.</p>
+      </div>
+      <img class="catalog__mark" src="../logos/parket36-mark-a.svg" alt="Концепция знака Паркет36">
+    </header>
+
+    <section class="specimen" id="buttons">
+      <div class="specimen__head">
+        <div><h2>Button</h2><p class="specimen__description">Основное действие, альтернативное действие и спокойная ссылка-кнопка.</p></div>
+        <span class="specimen__tag">3 variants · 5 states</span>
+      </div>
+      <div class="row">
+        <a class="button button--primary" href="#buttons">Primary</a>
+        <a class="button button--secondary" href="#buttons">Secondary</a>
+        <a class="button button--ghost" href="#buttons">Ghost</a>
+        <a class="button button--primary" href="#buttons" aria-disabled="true">Disabled</a>
+      </div>
+    </section>
+
+    <section class="specimen" id="badges">
+      <div class="specimen__head">
+        <div><h2>Badge</h2><p class="specimen__description">Короткие признаки доверия, статусы и нейтральные метки.</p></div>
+        <span class="specimen__tag">3 tones</span>
+      </div>
+      <div class="row">
+        <span class="badge badge--forest">Паркет — специализация</span>
+        <span class="badge badge--brass">Оценка по фото</span>
+        <span class="badge badge--neutral">Воронеж и область</span>
+      </div>
+    </section>
+
+    <section class="specimen" id="problem-cards">
+      <div class="specimen__head">
+        <div><h2>Problem Card</h2><p class="specimen__description">Карточка помогает выбрать ситуацию, а не угадывать название услуги.</p></div>
+        <span class="specimen__tag">default · hover · focus</span>
+      </div>
+      <div class="grid">
+        <a class="problem-card" href="#problem-cards"><span class="problem-card__number">01</span><strong>Потемнел лак</strong><span>Износ, царапины и потеря блеска.</span></a>
+        <a class="problem-card" href="#problem-cards"><span class="problem-card__number">02</span><strong>Скрипит пол</strong><span>Нужна проверка основания и крепления.</span></a>
+        <a class="problem-card" href="#problem-cards"><span class="problem-card__number">03</span><strong>Появились щели</strong><span>Причина может быть в дефектах или влажности.</span></a>
+      </div>
+    </section>
+
+    <section class="specimen" id="section-header">
+      <div class="specimen__head">
+        <div><h2>Section Header</h2><p class="specimen__description">Единая иерархия для смысловых блоков сайта.</p></div>
+        <span class="specimen__tag">left · center</span>
+      </div>
+      <div class="state-grid">
+        <div class="section-header"><p class="eyebrow">Диагностика</p><h3>Можно ли восстановить ваш пол?</h3><p>Ответ зависит от планок, основания, влажности и желаемого результата.</p></div>
+        <div class="section-header section-header--center"><p class="eyebrow">Следующий шаг</p><h3>Начните с нескольких фотографий</h3><p>Покажите общий вид и проблемный участок, чтобы мастер понял контекст.</p></div>
+      </div>
+    </section>
+
+    <section class="specimen" id="inputs">
+      <div class="specimen__head">
+        <div><h2>Input</h2><p class="specimen__description">Поле формы с обязательной подписью, подсказкой и отдельным текстом ошибки.</p></div>
+        <span class="specimen__tag">5 states</span>
+      </div>
+      <div class="state-grid">
+        <label class="field"><span class="field__label">Телефон</span><input class="field__control" type="tel" placeholder="+7 900 000-00-00"><span class="field__help">Нужен только для ответа по заявке.</span></label>
+        <label class="field"><span class="field__label">Площадь помещения</span><input class="field__control" type="text" value="примерно 25 м²" aria-invalid="true"><span class="field__error">Укажите только число или примерный диапазон.</span></label>
+        <label class="field"><span class="field__label">Район или населённый пункт</span><input class="field__control" type="text" value="Борисоглебск"></label>
+        <label class="field"><span class="field__label">Недоступное поле</span><input class="field__control" type="text" value="Заполнено системой" disabled><span class="field__help">Состояние disabled не должно выглядеть как ошибка.</span></label>
+      </div>
+    </section>
+
+    <footer class="catalog__footer">Источник токенов: <code>design/parket36-tokens.json</code>. Целевая страница Figma: <code>Foundations + Components — Дизайн-система</code>.</footer>
+  </main>
+</body>
+</html>
