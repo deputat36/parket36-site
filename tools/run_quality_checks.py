@@ -24,6 +24,7 @@ CHECKS = [
     ("Validate production design token layer", ["tools/check_production_design_token_layer.py"]),
     ("Validate button token migration", ["tools/check_button_token_migration.py"]),
     ("Validate Badge token migration", ["tools/check_badge_token_migration.py"]),
+    ("Validate Problem Card token migration", ["tools/check_problem_card_token_migration.py"]),
     ("Validate campaign links", ["tools/build_campaign_links.py", "--check"]),
     ("Validate local profile kit", ["tools/build_local_profile_kit.py", "--check"]),
     ("Validate direct callback campaign", ["tools/check_direct_callback_campaign.py"]),

@@ -39,7 +39,8 @@
 В нём на новую систему последовательно переведены:
 
 - базовые кнопки `.btn` и их состояния;
-- признаки доверия `.trust span`, соответствующие компоненту Badge.
+- признаки доверия `.trust span`, соответствующие компоненту Badge;
+- четыре ссылки `.quick-choice__grid a`, соответствующие компоненту Problem Card.
 
 Остальные production CSS-модули пока продолжают использовать прежние значения и не должны обращаться к `var(--p36-...)`.
 
@@ -60,7 +61,8 @@ css/cta-polish.css
 - радиус;
 - интервалы;
 - тень;
-- состояния, когда они предусмотрены контрактом.
+- состояния, когда они предусмотрены контрактом;
+- декоративная нумерация Problem Card через CSS counter.
 
 Не изменяются:
 
@@ -80,6 +82,7 @@ python tools/build_design_token_css.py --check
 python tools/check_production_design_token_layer.py
 python tools/check_button_token_migration.py
 python tools/check_badge_token_migration.py
+python tools/check_problem_card_token_migration.py
 python tools/build_pages.py
 ```
 
@@ -89,5 +92,5 @@ python tools/build_pages.py
 - объявлено ровно 80 переменных;
 - `design-tokens.css` расположен первым модулем;
 - токены использует только утверждённый список CSS-файлов;
-- кнопки и Badge соответствуют контракту компонентов;
+- Button, Badge и Problem Card соответствуют контракту компонентов;
 - публичная сборка содержит один cache-busted CSS-бандл.
