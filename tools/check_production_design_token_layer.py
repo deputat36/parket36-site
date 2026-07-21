@@ -21,7 +21,7 @@ TOKEN_USAGE_RE = re.compile(r"var\((--p36-[a-z0-9-]+)\)")
 EXPECTED_DECLARATION_COUNT = 80
 
 
-def load_assignment(path: Path, name: str) -> object:
+def load_literal_assignment(path: Path, name: str) -> object:
     tree = ast.parse(path.read_text(encoding="utf-8"))
     for node in tree.body:
         if not isinstance(node, ast.Assign):
@@ -67,25 +67,17 @@ def main() -> int:
     ):
         findings.append("production token CSS must keep the generated-file header and :root scope")
 
-    try:
-        output_paths = load_assignment(GENERATOR, "OUTPUT_PATHS")
-    except (SyntaxError, ValueError) as exc:
-        findings.append(str(exc))
-        output_paths = ()
-    expected_suffixes = {
-        ("design", "generated", "parket36-tokens.css"),
-        ("css", "design-tokens.css"),
-    }
-    actual_suffixes = {
-        tuple(path.parts[-3:]) if "design" in path.parts else tuple(path.parts[-2:])
-        for path in output_paths
-        if isinstance(path, Path)
-    }
-    if actual_suffixes != expected_suffixes:
-        findings.append("token generator must write both design and production CSS outputs")
+    generator_text = GENERATOR.read_text(encoding="utf-8")
+    for marker in (
+        'ROOT / "design" / "generated" / "parket36-tokens.css"',
+        'ROOT / "css" / "design-tokens.css"',
+        "for output_path in OUTPUT_PATHS:",
+    ):
+        if marker not in generator_text:
+            findings.append(f"token generator is missing production output marker: {marker}")
 
     try:
-        css_modules = load_assignment(BUNDLE, "CSS_MODULES")
+        css_modules = load_literal_assignment(BUNDLE, "CSS_MODULES")
     except (SyntaxError, ValueError) as exc:
         findings.append(str(exc))
         css_modules = ()
