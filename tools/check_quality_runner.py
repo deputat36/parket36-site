@@ -23,6 +23,7 @@ EXPECTED_CHECKS = [
     ["tools/check_design_foundations.py"],
     ["tools/check_homepage_screen_contract.py"],
     ["tools/check_production_design_token_layer.py"],
+    ["tools/check_button_token_migration.py"],
     ["tools/build_campaign_links.py", "--check"],
     ["tools/build_local_profile_kit.py", "--check"],
     ["tools/check_direct_callback_campaign.py"],
