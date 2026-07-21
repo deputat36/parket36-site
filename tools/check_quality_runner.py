@@ -26,6 +26,7 @@ EXPECTED_CHECKS = [
     ["tools/check_button_token_migration.py"],
     ["tools/check_badge_token_migration.py"],
     ["tools/check_problem_card_token_migration.py"],
+    ["tools/check_section_header_token_migration.py"],
     ["tools/build_campaign_links.py", "--check"],
     ["tools/build_local_profile_kit.py", "--check"],
     ["tools/check_direct_callback_campaign.py"],
