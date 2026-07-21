@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Паркет36 — Foundations v1</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="../generated/parket36-tokens.css">
+  <link rel="stylesheet" href="./foundations-v1.css">
+</head>
+<body>
+  <main class="foundations" data-design-foundations-catalog>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Parket36 design system</p>
+        <h1>Foundations нового сайта</h1>
+        <p class="lead">Цвет, типографика, интервалы, радиусы, тени и сетка. Изолированная спецификация. Не является опубликованной страницей сайта.</p>
+      </div>
+      <img class="hero__mark" src="../logos/parket36-mark-a.svg" alt="Концепция знака Паркет36">
+    </header>
+
+    <section class="panel" id="colors">
+      <div class="panel__header">
+        <div>
+          <p class="eyebrow">01 · Color</p>
+          <h2>Спокойная архитектурная палитра</h2>
+          <p>Нейтральные поверхности дают воздуху работать, лесной зелёный отвечает за экспертность, тёплая латунь — за акцент и ремесленный характер.</p>
+        </div>
+        <span class="status">Tokens linked</span>
+      </div>
+
+      <div class="palette-group">
+        <h3>Neutral</h3>
+        <div class="swatch-grid">
+          <article class="swatch swatch--neutral-0"><span>0</span><code>#FFFFFF</code></article>
+          <article class="swatch swatch--neutral-50"><span>50</span><code>#F7F7F4</code></article>
+          <article class="swatch swatch--neutral-100"><span>100</span><code>#EFEFE9</code></article>
+          <article class="swatch swatch--neutral-200"><span>200</span><code>#DDDDD3</code></article>
+          <article class="swatch swatch--neutral-500 swatch--dark"><span>500</span><code>#77776F</code></article>
+          <article class="swatch swatch--neutral-700 swatch--dark"><span>700</span><code>#3F413C</code></article>
+          <article class="swatch swatch--neutral-900 swatch--dark"><span>900</span><code>#151915</code></article>
+        </div>
+      </div>
+
+      <div class="palette-split">
+        <div class="palette-group">
+          <h3>Forest</h3>
+          <div class="swatch-grid swatch-grid--compact">
+            <article class="swatch swatch--forest-50"><span>50</span><code>#EAF3EE</code></article>
+            <article class="swatch swatch--forest-100"><span>100</span><code>#D5E7DB</code></article>
+            <article class="swatch swatch--forest-500 swatch--dark"><span>500</span><code>#2F6B4F</code></article>
+            <article class="swatch swatch--forest-700 swatch--dark"><span>700</span><code>#1E4A37</code></article>
+            <article class="swatch swatch--forest-900 swatch--dark"><span>900</span><code>#102A20</code></article>
+          </div>
+        </div>
+        <div class="palette-group">
+          <h3>Brass</h3>
+          <div class="swatch-grid swatch-grid--compact">
+            <article class="swatch swatch--brass-50"><span>50</span><code>#FFF4DE</code></article>
+            <article class="swatch swatch--brass-200"><span>200</span><code>#F2D49B</code></article>
+            <article class="swatch swatch--brass-500"><span>500</span><code>#C9943E</code></article>
+            <article class="swatch swatch--brass-700 swatch--dark"><span>700</span><code>#8A6428</code></article>
+          </div>
+        </div>
+      </div>
+
+      <div class="semantic-grid">
+        <article class="semantic-card semantic-card--canvas"><span>Background</span><strong>Canvas</strong></article>
+        <article class="semantic-card semantic-card--surface"><span>Surface</span><strong>Default</strong></article>
+        <article class="semantic-card semantic-card--subtle"><span>Surface</span><strong>Subtle</strong></article>
+        <article class="semantic-card semantic-card--accent"><span>Surface</span><strong>Accent</strong></article>
+        <article class="semantic-card semantic-card--primary"><span>Action</span><strong>Primary</strong></article>
+        <article class="semantic-card semantic-card--secondary"><span>Action</span><strong>Secondary</strong></article>
+      </div>
+    </section>
+
+    <section class="panel" id="typography">
+      <div class="panel__header">
+        <div>
+          <p class="eyebrow">02 · Typography</p>
+          <h2>Manrope для характера, Onest для ясности</h2>
+          <p>Заголовки уверенные, но не кричащие. Основной текст рассчитан на спокойное чтение описаний работ и диагностических пояснений.</p>
+        </div>
+        <span class="status">9 styles</span>
+      </div>
+      <div class="type-list">
+        <article class="type-row"><div><code>Type/Display</code><span>Manrope ExtraBold · 64/70</span></div><p class="type-display">Сохраняем ценный пол</p></article>
+        <article class="type-row"><div><code>Type/H1</code><span>Manrope ExtraBold · 52/58</span></div><p class="type-h1">Вернём деревянному полу характер</p></article>
+        <article class="type-row"><div><code>Type/H2</code><span>Manrope Bold · 40/48</span></div><p class="type-h2">Сначала диагностика, затем решение</p></article>
+        <article class="type-row"><div><code>Type/H3</code><span>Manrope Bold · 28/34</span></div><p class="type-h3">Что произошло с покрытием</p></article>
+        <article class="type-row"><div><code>Type/Lead</code><span>Onest Regular · 20/30</span></div><p class="type-lead">Покажите общий вид пола и проблемный участок — мастер оценит возможный сценарий восстановления.</p></article>
+        <article class="type-row"><div><code>Type/Body</code><span>Onest Regular · 16/25</span></div><p class="type-body">Не обещаем результат до осмотра. Состояние планок, основания и влажность могут изменить технологию работ.</p></article>
+        <article class="type-row"><div><code>Type/Body Strong</code><span>Onest SemiBold · 16/25</span></div><p class="type-strong">Восстановление предпочтительнее замены, когда это технически разумно.</p></article>
+        <article class="type-row"><div><code>Type/Small</code><span>Onest Regular · 14/21</span></div><p class="type-small">Условия и точная стоимость определяются после диагностики.</p></article>
+        <article class="type-row"><div><code>Type/Eyebrow</code><span>Onest Bold · 12/18 · uppercase</span></div><p class="type-eyebrow">Оценка по фотографиям</p></article>
+      </div>
+    </section>
+
+    <section class="panel" id="spacing">
+      <div class="panel__header">
+        <div>
+          <p class="eyebrow">03 · Spacing</p>
+          <h2>Шкала интервалов</h2>
+          <p>Интервалы строятся на последовательной шкале 4–96 px. Для связанных элементов используются меньшие значения, для самостоятельных смысловых блоков — большие.</p>
+        </div>
+        <span class="status">10 tokens</span>
+      </div>
+      <div class="spacing-list">
+        <article><code>0</code><span>0 px</span><i class="space space--0"></i></article>
+        <article><code>xs</code><span>4 px</span><i class="space space--xs"></i></article>
+        <article><code>sm</code><span>8 px</span><i class="space space--sm"></i></article>
+        <article><code>md</code><span>12 px</span><i class="space space--md"></i></article>
+        <article><code>lg</code><span>16 px</span><i class="space space--lg"></i></article>
+        <article><code>xl</code><span>24 px</span><i class="space space--xl"></i></article>
+        <article><code>2xl</code><span>32 px</span><i class="space space--2xl"></i></article>
+        <article><code>3xl</code><span>48 px</span><i class="space space--3xl"></i></article>
+        <article><code>4xl</code><span>64 px</span><i class="space space--4xl"></i></article>
+        <article><code>5xl</code><span>96 px</span><i class="space space--5xl"></i></article>
+      </div>
+    </section>
+
+    <section class="panel panel--split" id="shape-and-depth">
+      <div>
+        <div class="panel__header panel__header--stacked">
+          <div>
+            <p class="eyebrow">04 · Radius</p>
+            <h2>Форма без декоративной мягкости</h2>
+          </div>
+        </div>
+        <div class="radius-grid">
+          <article><i class="radius radius--none"></i><code>0 · none</code></article>
+          <article><i class="radius radius--sm"></i><code>8 · sm</code></article>
+          <article><i class="radius radius--md"></i><code>14 · md</code></article>
+          <article><i class="radius radius--lg"></i><code>20 · lg</code></article>
+          <article><i class="radius radius--xl"></i><code>28 · xl</code></article>
+          <article><i class="radius radius--full"></i><code>999 · full</code></article>
+        </div>
+      </div>
+      <div>
+        <div class="panel__header panel__header--stacked">
+          <div>
+            <p class="eyebrow">05 · Effects</p>
+            <h2>Тихая глубина</h2>
+          </div>
+        </div>
+        <div class="effect-grid">
+          <article class="effect-card effect-card--card"><strong>Effect/Card</strong><span>Карточки и спокойные панели</span></article>
+          <article class="effect-card effect-card--floating"><strong>Effect/Floating</strong><span>Плавающие CTA и важные подсказки</span></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="layout">
+      <div class="panel__header">
+        <div>
+          <p class="eyebrow">06 · Layout</p>
+          <h2>Два опорных холста</h2>
+          <p>Desktop проектируется на 1440 px с контентной областью 1180 px. Mobile — на 390 px, с четырьмя колонками и безопасными боковыми полями.</p>
+        </div>
+        <span class="status">1440 · 390</span>
+      </div>
+      <div class="layout-grid">
+        <article class="layout-card">
+          <div class="layout-card__preview layout-card__preview--desktop"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div><strong>Desktop / 1440</strong><span>12 колонок · gutter 24 · container 1180</span></div>
+        </article>
+        <article class="layout-card">
+          <div class="layout-card__preview layout-card__preview--mobile"><i></i><i></i><i></i><i></i></div>
+          <div><strong>Mobile / 390</strong><span>4 колонки · gutter 16 · margin 20</span></div>
+        </article>
+      </div>
+      <div class="measure-grid">
+        <article><strong>44 px</strong><span>минимальная зона взаимодействия</span></article>
+        <article><strong>72 px</strong><span>высота основного header</span></article>
+        <article><strong>1180 px</strong><span>максимальная ширина контента</span></article>
+      </div>
+    </section>
+
+    <footer class="footer">Источник: <code>design/parket36-tokens.json</code>. Целевая Figma-страница: <code>Foundations + Components — Дизайн-система</code>.</footer>
+  </main>
+</body>
+</html>

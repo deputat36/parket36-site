@@ -19,6 +19,7 @@ CHECKS = [
     ("Validate design tokens", ["tools/check_design_tokens.py"]),
     ("Validate design prototype", ["tools/check_design_prototype.py"]),
     ("Validate design component catalog", ["tools/check_design_component_catalog.py"]),
+    ("Validate design foundations", ["tools/check_design_foundations.py"]),
     ("Validate campaign links", ["tools/build_campaign_links.py", "--check"]),
     ("Validate local profile kit", ["tools/build_local_profile_kit.py", "--check"]),
     ("Validate direct callback campaign", ["tools/check_direct_callback_campaign.py"]),
