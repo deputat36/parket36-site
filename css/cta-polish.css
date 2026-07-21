@@ -247,3 +247,20 @@
     min-height: 52px;
   }
 }
+
+/* Design system v1: tokenized trust badges. */
+.trust span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px var(--p36-spacing-md);
+  border: 1px solid var(--p36-color-semantic-border-strong);
+  border-radius: var(--p36-radius-full);
+  background: var(--p36-color-semantic-surface-subtle);
+  color: var(--p36-color-semantic-text-accent);
+  font-size: var(--p36-font-size-small);
+  font-weight: var(--p36-font-weight-semibold);
+  line-height: 1.35;
+  box-shadow: none;
+}
