@@ -1,27 +1,30 @@
 # CSS bundle и cache busting
 
-Дата обновления: 2026-07-10.
+Дата обновления: 2026-07-21.
 
 ## Цель
 
-Публичная сборка Паркет36 должна загружать одну таблицу стилей вместо базового файла и девяти дополнительных CSS-модулей, подключавшихся через JavaScript.
+Публичная сборка Паркет36 должна загружать одну таблицу стилей вместо отдельных CSS-модулей. Первый модуль содержит production-копию дизайн-токенов, остальные сохраняют действующее оформление и постепенно переводятся на токены отдельными PR.
 
 ## Исходные файлы
 
 Читаемые модули остаются в каталоге `css/`:
 
-1. `style.css`;
-2. `enhancements.css`;
-3. `photo-brief.css`;
-4. `interface-polish.css`;
-5. `mobile-menu.css`;
-6. `typography-polish.css`;
-7. `scroll-progress.css`;
-8. `accessibility-polish.css`;
-9. `cta-polish.css`;
-10. `logo-brand.css`.
+1. `design-tokens.css`;
+2. `style.css`;
+3. `enhancements.css`;
+4. `photo-brief.css`;
+5. `interface-polish.css`;
+6. `mobile-menu.css`;
+7. `typography-polish.css`;
+8. `scroll-progress.css`;
+9. `accessibility-polish.css`;
+10. `cta-polish.css`;
+11. `logo-brand.css`.
 
 Порядок задаётся константой `CSS_MODULES` в `tools/css_bundle.py`. Он важен, потому что более поздние модули могут уточнять базовые стили.
+
+`design-tokens.css` всегда располагается первым. Он генерируется из `design/parket36-tokens.json` и не редактируется вручную.
 
 ## Публичная сборка
 
@@ -48,6 +51,8 @@
 Сборка завершается ошибкой, если:
 
 - отсутствует любой обязательный CSS-модуль;
+- production-копия токенов расходится с дизайн-копией;
+- `design-tokens.css` находится не первым в `CSS_MODULES`;
 - HTML не содержит исходной CSS-ссылки для замены;
 - отсутствует `</head>`;
 - в публичной папке находится больше одного CSS-файла;
@@ -59,11 +64,14 @@
 ## Локальная проверка
 
 ```bash
+python tools/build_design_token_css.py --check
+python tools/check_production_design_token_layer.py
 python tools/build_pages.py
 ```
 
 После успешной сборки:
 
 - в `_site/css/` должен быть один файл `site.<hash>.css`;
+- в начале bundle должен находиться блок `source: css/design-tokens.css`;
 - в каждом HTML должен быть атрибут `data-css-bundle="true"`;
 - в `_site/js/main.js` не должно быть вызовов `ensureStylesheet('/css/...')`.
