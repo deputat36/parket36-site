@@ -19,6 +19,7 @@ EXPECTED_CHECKS = [
     ["tools/check_docs.py"],
     ["tools/check_design_tokens.py"],
     ["tools/check_design_prototype.py"],
+    ["tools/check_design_component_catalog.py"],
     ["tools/build_campaign_links.py", "--check"],
     ["tools/build_local_profile_kit.py", "--check"],
     ["tools/check_direct_callback_campaign.py"],
