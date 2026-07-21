@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "meta": {
+    "name": "Parket36 foundations contract",
+    "version": "1.0.0-draft",
+    "status": "draft",
+    "figmaFile": "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH",
+    "figmaTargetPage": "Foundations + Components — Дизайн-система",
+    "tokenSource": "design/parket36-tokens.json",
+    "catalog": "design/prototypes/foundations-v1.htm",
+    "productionImpact": "none"
+  },
+  "colors": {
+    "primitiveGroups": [
+      "color.primitive.neutral",
+      "color.primitive.forest",
+      "color.primitive.brass",
+      "color.primitive.success",
+      "color.primitive.warning",
+      "color.primitive.error",
+      "color.primitive.info"
+    ],
+    "semanticGroups": [
+      "color.semantic.bg",
+      "color.semantic.surface",
+      "color.semantic.text",
+      "color.semantic.border",
+      "color.semantic.action",
+      "color.semantic.status"
+    ]
+  },
+  "typography": {
+    "styles": [
+      {
+        "figmaName": "Type/Display",
+        "familyToken": "font.family.display",
+        "weightToken": "font.weight.extrabold",
+        "sizeToken": "font.size.display",
+        "lineHeight": 70,
+        "letterSpacingPercent": -3
+      },
+      {
+        "figmaName": "Type/H1",
+        "familyToken": "font.family.display",
+        "weightToken": "font.weight.extrabold",
+        "sizeToken": "font.size.h1",
+        "lineHeight": 58,
+        "letterSpacingPercent": -3
+      },
+      {
+        "figmaName": "Type/H2",
+        "familyToken": "font.family.display",
+        "weightToken": "font.weight.bold",
+        "sizeToken": "font.size.h2",
+        "lineHeight": 48,
+        "letterSpacingPercent": -2
+      },
+      {
+        "figmaName": "Type/H3",
+        "familyToken": "font.family.display",
+        "weightToken": "font.weight.bold",
+        "sizeToken": "font.size.h3",
+        "lineHeight": 34,
+        "letterSpacingPercent": -2
+      },
+      {
+        "figmaName": "Type/Lead",
+        "familyToken": "font.family.body",
+        "weightToken": "font.weight.regular",
+        "sizeToken": "font.size.lead",
+        "lineHeight": 30,
+        "letterSpacingPercent": 0
+      },
+      {
+        "figmaName": "Type/Body",
+        "familyToken": "font.family.body",
+        "weightToken": "font.weight.regular",
+        "sizeToken": "font.size.body",
+        "lineHeight": 25,
+        "letterSpacingPercent": 0
+      },
+      {
+        "figmaName": "Type/Body Strong",
+        "familyToken": "font.family.body",
+        "weightToken": "font.weight.semibold",
+        "sizeToken": "font.size.body",
+        "lineHeight": 25,
+        "letterSpacingPercent": 0
+      },
+      {
+        "figmaName": "Type/Small",
+        "familyToken": "font.family.body",
+        "weightToken": "font.weight.regular",
+        "sizeToken": "font.size.small",
+        "lineHeight": 21,
+        "letterSpacingPercent": 0
+      },
+      {
+        "figmaName": "Type/Eyebrow",
+        "familyToken": "font.family.body",
+        "weightToken": "font.weight.bold",
+        "sizeToken": "font.size.eyebrow",
+        "lineHeight": 18,
+        "letterSpacingPercent": 14,
+        "textCase": "UPPER"
+      }
+    ]
+  },
+  "spacing": {
+    "tokens": [
+      "spacing.0",
+      "spacing.xs",
+      "spacing.sm",
+      "spacing.md",
+      "spacing.lg",
+      "spacing.xl",
+      "spacing.2xl",
+      "spacing.3xl",
+      "spacing.4xl",
+      "spacing.5xl"
+    ]
+  },
+  "radii": {
+    "tokens": [
+      "radius.none",
+      "radius.sm",
+      "radius.md",
+      "radius.lg",
+      "radius.xl",
+      "radius.full"
+    ]
+  },
+  "effects": {
+    "styles": [
+      {
+        "figmaName": "Effect/Card",
+        "token": "shadow.card"
+      },
+      {
+        "figmaName": "Effect/Floating",
+        "token": "shadow.floating"
+      }
+    ]
+  },
+  "layout": {
+    "tokens": [
+      "size.touchMin",
+      "size.header",
+      "size.container",
+      "size.desktopCanvas",
+      "size.mobileCanvas"
+    ],
+    "desktopColumns": 12,
+    "desktopGutter": 24,
+    "desktopMargin": 130,
+    "mobileColumns": 4,
+    "mobileGutter": 16,
+    "mobileMargin": 20
+  }
+}
