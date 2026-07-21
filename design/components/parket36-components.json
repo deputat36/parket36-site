@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "meta": {
+    "name": "Parket36 component contract",
+    "version": "1.0.0-draft",
+    "status": "draft",
+    "figmaFile": "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH",
+    "figmaTargetPage": "Foundations + Components — Дизайн-система",
+    "tokenSource": "design/parket36-tokens.json",
+    "catalog": "design/prototypes/components-v1.htm",
+    "productionImpact": "none"
+  },
+  "components": {
+    "button": {
+      "figmaName": "Button",
+      "anatomy": ["Container", "Label"],
+      "properties": {
+        "variant": ["primary", "secondary", "ghost"],
+        "state": ["default", "hover", "focus", "pressed", "disabled"],
+        "size": ["md", "lg"],
+        "label": "text"
+      },
+      "dimensions": {
+        "mdHeight": 48,
+        "lgHeight": 56,
+        "horizontalPadding": 24,
+        "radiusToken": "radius.full"
+      },
+      "accessibility": {
+        "minimumTouchTarget": 44,
+        "focusVisible": true,
+        "disabledUsesOpacityAndCursor": true
+      }
+    },
+    "badge": {
+      "figmaName": "Badge",
+      "anatomy": ["Container", "Label"],
+      "properties": {
+        "tone": ["forest", "brass", "neutral"],
+        "label": "text"
+      },
+      "dimensions": {
+        "minimumHeight": 34,
+        "horizontalPadding": 12,
+        "radiusToken": "radius.full"
+      }
+    },
+    "problemCard": {
+      "figmaName": "Problem Card",
+      "anatomy": ["Number", "Title", "Description", "Arrow"],
+      "properties": {
+        "state": ["default", "hover", "focus"],
+        "number": "text",
+        "title": "text",
+        "description": "text"
+      },
+      "dimensions": {
+        "minimumHeight": 168,
+        "padding": 24,
+        "radiusToken": "radius.lg"
+      },
+      "accessibility": {
+        "entireCardClickable": true,
+        "focusVisible": true,
+        "descriptiveLabelRequired": true
+      }
+    },
+    "sectionHeader": {
+      "figmaName": "Section Header",
+      "anatomy": ["Eyebrow", "Heading", "Description"],
+      "properties": {
+        "alignment": ["left", "center"],
+        "eyebrow": "text",
+        "heading": "text",
+        "description": "text"
+      },
+      "dimensions": {
+        "maximumTextWidth": 760,
+        "gap": 16
+      }
+    },
+    "input": {
+      "figmaName": "Input",
+      "anatomy": ["Label", "Field", "Value", "Help", "Error"],
+      "properties": {
+        "state": ["default", "focus", "filled", "error", "disabled"],
+        "label": "text",
+        "placeholder": "text",
+        "help": "text",
+        "error": "text"
+      },
+      "dimensions": {
+        "fieldHeight": 52,
+        "horizontalPadding": 16,
+        "radiusToken": "radius.md"
+      },
+      "accessibility": {
+        "labelRequired": true,
+        "errorNotColorOnly": true,
+        "minimumTouchTarget": 44
+      }
+    }
+  }
+}
