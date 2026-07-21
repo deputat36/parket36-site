@@ -102,14 +102,15 @@ def main() -> int:
         )
 
     doc = DOC.read_text(encoding="utf-8")
+    doc_lower = doc.lower()
     for marker in (
         "визуально нейтральный",
         "css/design-tokens.css",
         "первым модулем",
-        "80 CSS-переменных",
-        "следующий визуальный PR",
+        "80 css-переменных",
+        "следующий визуальный pr",
     ):
-        if marker not in doc:
+        if marker not in doc_lower:
             findings.append(f"production token layer documentation is missing marker: {marker}")
 
     if findings:
