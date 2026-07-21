@@ -95,6 +95,54 @@ html {
   line-height: 1.55;
 }
 
+/* Design system v1: tokenized Section Header. */
+.section__head {
+  display: grid;
+  gap: var(--p36-spacing-lg);
+  width: min(100%, 760px);
+  max-width: 760px;
+  margin-bottom: var(--p36-spacing-2xl);
+}
+
+.section__head > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.section__head .eyebrow {
+  color: var(--p36-color-semantic-text-warm);
+  font-size: var(--p36-font-size-eyebrow);
+  font-weight: var(--p36-font-weight-bold);
+}
+
+.section__head h2 {
+  max-width: 760px;
+  color: var(--p36-color-semantic-text-primary);
+}
+
+.section__head > p:not(.eyebrow) {
+  max-width: 760px;
+  color: var(--p36-color-semantic-text-secondary);
+  font-size: clamp(var(--p36-font-size-body), 1.5vw, var(--p36-font-size-lead));
+}
+
+.section__head::after {
+  width: var(--p36-spacing-4xl);
+  height: var(--p36-spacing-xs);
+  margin-top: 0;
+  background: linear-gradient(
+    90deg,
+    var(--p36-color-semantic-action-primary),
+    var(--p36-color-semantic-action-secondary)
+  );
+}
+
+.section__head--center {
+  justify-items: center;
+  margin-inline: auto;
+  text-align: center;
+}
+
 @media (max-width: 1000px) {
   html {
     scroll-padding-top: 88px;
