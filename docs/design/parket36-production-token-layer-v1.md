@@ -40,7 +40,8 @@
 
 - базовые кнопки `.btn` и их состояния;
 - признаки доверия `.trust span`, соответствующие компоненту Badge;
-- четыре ссылки `.quick-choice__grid a`, соответствующие компоненту Problem Card.
+- четыре ссылки `.quick-choice__grid a`, соответствующие компоненту Problem Card;
+- поля `.request-form`, соответствующие компоненту Input, включая состояния default, focus, filled, error и disabled.
 
 Второй разрешённый потребитель — `css/typography-polish.css`.
 
@@ -68,15 +69,17 @@ css/typography-polish.css
 - тень;
 - состояния, когда они предусмотрены контрактом;
 - декоративная нумерация Problem Card через CSS counter;
-- максимальная ширина и выравнивание Section Header.
+- максимальная ширина и выравнивание Section Header;
+- текстовая подсказка ошибки Input для `:user-invalid`.
 
 Не изменяются:
 
-- HTML и тексты;
+- HTML и тексты страниц;
 - уровни заголовков;
 - ссылки и телефон;
 - обработчики JavaScript;
-- формы и payload;
+- ID, required и metadata полей;
+- формирование payload и fallback;
 - аналитика;
 - Supabase.
 
@@ -91,6 +94,7 @@ python tools/check_button_token_migration.py
 python tools/check_badge_token_migration.py
 python tools/check_problem_card_token_migration.py
 python tools/check_section_header_token_migration.py
+python tools/check_input_token_migration.py
 python tools/build_pages.py
 ```
 
@@ -100,5 +104,5 @@ python tools/build_pages.py
 - объявлено ровно 80 переменных;
 - `design-tokens.css` расположен первым модулем;
 - токены используют только утверждённые CSS-файлы;
-- Button, Badge, Problem Card и Section Header соответствуют контракту компонентов;
+- Button, Badge, Problem Card, Section Header и Input соответствуют контракту компонентов;
 - публичная сборка содержит один cache-busted CSS-бандл.
