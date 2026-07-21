@@ -28,7 +28,13 @@
         <a class="button button--primary" href="#buttons">Primary</a>
         <a class="button button--secondary" href="#buttons">Secondary</a>
         <a class="button button--ghost" href="#buttons">Ghost</a>
-        <a class="button button--primary" href="#buttons" aria-disabled="true">Disabled</a>
+      </div>
+      <div class="state-strip" aria-label="Статические состояния основной кнопки">
+        <div><span class="state-caption">default</span><span class="button button--primary">Оценить по фото</span></div>
+        <div><span class="state-caption">hover</span><span class="button button--primary is-hover">Оценить по фото</span></div>
+        <div><span class="state-caption">focus</span><span class="button button--primary is-focus">Оценить по фото</span></div>
+        <div><span class="state-caption">pressed</span><span class="button button--primary is-pressed">Оценить по фото</span></div>
+        <div><span class="state-caption">disabled</span><span class="button button--primary" aria-disabled="true">Оценить по фото</span></div>
       </div>
     </section>
 
@@ -51,8 +57,8 @@
       </div>
       <div class="grid">
         <a class="problem-card" href="#problem-cards"><span class="problem-card__number">01</span><strong>Потемнел лак</strong><span>Износ, царапины и потеря блеска.</span></a>
-        <a class="problem-card" href="#problem-cards"><span class="problem-card__number">02</span><strong>Скрипит пол</strong><span>Нужна проверка основания и крепления.</span></a>
-        <a class="problem-card" href="#problem-cards"><span class="problem-card__number">03</span><strong>Появились щели</strong><span>Причина может быть в дефектах или влажности.</span></a>
+        <a class="problem-card is-hover" href="#problem-cards"><span class="problem-card__number">02</span><strong>Скрипит пол</strong><span>Нужна проверка основания и крепления.</span></a>
+        <a class="problem-card is-focus" href="#problem-cards"><span class="problem-card__number">03</span><strong>Появились щели</strong><span>Причина может быть в дефектах или влажности.</span></a>
       </div>
     </section>
 
@@ -73,10 +79,11 @@
         <span class="specimen__tag">5 states</span>
       </div>
       <div class="state-grid">
-        <label class="field"><span class="field__label">Телефон</span><input class="field__control" type="tel" placeholder="+7 900 000-00-00"><span class="field__help">Нужен только для ответа по заявке.</span></label>
-        <label class="field"><span class="field__label">Площадь помещения</span><input class="field__control" type="text" value="примерно 25 м²" aria-invalid="true"><span class="field__error">Укажите только число или примерный диапазон.</span></label>
-        <label class="field"><span class="field__label">Район или населённый пункт</span><input class="field__control" type="text" value="Борисоглебск"></label>
-        <label class="field"><span class="field__label">Недоступное поле</span><input class="field__control" type="text" value="Заполнено системой" disabled><span class="field__help">Состояние disabled не должно выглядеть как ошибка.</span></label>
+        <label class="field"><span class="field__label">Телефон · default</span><input class="field__control" type="tel" placeholder="+7 900 000-00-00"><span class="field__help">Нужен только для ответа по заявке.</span></label>
+        <label class="field"><span class="field__label">Телефон · focus</span><input class="field__control is-focus" type="tel" value="+7 900"><span class="field__help">Focus-state видим независимо от цвета границы.</span></label>
+        <label class="field"><span class="field__label">Площадь помещения · error</span><input class="field__control" type="text" value="примерно 25 м²" aria-invalid="true"><span class="field__error">Укажите только число или примерный диапазон.</span></label>
+        <label class="field"><span class="field__label">Район · filled</span><input class="field__control" type="text" value="Борисоглебск"></label>
+        <label class="field"><span class="field__label">Недоступное поле · disabled</span><input class="field__control" type="text" value="Заполнено системой" disabled><span class="field__help">Состояние disabled не должно выглядеть как ошибка.</span></label>
       </div>
     </section>
 
