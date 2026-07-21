@@ -327,3 +327,99 @@
   color: var(--p36-color-semantic-text-secondary);
   font-size: var(--p36-font-size-body);
 }
+
+/* Design system v1: tokenized request inputs. */
+.request-form label:has(> input),
+.request-form label:has(> select),
+.request-form label:has(> textarea) {
+  gap: var(--p36-spacing-sm);
+  padding: var(--p36-spacing-md);
+  border-radius: var(--p36-radius-lg);
+  background: var(--p36-color-semantic-surface-subtle);
+  color: var(--p36-color-semantic-text-primary);
+  font-weight: var(--p36-font-weight-bold);
+}
+
+.request-form input,
+.request-form select,
+.request-form textarea {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px var(--p36-spacing-lg);
+  border: 1px solid var(--p36-color-semantic-border-default);
+  border-radius: var(--p36-radius-md);
+  background: var(--p36-color-semantic-surface-default);
+  color: var(--p36-color-semantic-text-primary);
+  font-size: var(--p36-font-size-body);
+  line-height: 1.5;
+  box-shadow: none;
+  transition:
+    background-color .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease;
+}
+
+.request-form textarea {
+  min-height: 132px;
+  resize: vertical;
+}
+
+.request-form input::placeholder,
+.request-form textarea::placeholder {
+  color: var(--p36-color-semantic-text-muted);
+  opacity: 1;
+}
+
+.request-form input:focus,
+.request-form select:focus,
+.request-form textarea:focus,
+.request-form input:focus-visible,
+.request-form select:focus-visible,
+.request-form textarea:focus-visible {
+  outline: 0;
+  border-color: var(--p36-color-semantic-action-primary);
+  background: var(--p36-color-semantic-surface-default);
+  box-shadow: 0 0 0 4px var(--p36-color-primitive-brass-50);
+}
+
+.request-form input:not(:placeholder-shown),
+.request-form textarea:not(:placeholder-shown),
+.request-form select:valid {
+  background: var(--p36-color-semantic-surface-subtle);
+}
+
+.request-form input:required,
+.request-form textarea:required {
+  border-left-width: 4px;
+}
+
+.request-form input:required:valid,
+.request-form textarea:required:valid {
+  border-left-color: var(--p36-color-semantic-status-success);
+}
+
+.request-form input:required:user-invalid,
+.request-form textarea:required:user-invalid {
+  border-color: var(--p36-color-semantic-status-error);
+  background: var(--p36-color-semantic-surface-default);
+  box-shadow: 0 0 0 3px var(--p36-color-primitive-brass-50);
+}
+
+.request-form label:has(> input:required:user-invalid)::after,
+.request-form label:has(> textarea:required:user-invalid)::after {
+  content: "Проверьте обязательное поле";
+  color: var(--p36-color-semantic-status-error);
+  font-size: var(--p36-font-size-small);
+  font-weight: var(--p36-font-weight-semibold);
+  line-height: 1.4;
+}
+
+.request-form input:disabled,
+.request-form select:disabled,
+.request-form textarea:disabled {
+  border-color: var(--p36-color-semantic-border-default);
+  background: var(--p36-color-primitive-neutral-100);
+  color: var(--p36-color-semantic-text-muted);
+  cursor: not-allowed;
+  opacity: .72;
+}
