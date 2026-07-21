@@ -12,7 +12,10 @@ from typing import Any, Iterator
 
 ROOT = Path(__file__).resolve().parents[1]
 TOKENS_PATH = ROOT / "design" / "parket36-tokens.json"
-OUTPUT_PATH = ROOT / "design" / "generated" / "parket36-tokens.css"
+OUTPUT_PATHS = (
+    ROOT / "design" / "generated" / "parket36-tokens.css",
+    ROOT / "css" / "design-tokens.css",
+)
 REFERENCE_RE = re.compile(r"^\{([A-Za-z0-9_.-]+)\}$")
 CAMEL_RE = re.compile(r"([a-z0-9])([A-Z])")
 
@@ -91,19 +94,26 @@ def main() -> int:
         return 1
 
     if args.check:
-        if not OUTPUT_PATH.is_file():
-            print(f"Generated CSS is missing: {OUTPUT_PATH.relative_to(ROOT)}")
+        stale: list[Path] = []
+        for output_path in OUTPUT_PATHS:
+            if not output_path.is_file():
+                print(f"Generated CSS is missing: {output_path.relative_to(ROOT)}")
+                stale.append(output_path)
+                continue
+            actual = output_path.read_text(encoding="utf-8")
+            if actual != expected:
+                print(f"Generated design token CSS is stale: {output_path.relative_to(ROOT)}")
+                stale.append(output_path)
+        if stale:
+            print("Run tools/build_design_token_css.py")
             return 1
-        actual = OUTPUT_PATH.read_text(encoding="utf-8")
-        if actual != expected:
-            print("Generated design token CSS is stale. Run tools/build_design_token_css.py")
-            return 1
-        print("Generated design token CSS is current")
+        print("Generated design token CSS is current in design and production sources")
         return 0
 
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text(expected, encoding="utf-8")
-    print(f"Wrote {OUTPUT_PATH.relative_to(ROOT)}")
+    for output_path in OUTPUT_PATHS:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(expected, encoding="utf-8")
+        print(f"Wrote {output_path.relative_to(ROOT)}")
     return 0
 
 
