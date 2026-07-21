@@ -65,7 +65,7 @@ def main() -> int:
     else:
         block = css.split(BLOCK_MARKER, 1)[1].split("@media (max-width: 1000px)", 1)[0]
 
-    required_markers = (
+    required_markers = [
         ".section__head {",
         "display: grid;",
         "gap: var(--p36-spacing-lg);",
@@ -85,16 +85,19 @@ def main() -> int:
         ".section__head::after {",
         "width: var(--p36-spacing-4xl);",
         "height: var(--p36-spacing-xs);",
-        "var(--p36-color-semantic-action-primary)",
-        "var(--p36-color-semantic-action-secondary)",
         ".section__head--center {",
         "justify-items: center;",
         "margin-inline: auto;",
         "text-align: center;",
-    )
+    ]
     for marker in required_markers:
         if marker not in block:
             findings.append(f"tokenized Section Header block is missing marker: {marker}")
+
+    if "var(--p36-color-semantic-action-primary)" not in block:
+        findings.append("Section Header divider is missing the primary action token")
+    if "var(--p36-color-semantic-action-secondary)" not in block:
+        findings.append("Section Header divider is missing the secondary action token")
 
     if RAW_COLOR_RE.search(block):
         findings.append("tokenized Section Header block must not contain raw hex/rgb colors")
