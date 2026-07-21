@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "meta": {
+    "name": "Parket36 homepage screen contract",
+    "version": "1.0.0-draft",
+    "status": "draft",
+    "figmaFile": "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH",
+    "figmaTargetPage": "Screens — Desktop и Mobile сайт",
+    "tokenSource": "design/parket36-tokens.json",
+    "foundationSource": "design/foundations/parket36-foundations.json",
+    "componentSource": "design/components/parket36-components.json",
+    "prototype": "design/prototypes/homepage-v1.htm",
+    "productionImpact": "none"
+  },
+  "canvases": {
+    "desktop": {
+      "figmaName": "Homepage/Desktop/1440",
+      "width": 1440,
+      "contentWidth": 1180,
+      "columns": 12,
+      "gutter": 24,
+      "margin": 130
+    },
+    "mobile": {
+      "figmaName": "Homepage/Mobile/390",
+      "width": 390,
+      "columns": 4,
+      "gutter": 16,
+      "margin": 20
+    }
+  },
+  "breakpoints": {
+    "tablet": 1000,
+    "mobile": 640
+  },
+  "globalRules": {
+    "primaryJourney": ["problem", "diagnosis", "solution", "action"],
+    "primaryAction": "Оценить по фото",
+    "alternateAction": "Позвонить",
+    "restoreFirstPrinciple": "Восстановление предпочтительнее замены, когда это технически разумно.",
+    "noPromiseBeforeDiagnosis": true,
+    "prototypeNoteInternalOnly": true,
+    "prototypeNoteExcludedFromFigmaScreen": true,
+    "realProjectAssetsRequiredBeforeProduction": true,
+    "temporaryWoodColorsAreNotBrandTokens": true
+  },
+  "sections": [
+    {
+      "id": "header",
+      "figmaName": "Screen/Header",
+      "purpose": "Быстро показать специализацию, географию, телефон и основное действие.",
+      "desktopLayout": "brand | navigation | phone | primary button",
+      "tabletLayout": "brand | phone | primary button; navigation hidden",
+      "mobileLayout": "brand | compact primary button; phone hidden",
+      "heightToken": "size.header",
+      "components": ["Button"],
+      "content": {
+        "brand": "Паркет36",
+        "meta": "реставрация деревянных полов · Воронеж",
+        "phone": "8 (900) 926-79-29",
+        "cta": "Оценить по фото"
+      }
+    },
+    {
+      "id": "hero",
+      "figmaName": "Screen/Hero",
+      "purpose": "Сформулировать ценность сохранения деревянного пола и перевести к диагностике.",
+      "desktopLayout": "two columns 1.04fr / 0.96fr, gap 64",
+      "tabletLayout": "one column",
+      "mobileLayout": "one column; actions full width",
+      "components": ["Button", "Badge"],
+      "content": {
+        "eyebrow": "Воронеж и область · честная диагностика",
+        "heading": "Вернём деревянному полу характер, а дому — ощущение порядка",
+        "lead": "Сначала разберёмся, можно ли сохранить паркет без лишней замены. По фото оценим состояние и предложим понятный следующий шаг.",
+        "primaryCta": "Получить оценку по фото",
+        "secondaryCta": "Позвонить Ивану"
+      },
+      "visual": {
+        "type": "before-after-placeholder",
+        "minimumDesktopHeight": 500,
+        "minimumTabletHeight": 430,
+        "minimumMobileHeight": 360,
+        "policy": "Нейтральная схема до получения реальных фотографий. Временные древесные оттенки не являются UI- или brand-токенами."
+      }
+    },
+    {
+      "id": "problems",
+      "figmaName": "Screen/Problems",
+      "purpose": "Дать клиенту выбрать ситуацию понятными словами, не требуя знания названия услуги.",
+      "desktopLayout": "five equal columns",
+      "tabletLayout": "two columns",
+      "mobileLayout": "one column",
+      "components": ["Section Header", "Problem Card"],
+      "items": [
+        {"number": "01", "title": "Потемнел лак", "description": "Износ и царапины."},
+        {"number": "02", "title": "Скрипит пол", "description": "Нужна проверка основания."},
+        {"number": "03", "title": "Появились щели", "description": "Дефекты или влажность."},
+        {"number": "04", "title": "Локальный ремонт", "description": "Повреждён участок."},
+        {"number": "05", "title": "Не знаю", "description": "Начните с фото."}
+      ]
+    },
+    {
+      "id": "diagnostic",
+      "figmaName": "Screen/Diagnostic",
+      "purpose": "Объяснить, какие данные нужны для предварительной оценки и почему нельзя обещать результат заранее.",
+      "desktopLayout": "two columns inside inverse panel",
+      "tabletLayout": "one column",
+      "mobileLayout": "one column with compact padding",
+      "components": ["Section Header"],
+      "localPatterns": ["Diagnostic Step"],
+      "steps": [
+        {"number": "1", "title": "Общий вид", "description": "Комната целиком."},
+        {"number": "2", "title": "Дефект крупно", "description": "Щели, пятна или движение."},
+        {"number": "3", "title": "Контекст", "description": "Площадь, район и цель."}
+      ]
+    },
+    {
+      "id": "assessment",
+      "figmaName": "Screen/Assessment CTA",
+      "purpose": "Завершить сценарий понятным следующим шагом без ложного обещания отправки формы в прототипе.",
+      "desktopLayout": "left aligned content, max width 760",
+      "mobileLayout": "stacked full-width actions",
+      "components": ["Section Header", "Button"],
+      "content": {
+        "eyebrow": "Следующий шаг",
+        "heading": "Начните с 2–4 фотографий",
+        "prototypeDisclosure": "Этот прототип не отправляет данные. Рабочая форма внедряется отдельно без изменения существующей логики.",
+        "primaryCta": "Позвонить Ивану",
+        "secondaryCta": "К началу"
+      }
+    },
+    {
+      "id": "footer",
+      "figmaName": "Screen/Footer",
+      "purpose": "Закрыть внутренний прототип и дать ссылку на Figma.",
+      "internalPrototypeOnly": true,
+      "excludedFromProductionScreen": true
+    }
+  ],
+  "componentAlignment": {
+    "Button": {
+      "minimumHeight": 48,
+      "source": "components.button.dimensions.mdHeight"
+    },
+    "Problem Card": {
+      "minimumHeight": 168,
+      "titleSize": 21,
+      "source": "components.problemCard.dimensions.minimumHeight"
+    },
+    "Section Header": {
+      "maximumTextWidth": 760,
+      "source": "components.sectionHeader.dimensions.maximumTextWidth"
+    }
+  }
+}
