@@ -41,7 +41,8 @@
 - базовые кнопки `.btn` и их состояния;
 - признаки доверия `.trust span`, соответствующие компоненту Badge;
 - четыре ссылки `.quick-choice__grid a`, соответствующие компоненту Problem Card;
-- поля `.request-form`, соответствующие компоненту Input, включая состояния default, focus, filled, error и disabled.
+- поля `.request-form`, соответствующие компоненту Input, включая состояния default, focus, filled, error и disabled;
+- фиксированная панель `.mobile-cta` с двумя действиями, safe-area и состояниями default/hover/focus/pressed.
 
 Второй разрешённый потребитель — `css/typography-polish.css`.
 
@@ -80,7 +81,8 @@ css/typography-polish.css
 - максимальная ширина и выравнивание Section Header;
 - текстовая подсказка ошибки Input для `:user-invalid`;
 - compact и media оформление Service Card, включая подтверждённые изображения с `alt`;
-- нативные closed/open/hover/focus состояния FAQ Item с индикатором `+`/`−`.
+- нативные closed/open/hover/focus состояния FAQ Item с индикатором `+`/`−`;
+- Mobile CTA с двумя действиями, breakpoint 1000 px, safe-area и нижним отступом страницы.
 
 Не изменяются:
 
@@ -108,6 +110,7 @@ python tools/check_section_header_token_migration.py
 python tools/check_input_token_migration.py
 python tools/check_service_card_token_migration.py
 python tools/check_faq_item_token_migration.py
+python tools/check_mobile_cta_token_migration.py
 python tools/build_pages.py
 ```
 
@@ -117,5 +120,5 @@ python tools/build_pages.py
 - объявлено ровно 80 переменных;
 - `design-tokens.css` расположен первым модулем;
 - токены используют только утверждённые CSS-файлы;
-- Button, Badge, Problem Card, Service Card, FAQ Item, Section Header и Input соответствуют контракту компонентов;
+- Button, Badge, Problem Card, Service Card, FAQ Item, Section Header, Input и Mobile CTA соответствуют контракту компонентов;
 - публичная сборка содержит один cache-busted CSS-бандл.
