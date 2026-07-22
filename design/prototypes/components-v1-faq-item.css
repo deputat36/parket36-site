@@ -1,0 +1,95 @@
+.faq-item-grid {
+  display: grid;
+  gap: var(--p36-spacing-lg);
+  max-width: 820px;
+}
+
+.faq-item {
+  overflow: hidden;
+  border: 1px solid var(--p36-color-semantic-border-default);
+  border-radius: var(--p36-radius-lg);
+  background: var(--p36-color-semantic-surface-default);
+  box-shadow: var(--p36-shadow-card);
+  transition:
+    background-color .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+.faq-item:hover,
+.faq-item.is-hover {
+  border-color: var(--p36-color-semantic-border-strong);
+  box-shadow: var(--p36-shadow-floating);
+}
+
+.faq-item[open],
+.faq-item.is-open {
+  border-color: var(--p36-color-semantic-border-strong);
+  background: var(--p36-color-semantic-surface-subtle);
+}
+
+.faq-item summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px;
+  gap: var(--p36-spacing-lg);
+  align-items: center;
+  min-height: 52px;
+  padding: var(--p36-spacing-lg);
+  color: var(--p36-color-semantic-text-primary);
+  font-weight: var(--p36-font-weight-bold);
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: "+";
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--p36-radius-full);
+  background: var(--p36-color-semantic-surface-accent);
+  color: var(--p36-color-semantic-text-warm);
+  font-size: var(--p36-font-size-lead);
+  line-height: 1;
+}
+
+.faq-item[open] summary::after,
+.faq-item.is-open summary::after {
+  content: "−";
+  background: var(--p36-color-semantic-action-primary);
+  color: var(--p36-color-semantic-text-inverse);
+}
+
+.faq-item summary:focus-visible,
+.faq-item.is-focus summary {
+  outline: 3px solid var(--p36-color-primitive-brass-200);
+  outline-offset: -3px;
+}
+
+.faq-item > p {
+  margin: 0;
+  padding: 0 var(--p36-spacing-lg) var(--p36-spacing-lg);
+  color: var(--p36-color-semantic-text-secondary);
+}
+
+@media (max-width: 520px) {
+  .faq-item summary {
+    gap: var(--p36-spacing-md);
+    padding: var(--p36-spacing-md);
+  }
+
+  .faq-item > p {
+    padding: 0 var(--p36-spacing-md) var(--p36-spacing-md);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-item {
+    transition: none;
+  }
+}
