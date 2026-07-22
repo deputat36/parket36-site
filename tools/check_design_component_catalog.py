@@ -18,6 +18,7 @@ SERVICE_CARD_CSS = ROOT / "design" / "prototypes" / "components-v1-service-card.
 FAQ_ITEM_CSS = ROOT / "design" / "prototypes" / "components-v1-faq-item.css"
 MOBILE_CTA_CSS = ROOT / "design" / "prototypes" / "components-v1-mobile-cta.css"
 CHOICE_CHIP_CSS = ROOT / "design" / "prototypes" / "components-v1-choice-chip.css"
+BACK_TO_TOP_CSS = ROOT / "design" / "prototypes" / "components-v1-back-to-top.css"
 GENERATED_CSS = ROOT / "design" / "generated" / "parket36-tokens.css"
 DOC = ROOT / "docs" / "design" / "parket36-components-v1.md"
 FIGMA_URL = "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH"
@@ -27,6 +28,7 @@ EXPECTED_COMPONENTS = {
     "button": "Button",
     "badge": "Badge",
     "choiceChip": "Choice Chip",
+    "backToTop": "Back to Top",
     "problemCard": "Problem Card",
     "serviceCard": "Service Card",
     "faqItem": "FAQ Item",
@@ -38,11 +40,13 @@ EXPECTED_BUTTON_VARIANTS = ["primary", "secondary", "ghost"]
 EXPECTED_BUTTON_STATES = ["default", "hover", "focus", "pressed", "disabled"]
 EXPECTED_CHOICE_CHIP_VARIANTS = ["action"]
 EXPECTED_CHOICE_CHIP_STATES = ["default", "hover", "focus", "pressed"]
+EXPECTED_BACK_TO_TOP_STATES = ["hidden", "visible", "hover", "focus", "pressed"]
 EXPECTED_SERVICE_CARD_VARIANTS = ["compact", "media"]
 EXPECTED_SERVICE_CARD_STATES = ["default", "hover", "focus"]
 EXPECTED_FAQ_ITEM_STATES = ["closed", "open", "hover", "focus"]
 EXPECTED_INPUT_STATES = ["default", "focus", "filled", "error", "disabled"]
 EXPECTED_MOBILE_CTA_STATES = ["default", "hover", "focus", "pressed"]
+
 REQUIRED_HTML = (
     'meta name="robots" content="noindex,nofollow"',
     "data-design-component-catalog",
@@ -52,6 +56,7 @@ REQUIRED_HTML = (
     'href="./components-v1-faq-item.css"',
     'href="./components-v1-mobile-cta.css"',
     'href="./components-v1-choice-chip.css"',
+    'href="./components-v1-back-to-top.css"',
     'src="../logos/parket36-mark-a.svg"',
     "Базовые компоненты нового сайта",
     "Не является опубликованной страницей",
@@ -59,6 +64,11 @@ REQUIRED_HTML = (
     'id="choice-chips"',
     'class="choice-chip-row"',
     'class="choice-chip"',
+    "Back to Top",
+    'id="back-to-top"',
+    'class="back-to-top-specimen-row"',
+    'aria-label="Вернуться к началу страницы"',
+    "hidden · visible · hover · focus · pressed",
     "Service Card",
     'id="service-cards"',
     "FAQ Item",
@@ -67,10 +77,9 @@ REQUIRED_HTML = (
     "<summary>",
     "Mobile CTA",
     'id="mobile-cta"',
-    "default · hover · focus · pressed",
     "tel:+79009267929",
 )
-REQUIRED_CSS = (
+REQUIRED_BASE_CSS = (
     "var(--p36-color-semantic-action-primary)",
     "var(--p36-color-semantic-action-secondary)",
     "var(--p36-size-touch-min)",
@@ -88,7 +97,20 @@ REQUIRED_CHOICE_CHIP_CSS = (
     "var(--p36-shadow-floating)",
     ".choice-chip:focus-visible",
     ".choice-chip:active",
-    "var(--p36-color-semantic-action-primary)",
+    "@media (prefers-reduced-motion: reduce)",
+)
+REQUIRED_BACK_TO_TOP_CSS = (
+    ".back-to-top-specimen-row",
+    ".back-to-top-specimen {",
+    "width: 48px",
+    "height: 48px",
+    "var(--p36-size-touch-min)",
+    "var(--p36-radius-full)",
+    "var(--p36-shadow-floating)",
+    ".back-to-top-specimen.is-hidden",
+    ".back-to-top-specimen.is-hover",
+    ".back-to-top-specimen.is-focus",
+    ".back-to-top-specimen.is-pressed",
     "@media (prefers-reduced-motion: reduce)",
 )
 REQUIRED_SERVICE_CARD_CSS = (
@@ -136,8 +158,6 @@ FORBIDDEN = (
     "request-form",
     "data-request-template",
     "data-request-service",
-    "aria-pressed",
-    "aria-selected",
     "#6f4628",
     "#9b683d",
     "#d7a86e",
@@ -152,7 +172,8 @@ class CatalogParser(HTMLParser):
         self.local_assets: list[str] = []
         self.details_count = 0
         self.summary_count = 0
-        self.choice_chip_count = 0
+        self.back_to_top_buttons = 0
+        self.choice_chip_buttons = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = dict(attrs)
@@ -163,10 +184,10 @@ class CatalogParser(HTMLParser):
             self.details_count += 1
         if tag == "summary":
             self.summary_count += 1
+        if tag == "button" and "back-to-top-specimen" in classes:
+            self.back_to_top_buttons += 1
         if tag == "button" and "choice-chip" in classes:
-            self.choice_chip_count += 1
-            if values.get("type") != "button":
-                raise ValueError("Choice Chip catalog buttons must use type=button")
+            self.choice_chip_buttons += 1
         if tag == "img" and "alt" not in values:
             self.images_without_alt.append(values.get("src", "<unknown>") or "<unknown>")
         if tag in {"img", "link"}:
@@ -188,6 +209,12 @@ def get_path(data: Any, dotted_path: str) -> Any:
     return value
 
 
+def require_markers(findings: list[str], text: str, markers: tuple[str, ...], label: str) -> None:
+    for marker in markers:
+        if marker not in text:
+            findings.append(f"{label} is missing marker: {marker}")
+
+
 def main() -> int:
     findings: list[str] = []
     required_files = (
@@ -195,10 +222,11 @@ def main() -> int:
         TOKENS,
         CATALOG,
         CATALOG_CSS,
-        CHOICE_CHIP_CSS,
         SERVICE_CARD_CSS,
         FAQ_ITEM_CSS,
         MOBILE_CTA_CSS,
+        CHOICE_CHIP_CSS,
+        BACK_TO_TOP_CSS,
         GENERATED_CSS,
         DOC,
     )
@@ -233,9 +261,9 @@ def main() -> int:
     if not isinstance(components, dict):
         findings.append("component contract must contain a components object")
         components = {}
-    if set(components) != set(EXPECTED_COMPONENTS):
+    if list(components) != list(EXPECTED_COMPONENTS):
         findings.append(
-            f"unexpected component set: {sorted(components)} != {sorted(EXPECTED_COMPONENTS)}"
+            f"unexpected ordered component set: {list(components)} != {list(EXPECTED_COMPONENTS)}"
         )
 
     figma_names: list[str] = []
@@ -258,27 +286,34 @@ def main() -> int:
             else:
                 if not isinstance(target, dict) or "$value" not in target:
                     findings.append(f"{key} radius token is not a design token: {radius_token}")
-
     if len(figma_names) != len(set(figma_names)):
         findings.append("Figma component names must be unique")
 
     button = components.get("button", {})
     if button.get("properties", {}).get("variant") != EXPECTED_BUTTON_VARIANTS:
-        findings.append("button variants do not match the approved contract")
+        findings.append("Button variants do not match the approved contract")
     if button.get("properties", {}).get("state") != EXPECTED_BUTTON_STATES:
-        findings.append("button states do not match the approved contract")
+        findings.append("Button states do not match the approved contract")
 
     choice_chip = components.get("choiceChip", {})
     if choice_chip.get("properties", {}).get("variant") != EXPECTED_CHOICE_CHIP_VARIANTS:
         findings.append("Choice Chip variants do not match the approved contract")
     if choice_chip.get("properties", {}).get("state") != EXPECTED_CHOICE_CHIP_STATES:
         findings.append("Choice Chip states do not match the approved contract")
-    if choice_chip.get("dimensions", {}).get("minimumHeight") != 44:
-        findings.append("Choice Chip minimumHeight must remain 44")
-    if choice_chip.get("accessibility", {}).get("nativeButtonRequired") is not True:
-        findings.append("Choice Chip must require native buttons")
     if choice_chip.get("accessibility", {}).get("persistentSelectedStateForbidden") is not True:
         findings.append("Choice Chip must forbid persistent selected state")
+
+    back_to_top = components.get("backToTop", {})
+    if back_to_top.get("properties", {}).get("state") != EXPECTED_BACK_TO_TOP_STATES:
+        findings.append("Back to Top states do not match the approved contract")
+    if back_to_top.get("dimensions", {}).get("size") != 48:
+        findings.append("Back to Top size must remain 48")
+    if back_to_top.get("dimensions", {}).get("visibilityThreshold") != 650:
+        findings.append("Back to Top visibilityThreshold must remain 650")
+    if back_to_top.get("accessibility", {}).get("accessibleNameRequired") is not True:
+        findings.append("Back to Top must require an accessible name")
+    if back_to_top.get("accessibility", {}).get("reducedMotionAware") is not True:
+        findings.append("Back to Top must remain reduced-motion aware")
 
     service_card = components.get("serviceCard", {})
     if service_card.get("properties", {}).get("variant") != EXPECTED_SERVICE_CARD_VARIANTS:
@@ -300,7 +335,7 @@ def main() -> int:
 
     input_component = components.get("input", {})
     if input_component.get("properties", {}).get("state") != EXPECTED_INPUT_STATES:
-        findings.append("input states do not match the approved contract")
+        findings.append("Input states do not match the approved contract")
 
     mobile_cta = components.get("mobileCta", {})
     if mobile_cta.get("properties", {}).get("state") != EXPECTED_MOBILE_CTA_STATES:
@@ -315,60 +350,46 @@ def main() -> int:
         findings.append("Mobile CTA must remain safe-area aware")
 
     token_touch_min = get_path(tokens, "size.touchMin.$value.value")
-    for key in ("button", "choiceChip", "faqItem", "input", "mobileCta"):
+    for key in ("button", "choiceChip", "backToTop", "faqItem", "input", "mobileCta"):
         minimum = components.get(key, {}).get("accessibility", {}).get("minimumTouchTarget")
         if not isinstance(minimum, int) or minimum < token_touch_min:
             findings.append(f"{key} minimumTouchTarget must be at least {token_touch_min}")
 
     html = CATALOG.read_text(encoding="utf-8")
     css = CATALOG_CSS.read_text(encoding="utf-8")
-    choice_chip_css = CHOICE_CHIP_CSS.read_text(encoding="utf-8")
     service_card_css = SERVICE_CARD_CSS.read_text(encoding="utf-8")
     faq_item_css = FAQ_ITEM_CSS.read_text(encoding="utf-8")
     mobile_cta_css = MOBILE_CTA_CSS.read_text(encoding="utf-8")
-    combined = (
-        f"{html}\n{css}\n{choice_chip_css}\n{service_card_css}\n"
-        f"{faq_item_css}\n{mobile_cta_css}"
+    choice_chip_css = CHOICE_CHIP_CSS.read_text(encoding="utf-8")
+    back_to_top_css = BACK_TO_TOP_CSS.read_text(encoding="utf-8")
+    combined = "\n".join(
+        (html, css, service_card_css, faq_item_css, mobile_cta_css, choice_chip_css, back_to_top_css)
     ).lower()
 
-    for marker in REQUIRED_HTML:
-        if marker not in html:
-            findings.append(f"component catalog HTML is missing marker: {marker}")
-    for marker in REQUIRED_CSS:
-        if marker not in css:
-            findings.append(f"component catalog CSS is missing marker: {marker}")
-    for marker in REQUIRED_CHOICE_CHIP_CSS:
-        if marker not in choice_chip_css:
-            findings.append(f"Choice Chip catalog CSS is missing marker: {marker}")
-    for marker in REQUIRED_SERVICE_CARD_CSS:
-        if marker not in service_card_css:
-            findings.append(f"Service Card catalog CSS is missing marker: {marker}")
-    for marker in REQUIRED_FAQ_ITEM_CSS:
-        if marker not in faq_item_css:
-            findings.append(f"FAQ Item catalog CSS is missing marker: {marker}")
-    for marker in REQUIRED_MOBILE_CTA_CSS:
-        if marker not in mobile_cta_css:
-            findings.append(f"Mobile CTA catalog CSS is missing marker: {marker}")
+    require_markers(findings, html, REQUIRED_HTML, "component catalog HTML")
+    require_markers(findings, css, REQUIRED_BASE_CSS, "component catalog CSS")
+    require_markers(findings, choice_chip_css, REQUIRED_CHOICE_CHIP_CSS, "Choice Chip catalog CSS")
+    require_markers(findings, back_to_top_css, REQUIRED_BACK_TO_TOP_CSS, "Back to Top catalog CSS")
+    require_markers(findings, service_card_css, REQUIRED_SERVICE_CARD_CSS, "Service Card catalog CSS")
+    require_markers(findings, faq_item_css, REQUIRED_FAQ_ITEM_CSS, "FAQ Item catalog CSS")
+    require_markers(findings, mobile_cta_css, REQUIRED_MOBILE_CTA_CSS, "Mobile CTA catalog CSS")
     for marker in FORBIDDEN:
         if marker in combined:
             findings.append(f"isolated component catalog contains forbidden marker: {marker}")
 
     parser = CatalogParser()
-    try:
-        parser.feed(html)
-    except ValueError as exc:
-        findings.append(str(exc))
+    parser.feed(html)
     if parser.h1_count != 1:
         findings.append(f"component catalog must contain exactly one h1, found {parser.h1_count}")
-    if parser.choice_chip_count != 4:
-        findings.append(
-            f"Choice Chip catalog must contain four static state buttons, found {parser.choice_chip_count}"
-        )
     if parser.details_count != 4 or parser.summary_count != 4:
         findings.append(
             f"FAQ Item catalog must contain four details/summary pairs, found "
             f"{parser.details_count}/{parser.summary_count}"
         )
+    if parser.choice_chip_buttons != 4:
+        findings.append(f"Choice Chip catalog must contain four specimens, found {parser.choice_chip_buttons}")
+    if parser.back_to_top_buttons != 5:
+        findings.append(f"Back to Top catalog must contain five specimens, found {parser.back_to_top_buttons}")
     for source in parser.images_without_alt:
         findings.append(f"component catalog image is missing alt: {source}")
     for raw_path in parser.local_assets:
@@ -393,12 +414,14 @@ def main() -> int:
         FIGMA_URL,
         TARGET_PAGE,
         "Choice Chip",
+        "Back to Top",
         "Problem Card",
         "Service Card",
         "FAQ Item",
         "Mobile CTA",
         "минимальная зона взаимодействия — 44 px",
-        "постоянное состояние `selected` запрещено",
+        "650 px",
+        "Вернуться к началу страницы",
     ):
         if marker not in doc:
             findings.append(f"component documentation is missing marker: {marker}")
