@@ -18,6 +18,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - `design/prototypes/components-v1-faq-item.css` — изолированные стили FAQ Item;
 - `design/prototypes/components-v1-mobile-cta.css` — изолированные стили Mobile CTA;
 - `design/prototypes/components-v1-choice-chip.css` — изолированные стили Choice Chip;
+- `design/prototypes/components-v1-back-to-top.css` — изолированные стили Back to Top;
 - `tools/check_design_component_catalog.py` — fail-closed проверка.
 
 ## Компоненты v1
@@ -43,6 +44,14 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 Состояния: `default`, `hover`, `focus`, `pressed`. Минимальная высота — 44 px, горизонтальные поля — 16 px, радиус — `radius.full`.
 
 Компонент реализуется нативной кнопкой `<button type="button">`. Он добавляет шаблон в текст заявки, поэтому постоянное состояние `selected` запрещено: пользователь может последовательно применить несколько шаблонов. Focus-state видим с клавиатуры, а pressed-state существует только во время нажатия.
+
+### Back to Top
+
+Состояния: `hidden`, `visible`, `hover`, `focus`, `pressed`.
+
+Компонент создаётся как нативная кнопка размером 48×48 px с радиусом `radius.full` и доступным именем «Вернуться к началу страницы». Минимальная зона взаимодействия — 44 px.
+
+Кнопка появляется после прокрутки более 650 px. На desktop она расположена справа 18 px и снизу 22 px; на mobile до 640 px — справа 18 px и снизу 82 px, чтобы оставаться над Mobile CTA. При reduced motion плавная прокрутка отключается.
 
 ### Problem Card
 
@@ -100,6 +109,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - FAQ Item использует только нативные `<details>/<summary>` без скриптов.
 - Mobile CTA в каталоге использует тестовую внутреннюю ссылку вместо production-заявки и не отправляет данные.
 - Choice Chip в каталоге использует нативные кнопки без `data-request-*`, формы и обработчиков.
+- Back to Top в каталоге показывает только статические состояния и не прокручивает страницу программно.
 - Компоненты не внедряются в публичные HTML/CSS до отдельного этапа и полного browser smoke.
 
 ## Проверка
