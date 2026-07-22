@@ -14,6 +14,7 @@ CONTRACT = ROOT / "design" / "components" / "parket36-components.json"
 TOKENS = ROOT / "design" / "parket36-tokens.json"
 CATALOG = ROOT / "design" / "prototypes" / "components-v1.htm"
 CATALOG_CSS = ROOT / "design" / "prototypes" / "components-v1.css"
+SERVICE_CARD_CSS = ROOT / "design" / "prototypes" / "components-v1-service-card.css"
 GENERATED_CSS = ROOT / "design" / "generated" / "parket36-tokens.css"
 DOC = ROOT / "docs" / "design" / "parket36-components-v1.md"
 FIGMA_URL = "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH"
@@ -23,20 +24,26 @@ EXPECTED_COMPONENTS = {
     "button": "Button",
     "badge": "Badge",
     "problemCard": "Problem Card",
+    "serviceCard": "Service Card",
     "sectionHeader": "Section Header",
     "input": "Input",
 }
 EXPECTED_BUTTON_VARIANTS = ["primary", "secondary", "ghost"]
 EXPECTED_BUTTON_STATES = ["default", "hover", "focus", "pressed", "disabled"]
+EXPECTED_SERVICE_CARD_VARIANTS = ["compact", "media"]
+EXPECTED_SERVICE_CARD_STATES = ["default", "hover", "focus"]
 EXPECTED_INPUT_STATES = ["default", "focus", "filled", "error", "disabled"]
 REQUIRED_HTML = (
     'meta name="robots" content="noindex,nofollow"',
     "data-design-component-catalog",
     'href="../generated/parket36-tokens.css"',
     'href="./components-v1.css"',
+    'href="./components-v1-service-card.css"',
     'src="../logos/parket36-mark-a.svg"',
     "Базовые компоненты нового сайта",
     "Не является опубликованной страницей",
+    "Service Card",
+    'id="service-cards"',
 )
 REQUIRED_CSS = (
     "var(--p36-color-semantic-action-primary)",
@@ -45,6 +52,17 @@ REQUIRED_CSS = (
     ":focus-visible",
     "@media(max-width:520px)",
     "@media(prefers-reduced-motion:reduce)",
+)
+REQUIRED_SERVICE_CARD_CSS = (
+    ".service-card-grid",
+    ".service-card--compact",
+    ".service-card--media",
+    "min-height: 192px",
+    "aspect-ratio: 1000 / 760",
+    "var(--p36-radius-lg)",
+    "var(--p36-shadow-floating)",
+    ".service-card:focus-visible",
+    "@media (prefers-reduced-motion: reduce)",
 )
 FORBIDDEN = (
     "<form",
@@ -92,7 +110,15 @@ def get_path(data: Any, dotted_path: str) -> Any:
 
 def main() -> int:
     findings: list[str] = []
-    required_files = (CONTRACT, TOKENS, CATALOG, CATALOG_CSS, GENERATED_CSS, DOC)
+    required_files = (
+        CONTRACT,
+        TOKENS,
+        CATALOG,
+        CATALOG_CSS,
+        SERVICE_CARD_CSS,
+        GENERATED_CSS,
+        DOC,
+    )
     for path in required_files:
         if not path.is_file():
             findings.append(f"missing component catalog asset: {path.relative_to(ROOT)}")
@@ -160,6 +186,14 @@ def main() -> int:
     if button.get("properties", {}).get("state") != EXPECTED_BUTTON_STATES:
         findings.append("button states do not match the approved contract")
 
+    service_card = components.get("serviceCard", {})
+    if service_card.get("properties", {}).get("variant") != EXPECTED_SERVICE_CARD_VARIANTS:
+        findings.append("Service Card variants do not match the approved contract")
+    if service_card.get("properties", {}).get("state") != EXPECTED_SERVICE_CARD_STATES:
+        findings.append("Service Card states do not match the approved contract")
+    if service_card.get("dimensions", {}).get("mediaAspectRatio") != "1000/760":
+        findings.append("Service Card mediaAspectRatio must remain 1000/760")
+
     input_component = components.get("input", {})
     if input_component.get("properties", {}).get("state") != EXPECTED_INPUT_STATES:
         findings.append("input states do not match the approved contract")
@@ -172,7 +206,8 @@ def main() -> int:
 
     html = CATALOG.read_text(encoding="utf-8")
     css = CATALOG_CSS.read_text(encoding="utf-8")
-    combined = f"{html}\n{css}".lower()
+    service_card_css = SERVICE_CARD_CSS.read_text(encoding="utf-8")
+    combined = f"{html}\n{css}\n{service_card_css}".lower()
 
     for marker in REQUIRED_HTML:
         if marker not in html:
@@ -180,6 +215,9 @@ def main() -> int:
     for marker in REQUIRED_CSS:
         if marker not in css:
             findings.append(f"component catalog CSS is missing marker: {marker}")
+    for marker in REQUIRED_SERVICE_CARD_CSS:
+        if marker not in service_card_css:
+            findings.append(f"Service Card catalog CSS is missing marker: {marker}")
     for marker in FORBIDDEN:
         if marker in combined:
             findings.append(f"isolated component catalog contains forbidden marker: {marker}")
@@ -208,7 +246,13 @@ def main() -> int:
         )
 
     doc = DOC.read_text(encoding="utf-8")
-    for marker in (FIGMA_URL, TARGET_PAGE, "Problem Card", "минимальная зона взаимодействия — 44 px"):
+    for marker in (
+        FIGMA_URL,
+        TARGET_PAGE,
+        "Problem Card",
+        "Service Card",
+        "минимальная зона взаимодействия — 44 px",
+    ):
         if marker not in doc:
             findings.append(f"component documentation is missing marker: {marker}")
 
