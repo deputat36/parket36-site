@@ -45,7 +45,14 @@ EXPECTED_TEXT_STYLES = [
     "Type/Eyebrow",
 ]
 EXPECTED_EFFECT_STYLES = ["Effect/Card", "Effect/Floating"]
-EXPECTED_COMPONENTS = ["Button", "Badge", "Problem Card", "Section Header", "Input"]
+EXPECTED_COMPONENTS = [
+    "Button",
+    "Badge",
+    "Problem Card",
+    "Service Card",
+    "Section Header",
+    "Input",
+]
 REQUIRED_SECTIONS = ["colors", "typography", "spacing", "shape-and-depth", "layout"]
 REQUIRED_CSS = [
     "var(--p36-color-semantic-action-primary)",
