@@ -13,7 +13,8 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - `design/parket36-tokens.json` — единый источник цветов, размеров, типографики и теней;
 - `design/components/parket36-components.json` — машинно-читаемый контракт компонентов;
 - `design/prototypes/components-v1.htm` — визуальный каталог для браузера и последующего захвата в Figma;
-- `design/prototypes/components-v1.css` — стили каталога;
+- `design/prototypes/components-v1.css` — базовые стили каталога;
+- `design/prototypes/components-v1-service-card.css` — изолированные стили Service Card;
 - `tools/check_design_component_catalog.py` — fail-closed проверка.
 
 ## Компоненты v1
@@ -35,6 +36,14 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 ### Problem Card
 
 Карточка описывает проблему клиента, а не внутреннее название услуги. Вся площадь карточки кликабельна, focus-state видимый, подпись должна быть понятна без номера.
+
+### Service Card
+
+Варианты: `compact` и `media`. Компактный вариант использует номер или небольшую иконку, медиа-вариант может содержать только подтверждённое изображение реальной работы с осмысленным `alt`.
+
+Состояния: `default`, `hover`, `focus`. Вся площадь карточки остаётся ссылкой. Минимальная высота — 192 px, внутренние поля — 24 px, радиус — `radius.lg`, соотношение медиа — `1000/760`.
+
+Название объясняет услугу, а описание — результат или задачу клиента. Не использовать неподтверждённые фотографии, цены, сроки и гарантии.
 
 ### Section Header
 
@@ -60,6 +69,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - Каталог не содержит рабочей формы и не отправляет данные.
 - В нём нет production endpoint, Supabase или аналитики.
 - Используются только нейтральные схемы и существующие SVG-концепции логотипа.
+- Service Card в каталоге не использует выдуманные фотографии: медиа-вариант показывает нейтральный placeholder.
 - Компоненты не внедряются в публичные HTML/CSS до отдельного этапа и полного browser smoke.
 
 ## Проверка
