@@ -27,6 +27,10 @@
   padding: var(--p36-spacing-xl);
 }
 
+.service-card--media {
+  grid-template-rows: auto 1fr;
+}
+
 .service-card:hover,
 .service-card.is-hover {
   transform: translateY(-4px);
