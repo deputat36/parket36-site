@@ -59,11 +59,16 @@
 
 Он переводит восемь action-chip `.request-form .pill-row .pill` на состояния default/hover/focus/pressed, сохраняя нативные кнопки, тексты и `data-request-*`. Модуль расположен после `cta-polish.css` в production bundle; на исходной главной странице подключается отдельной строкой для локального просмотра.
 
+Пятый разрешённый потребитель — `css/back-to-top-polish.css`.
+
+Он переводит глобальную кнопку `.back-to-top` на состояния hidden/visible/hover/focus/pressed, сохраняя размер 48×48 px, порог появления 650 px, доступное имя, мобильное положение над Mobile CTA и reduced-motion прокрутку. Модуль расположен после `choice-chip-polish.css` и перед `logo-brand.css` в production bundle.
+
 Остальные production CSS-модули пока продолжают использовать прежние значения и не должны обращаться к `var(--p36-...)`.
 
 Fail-closed guardrail разрешает следующий набор потребителей:
 
 ```text
+css/back-to-top-polish.css
 css/choice-chip-polish.css
 css/cta-polish.css
 css/enhancements.css
@@ -88,7 +93,8 @@ css/typography-polish.css
 - compact и media оформление Service Card, включая подтверждённые изображения с `alt`;
 - нативные closed/open/hover/focus состояния FAQ Item с индикатором `+`/`−`;
 - Mobile CTA с двумя действиями, breakpoint 1000 px, safe-area и нижним отступом страницы;
-- Choice Chip с нативной кнопкой, touch target 44 px и состояниями default/hover/focus/pressed без постоянного selected-state.
+- Choice Chip с нативной кнопкой, touch target 44 px и состояниями default/hover/focus/pressed без постоянного selected-state;
+- Back to Top с нативной кнопкой 48×48 px, порогом 650 px, мобильным отступом и состояниями hidden/visible/hover/focus/pressed.
 
 Не изменяются:
 
@@ -113,6 +119,7 @@ python tools/check_production_design_token_layer.py
 python tools/check_button_token_migration.py
 python tools/check_badge_token_migration.py
 python tools/check_choice_chip_token_migration.py
+python tools/check_back_to_top_token_migration.py
 python tools/check_problem_card_token_migration.py
 python tools/check_section_header_token_migration.py
 python tools/check_input_token_migration.py
@@ -128,5 +135,5 @@ python tools/build_pages.py
 - объявлено ровно 80 переменных;
 - `design-tokens.css` расположен первым модулем;
 - токены используют только утверждённые CSS-файлы;
-- Button, Badge, Choice Chip, Problem Card, Service Card, FAQ Item, Section Header, Input и Mobile CTA соответствуют контракту компонентов;
+- Button, Badge, Choice Chip, Back to Top, Problem Card, Service Card, FAQ Item, Section Header, Input и Mobile CTA соответствуют контракту компонентов;
 - публичная сборка содержит один cache-busted CSS-бандл.

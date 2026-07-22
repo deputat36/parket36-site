@@ -20,6 +20,7 @@ TOKEN_DECLARATION_RE = re.compile(r"^\s*(--p36-[a-z0-9-]+):", re.MULTILINE)
 TOKEN_USAGE_RE = re.compile(r"var\((--p36-[a-z0-9-]+)\)")
 EXPECTED_DECLARATION_COUNT = 80
 APPROVED_CONSUMERS = {
+    "css/back-to-top-polish.css",
     "css/choice-chip-polish.css",
     "css/cta-polish.css",
     "css/enhancements.css",
@@ -94,6 +95,11 @@ def main() -> int:
             findings.append("design-tokens.css must be the first production CSS module")
         if css_modules.count("design-tokens.css") != 1:
             findings.append("design-tokens.css must appear exactly once in CSS_MODULES")
+        expected_tail = ("choice-chip-polish.css", "back-to-top-polish.css", "logo-brand.css")
+        if tuple(css_modules[-3:]) != expected_tail:
+            findings.append(
+                "Back to Top bundle order must remain choice-chip, back-to-top, logo-brand"
+            )
 
     consumers: set[str] = set()
     for css_file in sorted((ROOT / "css").glob("*.css")):
@@ -115,6 +121,7 @@ def main() -> int:
         "первым модулем",
         "80 css-переменных",
         "первый визуальный потребитель",
+        "css/back-to-top-polish.css",
         "css/choice-chip-polish.css",
         "css/cta-polish.css",
         "css/enhancements.css",

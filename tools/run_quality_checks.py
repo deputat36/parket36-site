@@ -25,6 +25,7 @@ CHECKS = [
     ("Validate button token migration", ["tools/check_button_token_migration.py"]),
     ("Validate Badge token migration", ["tools/check_badge_token_migration.py"]),
     ("Validate Choice Chip token migration", ["tools/check_choice_chip_token_migration.py"]),
+    ("Validate Back to Top token migration", ["tools/check_back_to_top_token_migration.py"]),
     ("Validate Problem Card token migration", ["tools/check_problem_card_token_migration.py"]),
     ("Validate Service Card token migration", ["tools/check_service_card_token_migration.py"]),
     ("Validate FAQ Item token migration", ["tools/check_faq_item_token_migration.py"]),

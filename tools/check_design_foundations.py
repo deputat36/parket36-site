@@ -49,6 +49,7 @@ EXPECTED_COMPONENTS = [
     "Button",
     "Badge",
     "Choice Chip",
+    "Back to Top",
     "Problem Card",
     "Service Card",
     "FAQ Item",
