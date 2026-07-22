@@ -20,6 +20,7 @@ TOKEN_DECLARATION_RE = re.compile(r"^\s*(--p36-[a-z0-9-]+):", re.MULTILINE)
 TOKEN_USAGE_RE = re.compile(r"var\((--p36-[a-z0-9-]+)\)")
 EXPECTED_DECLARATION_COUNT = 80
 APPROVED_CONSUMERS = {
+    "css/choice-chip-polish.css",
     "css/cta-polish.css",
     "css/enhancements.css",
     "css/typography-polish.css",
@@ -114,6 +115,7 @@ def main() -> int:
         "первым модулем",
         "80 css-переменных",
         "первый визуальный потребитель",
+        "css/choice-chip-polish.css",
         "css/cta-polish.css",
         "css/enhancements.css",
         "css/typography-polish.css",

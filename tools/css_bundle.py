@@ -24,6 +24,7 @@ CSS_MODULES = (
     "scroll-progress.css",
     "accessibility-polish.css",
     "cta-polish.css",
+    "choice-chip-polish.css",
     "logo-brand.css",
 )
 CSS_LINK_RE = re.compile(

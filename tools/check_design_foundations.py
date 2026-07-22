@@ -48,6 +48,7 @@ EXPECTED_EFFECT_STYLES = ["Effect/Card", "Effect/Floating"]
 EXPECTED_COMPONENTS = [
     "Button",
     "Badge",
+    "Choice Chip",
     "Problem Card",
     "Service Card",
     "FAQ Item",

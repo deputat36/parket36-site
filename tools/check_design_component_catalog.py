@@ -17,6 +17,7 @@ CATALOG_CSS = ROOT / "design" / "prototypes" / "components-v1.css"
 SERVICE_CARD_CSS = ROOT / "design" / "prototypes" / "components-v1-service-card.css"
 FAQ_ITEM_CSS = ROOT / "design" / "prototypes" / "components-v1-faq-item.css"
 MOBILE_CTA_CSS = ROOT / "design" / "prototypes" / "components-v1-mobile-cta.css"
+CHOICE_CHIP_CSS = ROOT / "design" / "prototypes" / "components-v1-choice-chip.css"
 GENERATED_CSS = ROOT / "design" / "generated" / "parket36-tokens.css"
 DOC = ROOT / "docs" / "design" / "parket36-components-v1.md"
 FIGMA_URL = "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH"
@@ -25,6 +26,7 @@ TARGET_PAGE = "Foundations + Components — Дизайн-система"
 EXPECTED_COMPONENTS = {
     "button": "Button",
     "badge": "Badge",
+    "choiceChip": "Choice Chip",
     "problemCard": "Problem Card",
     "serviceCard": "Service Card",
     "faqItem": "FAQ Item",
@@ -34,6 +36,8 @@ EXPECTED_COMPONENTS = {
 }
 EXPECTED_BUTTON_VARIANTS = ["primary", "secondary", "ghost"]
 EXPECTED_BUTTON_STATES = ["default", "hover", "focus", "pressed", "disabled"]
+EXPECTED_CHOICE_CHIP_VARIANTS = ["action"]
+EXPECTED_CHOICE_CHIP_STATES = ["default", "hover", "focus", "pressed"]
 EXPECTED_SERVICE_CARD_VARIANTS = ["compact", "media"]
 EXPECTED_SERVICE_CARD_STATES = ["default", "hover", "focus"]
 EXPECTED_FAQ_ITEM_STATES = ["closed", "open", "hover", "focus"]
@@ -47,9 +51,14 @@ REQUIRED_HTML = (
     'href="./components-v1-service-card.css"',
     'href="./components-v1-faq-item.css"',
     'href="./components-v1-mobile-cta.css"',
+    'href="./components-v1-choice-chip.css"',
     'src="../logos/parket36-mark-a.svg"',
     "Базовые компоненты нового сайта",
     "Не является опубликованной страницей",
+    "Choice Chip",
+    'id="choice-chips"',
+    'class="choice-chip-row"',
+    'class="choice-chip"',
     "Service Card",
     'id="service-cards"',
     "FAQ Item",
@@ -68,6 +77,19 @@ REQUIRED_CSS = (
     ":focus-visible",
     "@media(max-width:520px)",
     "@media(prefers-reduced-motion:reduce)",
+)
+REQUIRED_CHOICE_CHIP_CSS = (
+    ".choice-chip-row",
+    ".choice-chip {",
+    "min-height: 44px",
+    "var(--p36-radius-full)",
+    "var(--p36-shadow-card)",
+    ".choice-chip:hover",
+    "var(--p36-shadow-floating)",
+    ".choice-chip:focus-visible",
+    ".choice-chip:active",
+    "var(--p36-color-semantic-action-primary)",
+    "@media (prefers-reduced-motion: reduce)",
 )
 REQUIRED_SERVICE_CARD_CSS = (
     ".service-card-grid",
@@ -112,6 +134,10 @@ FORBIDDEN = (
     "supabase",
     "parket-public-lead",
     "request-form",
+    "data-request-template",
+    "data-request-service",
+    "aria-pressed",
+    "aria-selected",
     "#6f4628",
     "#9b683d",
     "#d7a86e",
@@ -126,15 +152,21 @@ class CatalogParser(HTMLParser):
         self.local_assets: list[str] = []
         self.details_count = 0
         self.summary_count = 0
+        self.choice_chip_count = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = dict(attrs)
+        classes = set((values.get("class") or "").split())
         if tag == "h1":
             self.h1_count += 1
         if tag == "details":
             self.details_count += 1
         if tag == "summary":
             self.summary_count += 1
+        if tag == "button" and "choice-chip" in classes:
+            self.choice_chip_count += 1
+            if values.get("type") != "button":
+                raise ValueError("Choice Chip catalog buttons must use type=button")
         if tag == "img" and "alt" not in values:
             self.images_without_alt.append(values.get("src", "<unknown>") or "<unknown>")
         if tag in {"img", "link"}:
@@ -163,6 +195,7 @@ def main() -> int:
         TOKENS,
         CATALOG,
         CATALOG_CSS,
+        CHOICE_CHIP_CSS,
         SERVICE_CARD_CSS,
         FAQ_ITEM_CSS,
         MOBILE_CTA_CSS,
@@ -235,6 +268,18 @@ def main() -> int:
     if button.get("properties", {}).get("state") != EXPECTED_BUTTON_STATES:
         findings.append("button states do not match the approved contract")
 
+    choice_chip = components.get("choiceChip", {})
+    if choice_chip.get("properties", {}).get("variant") != EXPECTED_CHOICE_CHIP_VARIANTS:
+        findings.append("Choice Chip variants do not match the approved contract")
+    if choice_chip.get("properties", {}).get("state") != EXPECTED_CHOICE_CHIP_STATES:
+        findings.append("Choice Chip states do not match the approved contract")
+    if choice_chip.get("dimensions", {}).get("minimumHeight") != 44:
+        findings.append("Choice Chip minimumHeight must remain 44")
+    if choice_chip.get("accessibility", {}).get("nativeButtonRequired") is not True:
+        findings.append("Choice Chip must require native buttons")
+    if choice_chip.get("accessibility", {}).get("persistentSelectedStateForbidden") is not True:
+        findings.append("Choice Chip must forbid persistent selected state")
+
     service_card = components.get("serviceCard", {})
     if service_card.get("properties", {}).get("variant") != EXPECTED_SERVICE_CARD_VARIANTS:
         findings.append("Service Card variants do not match the approved contract")
@@ -270,17 +315,21 @@ def main() -> int:
         findings.append("Mobile CTA must remain safe-area aware")
 
     token_touch_min = get_path(tokens, "size.touchMin.$value.value")
-    for key in ("button", "faqItem", "input", "mobileCta"):
+    for key in ("button", "choiceChip", "faqItem", "input", "mobileCta"):
         minimum = components.get(key, {}).get("accessibility", {}).get("minimumTouchTarget")
         if not isinstance(minimum, int) or minimum < token_touch_min:
             findings.append(f"{key} minimumTouchTarget must be at least {token_touch_min}")
 
     html = CATALOG.read_text(encoding="utf-8")
     css = CATALOG_CSS.read_text(encoding="utf-8")
+    choice_chip_css = CHOICE_CHIP_CSS.read_text(encoding="utf-8")
     service_card_css = SERVICE_CARD_CSS.read_text(encoding="utf-8")
     faq_item_css = FAQ_ITEM_CSS.read_text(encoding="utf-8")
     mobile_cta_css = MOBILE_CTA_CSS.read_text(encoding="utf-8")
-    combined = f"{html}\n{css}\n{service_card_css}\n{faq_item_css}\n{mobile_cta_css}".lower()
+    combined = (
+        f"{html}\n{css}\n{choice_chip_css}\n{service_card_css}\n"
+        f"{faq_item_css}\n{mobile_cta_css}"
+    ).lower()
 
     for marker in REQUIRED_HTML:
         if marker not in html:
@@ -288,6 +337,9 @@ def main() -> int:
     for marker in REQUIRED_CSS:
         if marker not in css:
             findings.append(f"component catalog CSS is missing marker: {marker}")
+    for marker in REQUIRED_CHOICE_CHIP_CSS:
+        if marker not in choice_chip_css:
+            findings.append(f"Choice Chip catalog CSS is missing marker: {marker}")
     for marker in REQUIRED_SERVICE_CARD_CSS:
         if marker not in service_card_css:
             findings.append(f"Service Card catalog CSS is missing marker: {marker}")
@@ -302,9 +354,16 @@ def main() -> int:
             findings.append(f"isolated component catalog contains forbidden marker: {marker}")
 
     parser = CatalogParser()
-    parser.feed(html)
+    try:
+        parser.feed(html)
+    except ValueError as exc:
+        findings.append(str(exc))
     if parser.h1_count != 1:
         findings.append(f"component catalog must contain exactly one h1, found {parser.h1_count}")
+    if parser.choice_chip_count != 4:
+        findings.append(
+            f"Choice Chip catalog must contain four static state buttons, found {parser.choice_chip_count}"
+        )
     if parser.details_count != 4 or parser.summary_count != 4:
         findings.append(
             f"FAQ Item catalog must contain four details/summary pairs, found "
@@ -333,11 +392,13 @@ def main() -> int:
     for marker in (
         FIGMA_URL,
         TARGET_PAGE,
+        "Choice Chip",
         "Problem Card",
         "Service Card",
         "FAQ Item",
         "Mobile CTA",
         "минимальная зона взаимодействия — 44 px",
+        "постоянное состояние `selected` запрещено",
     ):
         if marker not in doc:
             findings.append(f"component documentation is missing marker: {marker}")

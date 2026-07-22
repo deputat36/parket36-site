@@ -17,6 +17,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - `design/prototypes/components-v1-service-card.css` — изолированные стили Service Card;
 - `design/prototypes/components-v1-faq-item.css` — изолированные стили FAQ Item;
 - `design/prototypes/components-v1-mobile-cta.css` — изолированные стили Mobile CTA;
+- `design/prototypes/components-v1-choice-chip.css` — изолированные стили Choice Chip;
 - `tools/check_design_component_catalog.py` — fail-closed проверка.
 
 ## Компоненты v1
@@ -34,6 +35,14 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 Тоны: `forest`, `brass`, `neutral`.
 
 Используется только для коротких признаков доверия, статусов и контекстных меток. Не заменяет заголовок или полноценное описание.
+
+### Choice Chip
+
+Вариант: `action`.
+
+Состояния: `default`, `hover`, `focus`, `pressed`. Минимальная высота — 44 px, горизонтальные поля — 16 px, радиус — `radius.full`.
+
+Компонент реализуется нативной кнопкой `<button type="button">`. Он добавляет шаблон в текст заявки, поэтому постоянное состояние `selected` запрещено: пользователь может последовательно применить несколько шаблонов. Focus-state видим с клавиатуры, а pressed-state существует только во время нажатия.
 
 ### Problem Card
 
@@ -90,6 +99,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - Service Card в каталоге не использует выдуманные фотографии: медиа-вариант показывает нейтральный placeholder.
 - FAQ Item использует только нативные `<details>/<summary>` без скриптов.
 - Mobile CTA в каталоге использует тестовую внутреннюю ссылку вместо production-заявки и не отправляет данные.
+- Choice Chip в каталоге использует нативные кнопки без `data-request-*`, формы и обработчиков.
 - Компоненты не внедряются в публичные HTML/CSS до отдельного этапа и полного browser smoke.
 
 ## Проверка
