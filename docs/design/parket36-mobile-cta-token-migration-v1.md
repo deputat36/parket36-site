@@ -9,7 +9,7 @@
 - компонент: `.mobile-cta`;
 - действия: `.mobile-cta a`;
 - CSS: `css/cta-polish.css`;
-- breakpoint: `max-width: 1000px`.
+- breakpoint — 1000 px (`max-width: 1000px`).
 
 ## Контракт
 
