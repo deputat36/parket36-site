@@ -155,8 +155,8 @@ def main() -> int:
     for pattern in FORBIDDEN_CSS_PATTERNS:
         if pattern.search(css):
             findings.append(f"Back to Top CSS contains forbidden raw/legacy color: {pattern.pattern}")
-    if css.count(".back-to-top {") != 1:
-        findings.append("Back to Top production CSS must define one base block")
+    if css.count(".back-to-top {") != 2:
+        findings.append("Back to Top production CSS must define base and mobile blocks only")
 
     js = JS.read_text(encoding="utf-8")
     for marker in REQUIRED_JS:
