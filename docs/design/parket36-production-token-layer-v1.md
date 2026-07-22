@@ -47,12 +47,17 @@
 
 В нём на токены переведён общий компонент Section Header: `.section__head`, eyebrow, heading, description, разделитель и модификатор `.section__head--center`.
 
+Третий разрешённый потребитель — `css/enhancements.css`.
+
+В конце этого файла расположен отдельный блок `tokenized Service Card`. Он переводит карточки `.service-card` на варианты compact и media, сохраняя существующие ссылки, изображения и сетку.
+
 Остальные production CSS-модули пока продолжают использовать прежние значения и не должны обращаться к `var(--p36-...)`.
 
 Fail-closed guardrail разрешает следующий набор потребителей:
 
 ```text
 css/cta-polish.css
+css/enhancements.css
 css/typography-polish.css
 ```
 
@@ -70,7 +75,8 @@ css/typography-polish.css
 - состояния, когда они предусмотрены контрактом;
 - декоративная нумерация Problem Card через CSS counter;
 - максимальная ширина и выравнивание Section Header;
-- текстовая подсказка ошибки Input для `:user-invalid`.
+- текстовая подсказка ошибки Input для `:user-invalid`;
+- compact и media оформление Service Card, включая подтверждённые изображения с `alt`.
 
 Не изменяются:
 
@@ -95,6 +101,7 @@ python tools/check_badge_token_migration.py
 python tools/check_problem_card_token_migration.py
 python tools/check_section_header_token_migration.py
 python tools/check_input_token_migration.py
+python tools/check_service_card_token_migration.py
 python tools/build_pages.py
 ```
 
@@ -104,5 +111,5 @@ python tools/build_pages.py
 - объявлено ровно 80 переменных;
 - `design-tokens.css` расположен первым модулем;
 - токены используют только утверждённые CSS-файлы;
-- Button, Badge, Problem Card, Section Header и Input соответствуют контракту компонентов;
+- Button, Badge, Problem Card, Service Card, Section Header и Input соответствуют контракту компонентов;
 - публичная сборка содержит один cache-busted CSS-бандл.
