@@ -15,6 +15,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - `design/prototypes/components-v1.htm` — визуальный каталог для браузера и последующего захвата в Figma;
 - `design/prototypes/components-v1.css` — базовые стили каталога;
 - `design/prototypes/components-v1-service-card.css` — изолированные стили Service Card;
+- `design/prototypes/components-v1-faq-item.css` — изолированные стили FAQ Item;
 - `tools/check_design_component_catalog.py` — fail-closed проверка.
 
 ## Компоненты v1
@@ -45,6 +46,14 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 
 Название объясняет услугу, а описание — результат или задачу клиента. Не использовать неподтверждённые фотографии, цены, сроки и гарантии.
 
+### FAQ Item
+
+Состояния: `closed`, `open`, `hover`, `focus`.
+
+Компонент обязан сохранять нативные элементы `<details>` и `<summary>`. JavaScript для раскрытия вопроса не добавляется. Минимальная высота trigger — 52 px, минимальная зона взаимодействия — 44 px, радиус — `radius.lg`.
+
+Закрытое и открытое состояние различаются не только цветом: индикатор меняется с `+` на `−`. Focus-state видим с клавиатуры. Вопрос остаётся кратким, а ответ не обещает цену, срок или результат до диагностики.
+
 ### Section Header
 
 Содержит eyebrow, заголовок и необязательное описание. Поддерживает выравнивание `left` и `center`. Максимальная ширина текста — 760 px.
@@ -70,6 +79,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - В нём нет production endpoint, Supabase или аналитики.
 - Используются только нейтральные схемы и существующие SVG-концепции логотипа.
 - Service Card в каталоге не использует выдуманные фотографии: медиа-вариант показывает нейтральный placeholder.
+- FAQ Item использует только нативные `<details>/<summary>` без скриптов.
 - Компоненты не внедряются в публичные HTML/CSS до отдельного этапа и полного browser smoke.
 
 ## Проверка
