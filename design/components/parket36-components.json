@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "meta": {
     "name": "Parket36 component contract",
-    "version": "1.1.0-draft",
+    "version": "1.2.0-draft",
     "status": "draft",
     "figmaFile": "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH",
     "figmaTargetPage": "Foundations + Components — Дизайн-система",
@@ -87,6 +87,28 @@
         "focusVisible": true,
         "descriptiveLabelRequired": true,
         "imageAltRequired": true
+      }
+    },
+    "faqItem": {
+      "figmaName": "FAQ Item",
+      "anatomy": ["Container", "Trigger", "Question", "Indicator", "Answer"],
+      "properties": {
+        "state": ["closed", "open", "hover", "focus"],
+        "question": "text",
+        "answer": "text",
+        "defaultOpen": "boolean"
+      },
+      "dimensions": {
+        "minimumTriggerHeight": 52,
+        "padding": 18,
+        "indicatorSize": 32,
+        "radiusToken": "radius.lg"
+      },
+      "accessibility": {
+        "nativeDetailsRequired": true,
+        "focusVisible": true,
+        "indicatorNotColorOnly": true,
+        "minimumTouchTarget": 44
       }
     },
     "sectionHeader": {
