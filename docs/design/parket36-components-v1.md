@@ -16,6 +16,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - `design/prototypes/components-v1.css` — базовые стили каталога;
 - `design/prototypes/components-v1-service-card.css` — изолированные стили Service Card;
 - `design/prototypes/components-v1-faq-item.css` — изолированные стили FAQ Item;
+- `design/prototypes/components-v1-mobile-cta.css` — изолированные стили Mobile CTA;
 - `tools/check_design_component_catalog.py` — fail-closed проверка.
 
 ## Компоненты v1
@@ -64,6 +65,14 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 
 Каждое поле имеет label. Ошибка выводится отдельным текстом и не обозначается только цветом. Высота поля — 52 px.
 
+### Mobile CTA
+
+Состояния: `default`, `hover`, `focus`, `pressed`.
+
+Компонент содержит ровно два действия в фиксированном порядке: звонок и переход к оценке по фото. Максимальная ширина — 620 px, breakpoint — 1000 px, минимальная высота каждого действия — 52 px, gap и внутреннее поле контейнера — 8 px, радиус контейнера — `radius.lg`.
+
+Панель учитывает `env(safe-area-inset-bottom)`, сохраняет заметный focus-state и не перекрывает содержимое страницы благодаря дополнительному нижнему отступу `body`.
+
 ## Правила синхронизации с Figma
 
 1. Название компонента в Figma должно совпадать с `figmaName` в JSON.
@@ -80,6 +89,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - Используются только нейтральные схемы и существующие SVG-концепции логотипа.
 - Service Card в каталоге не использует выдуманные фотографии: медиа-вариант показывает нейтральный placeholder.
 - FAQ Item использует только нативные `<details>/<summary>` без скриптов.
+- Mobile CTA в каталоге использует тестовую внутреннюю ссылку вместо production-заявки и не отправляет данные.
 - Компоненты не внедряются в публичные HTML/CSS до отдельного этапа и полного browser smoke.
 
 ## Проверка

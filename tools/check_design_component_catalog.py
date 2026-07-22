@@ -16,6 +16,7 @@ CATALOG = ROOT / "design" / "prototypes" / "components-v1.htm"
 CATALOG_CSS = ROOT / "design" / "prototypes" / "components-v1.css"
 SERVICE_CARD_CSS = ROOT / "design" / "prototypes" / "components-v1-service-card.css"
 FAQ_ITEM_CSS = ROOT / "design" / "prototypes" / "components-v1-faq-item.css"
+MOBILE_CTA_CSS = ROOT / "design" / "prototypes" / "components-v1-mobile-cta.css"
 GENERATED_CSS = ROOT / "design" / "generated" / "parket36-tokens.css"
 DOC = ROOT / "docs" / "design" / "parket36-components-v1.md"
 FIGMA_URL = "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH"
@@ -29,6 +30,7 @@ EXPECTED_COMPONENTS = {
     "faqItem": "FAQ Item",
     "sectionHeader": "Section Header",
     "input": "Input",
+    "mobileCta": "Mobile CTA",
 }
 EXPECTED_BUTTON_VARIANTS = ["primary", "secondary", "ghost"]
 EXPECTED_BUTTON_STATES = ["default", "hover", "focus", "pressed", "disabled"]
@@ -36,6 +38,7 @@ EXPECTED_SERVICE_CARD_VARIANTS = ["compact", "media"]
 EXPECTED_SERVICE_CARD_STATES = ["default", "hover", "focus"]
 EXPECTED_FAQ_ITEM_STATES = ["closed", "open", "hover", "focus"]
 EXPECTED_INPUT_STATES = ["default", "focus", "filled", "error", "disabled"]
+EXPECTED_MOBILE_CTA_STATES = ["default", "hover", "focus", "pressed"]
 REQUIRED_HTML = (
     'meta name="robots" content="noindex,nofollow"',
     "data-design-component-catalog",
@@ -43,6 +46,7 @@ REQUIRED_HTML = (
     'href="./components-v1.css"',
     'href="./components-v1-service-card.css"',
     'href="./components-v1-faq-item.css"',
+    'href="./components-v1-mobile-cta.css"',
     'src="../logos/parket36-mark-a.svg"',
     "Базовые компоненты нового сайта",
     "Не является опубликованной страницей",
@@ -52,6 +56,10 @@ REQUIRED_HTML = (
     'id="faq-items"',
     '<details class="faq-item"',
     "<summary>",
+    "Mobile CTA",
+    'id="mobile-cta"',
+    "default · hover · focus · pressed",
+    "tel:+79009267929",
 )
 REQUIRED_CSS = (
     "var(--p36-color-semantic-action-primary)",
@@ -83,6 +91,19 @@ REQUIRED_FAQ_ITEM_CSS = (
     "var(--p36-radius-lg)",
     "var(--p36-shadow-floating)",
     ".faq-item summary:focus-visible",
+    "@media (prefers-reduced-motion: reduce)",
+)
+REQUIRED_MOBILE_CTA_CSS = (
+    ".mobile-cta-specimen",
+    ".mobile-cta-specimen__action",
+    ".mobile-cta-specimen__action--primary",
+    ".mobile-cta-specimen__action--secondary",
+    "min-height: 52px",
+    "var(--p36-color-semantic-action-primary)",
+    "var(--p36-color-semantic-action-secondary)",
+    "var(--p36-radius-lg)",
+    "var(--p36-shadow-floating)",
+    "outline: 3px solid var(--p36-color-primitive-brass-200)",
     "@media (prefers-reduced-motion: reduce)",
 )
 FORBIDDEN = (
@@ -144,6 +165,7 @@ def main() -> int:
         CATALOG_CSS,
         SERVICE_CARD_CSS,
         FAQ_ITEM_CSS,
+        MOBILE_CTA_CSS,
         GENERATED_CSS,
         DOC,
     )
@@ -178,7 +200,6 @@ def main() -> int:
     if not isinstance(components, dict):
         findings.append("component contract must contain a components object")
         components = {}
-
     if set(components) != set(EXPECTED_COMPONENTS):
         findings.append(
             f"unexpected component set: {sorted(components)} != {sorted(EXPECTED_COMPONENTS)}"
@@ -236,8 +257,20 @@ def main() -> int:
     if input_component.get("properties", {}).get("state") != EXPECTED_INPUT_STATES:
         findings.append("input states do not match the approved contract")
 
+    mobile_cta = components.get("mobileCta", {})
+    if mobile_cta.get("properties", {}).get("state") != EXPECTED_MOBILE_CTA_STATES:
+        findings.append("Mobile CTA states do not match the approved contract")
+    if mobile_cta.get("dimensions", {}).get("breakpoint") != 1000:
+        findings.append("Mobile CTA breakpoint must remain 1000")
+    if mobile_cta.get("dimensions", {}).get("actionHeight") != 52:
+        findings.append("Mobile CTA actionHeight must remain 52")
+    if mobile_cta.get("accessibility", {}).get("twoActionsRequired") is not True:
+        findings.append("Mobile CTA must require exactly two actions")
+    if mobile_cta.get("accessibility", {}).get("safeAreaAware") is not True:
+        findings.append("Mobile CTA must remain safe-area aware")
+
     token_touch_min = get_path(tokens, "size.touchMin.$value.value")
-    for key in ("button", "faqItem", "input"):
+    for key in ("button", "faqItem", "input", "mobileCta"):
         minimum = components.get(key, {}).get("accessibility", {}).get("minimumTouchTarget")
         if not isinstance(minimum, int) or minimum < token_touch_min:
             findings.append(f"{key} minimumTouchTarget must be at least {token_touch_min}")
@@ -246,7 +279,8 @@ def main() -> int:
     css = CATALOG_CSS.read_text(encoding="utf-8")
     service_card_css = SERVICE_CARD_CSS.read_text(encoding="utf-8")
     faq_item_css = FAQ_ITEM_CSS.read_text(encoding="utf-8")
-    combined = f"{html}\n{css}\n{service_card_css}\n{faq_item_css}".lower()
+    mobile_cta_css = MOBILE_CTA_CSS.read_text(encoding="utf-8")
+    combined = f"{html}\n{css}\n{service_card_css}\n{faq_item_css}\n{mobile_cta_css}".lower()
 
     for marker in REQUIRED_HTML:
         if marker not in html:
@@ -260,6 +294,9 @@ def main() -> int:
     for marker in REQUIRED_FAQ_ITEM_CSS:
         if marker not in faq_item_css:
             findings.append(f"FAQ Item catalog CSS is missing marker: {marker}")
+    for marker in REQUIRED_MOBILE_CTA_CSS:
+        if marker not in mobile_cta_css:
+            findings.append(f"Mobile CTA catalog CSS is missing marker: {marker}")
     for marker in FORBIDDEN:
         if marker in combined:
             findings.append(f"isolated component catalog contains forbidden marker: {marker}")
@@ -299,6 +336,7 @@ def main() -> int:
         "Problem Card",
         "Service Card",
         "FAQ Item",
+        "Mobile CTA",
         "минимальная зона взаимодействия — 44 px",
     ):
         if marker not in doc:

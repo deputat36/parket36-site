@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./components-v1.css">
   <link rel="stylesheet" href="./components-v1-service-card.css">
   <link rel="stylesheet" href="./components-v1-faq-item.css">
+  <link rel="stylesheet" href="./components-v1-mobile-cta.css">
 </head>
 <body>
   <main class="catalog" data-design-component-catalog>
@@ -111,6 +112,19 @@
         <label class="field"><span class="field__label">Площадь помещения · error</span><input class="field__control" type="text" value="примерно 25 м²" aria-invalid="true"><span class="field__error">Укажите только число или примерный диапазон.</span></label>
         <label class="field"><span class="field__label">Район · filled</span><input class="field__control" type="text" value="Борисоглебск"></label>
         <label class="field"><span class="field__label">Недоступное поле · disabled</span><input class="field__control" type="text" value="Заполнено системой" disabled><span class="field__help">Состояние disabled не должно выглядеть как ошибка.</span></label>
+      </div>
+    </section>
+
+    <section class="specimen" id="mobile-cta">
+      <div class="specimen__head">
+        <div><h2>Mobile CTA</h2><p class="specimen__description">Фиксированная мобильная панель с двумя главными действиями: звонок и оценка по фото.</p></div>
+        <span class="specimen__tag">default · hover · focus · pressed</span>
+      </div>
+      <div class="state-grid">
+        <div><span class="state-caption">default</span><div class="mobile-cta-specimen"><a class="mobile-cta-specimen__action mobile-cta-specimen__action--primary" href="tel:+79009267929">Позвонить</a><a class="mobile-cta-specimen__action mobile-cta-specimen__action--secondary" href="#mobile-cta">Оценка по фото</a></div></div>
+        <div><span class="state-caption">hover</span><div class="mobile-cta-specimen is-hover"><a class="mobile-cta-specimen__action mobile-cta-specimen__action--primary" href="tel:+79009267929">Позвонить</a><a class="mobile-cta-specimen__action mobile-cta-specimen__action--secondary" href="#mobile-cta">Оценка по фото</a></div></div>
+        <div><span class="state-caption">focus</span><div class="mobile-cta-specimen is-focus"><a class="mobile-cta-specimen__action mobile-cta-specimen__action--primary" href="tel:+79009267929">Позвонить</a><a class="mobile-cta-specimen__action mobile-cta-specimen__action--secondary" href="#mobile-cta">Оценка по фото</a></div></div>
+        <div><span class="state-caption">pressed</span><div class="mobile-cta-specimen is-pressed"><a class="mobile-cta-specimen__action mobile-cta-specimen__action--primary" href="tel:+79009267929">Позвонить</a><a class="mobile-cta-specimen__action mobile-cta-specimen__action--secondary" href="#mobile-cta">Оценка по фото</a></div></div>
       </div>
     </section>
 
