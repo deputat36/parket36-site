@@ -50,6 +50,7 @@ EXPECTED_COMPONENTS = [
     "Badge",
     "Problem Card",
     "Service Card",
+    "FAQ Item",
     "Section Header",
     "Input",
 ]
