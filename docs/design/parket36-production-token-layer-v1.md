@@ -45,7 +45,10 @@
 
 Второй разрешённый потребитель — `css/typography-polish.css`.
 
-В нём на токены переведён общий компонент Section Header: `.section__head`, eyebrow, heading, description, разделитель и модификатор `.section__head--center`.
+В нём на токены переведены:
+
+- общий компонент Section Header: `.section__head`, eyebrow, heading, description, разделитель и модификатор `.section__head--center`;
+- нативный FAQ Item: `.faq details`, `.faq summary`, ответы, closed/open/hover/focus и индикатор `+`/`−`.
 
 Третий разрешённый потребитель — `css/enhancements.css`.
 
@@ -76,7 +79,8 @@ css/typography-polish.css
 - декоративная нумерация Problem Card через CSS counter;
 - максимальная ширина и выравнивание Section Header;
 - текстовая подсказка ошибки Input для `:user-invalid`;
-- compact и media оформление Service Card, включая подтверждённые изображения с `alt`.
+- compact и media оформление Service Card, включая подтверждённые изображения с `alt`;
+- нативные closed/open/hover/focus состояния FAQ Item с индикатором `+`/`−`.
 
 Не изменяются:
 
@@ -86,6 +90,7 @@ css/typography-polish.css
 - обработчики JavaScript;
 - ID, required и metadata полей;
 - формирование payload и fallback;
+- FAQPage JSON-LD;
 - аналитика;
 - Supabase.
 
@@ -102,6 +107,7 @@ python tools/check_problem_card_token_migration.py
 python tools/check_section_header_token_migration.py
 python tools/check_input_token_migration.py
 python tools/check_service_card_token_migration.py
+python tools/check_faq_item_token_migration.py
 python tools/build_pages.py
 ```
 
@@ -111,5 +117,5 @@ python tools/build_pages.py
 - объявлено ровно 80 переменных;
 - `design-tokens.css` расположен первым модулем;
 - токены используют только утверждённые CSS-файлы;
-- Button, Badge, Problem Card, Service Card, Section Header и Input соответствуют контракту компонентов;
+- Button, Badge, Problem Card, Service Card, FAQ Item, Section Header и Input соответствуют контракту компонентов;
 - публичная сборка содержит один cache-busted CSS-бандл.

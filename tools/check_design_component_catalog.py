@@ -15,6 +15,7 @@ TOKENS = ROOT / "design" / "parket36-tokens.json"
 CATALOG = ROOT / "design" / "prototypes" / "components-v1.htm"
 CATALOG_CSS = ROOT / "design" / "prototypes" / "components-v1.css"
 SERVICE_CARD_CSS = ROOT / "design" / "prototypes" / "components-v1-service-card.css"
+FAQ_ITEM_CSS = ROOT / "design" / "prototypes" / "components-v1-faq-item.css"
 GENERATED_CSS = ROOT / "design" / "generated" / "parket36-tokens.css"
 DOC = ROOT / "docs" / "design" / "parket36-components-v1.md"
 FIGMA_URL = "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH"
@@ -25,6 +26,7 @@ EXPECTED_COMPONENTS = {
     "badge": "Badge",
     "problemCard": "Problem Card",
     "serviceCard": "Service Card",
+    "faqItem": "FAQ Item",
     "sectionHeader": "Section Header",
     "input": "Input",
 }
@@ -32,6 +34,7 @@ EXPECTED_BUTTON_VARIANTS = ["primary", "secondary", "ghost"]
 EXPECTED_BUTTON_STATES = ["default", "hover", "focus", "pressed", "disabled"]
 EXPECTED_SERVICE_CARD_VARIANTS = ["compact", "media"]
 EXPECTED_SERVICE_CARD_STATES = ["default", "hover", "focus"]
+EXPECTED_FAQ_ITEM_STATES = ["closed", "open", "hover", "focus"]
 EXPECTED_INPUT_STATES = ["default", "focus", "filled", "error", "disabled"]
 REQUIRED_HTML = (
     'meta name="robots" content="noindex,nofollow"',
@@ -39,11 +42,16 @@ REQUIRED_HTML = (
     'href="../generated/parket36-tokens.css"',
     'href="./components-v1.css"',
     'href="./components-v1-service-card.css"',
+    'href="./components-v1-faq-item.css"',
     'src="../logos/parket36-mark-a.svg"',
     "Базовые компоненты нового сайта",
     "Не является опубликованной страницей",
     "Service Card",
     'id="service-cards"',
+    "FAQ Item",
+    'id="faq-items"',
+    '<details class="faq-item"',
+    "<summary>",
 )
 REQUIRED_CSS = (
     "var(--p36-color-semantic-action-primary)",
@@ -64,6 +72,19 @@ REQUIRED_SERVICE_CARD_CSS = (
     ".service-card:focus-visible",
     "@media (prefers-reduced-motion: reduce)",
 )
+REQUIRED_FAQ_ITEM_CSS = (
+    ".faq-item-grid",
+    ".faq-item[open]",
+    ".faq-item summary",
+    ".faq-item summary::after",
+    'content: "+"',
+    'content: "−"',
+    "min-height: 52px",
+    "var(--p36-radius-lg)",
+    "var(--p36-shadow-floating)",
+    ".faq-item summary:focus-visible",
+    "@media (prefers-reduced-motion: reduce)",
+)
 FORBIDDEN = (
     "<form",
     "<script",
@@ -82,11 +103,17 @@ class CatalogParser(HTMLParser):
         self.h1_count = 0
         self.images_without_alt: list[str] = []
         self.local_assets: list[str] = []
+        self.details_count = 0
+        self.summary_count = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = dict(attrs)
         if tag == "h1":
             self.h1_count += 1
+        if tag == "details":
+            self.details_count += 1
+        if tag == "summary":
+            self.summary_count += 1
         if tag == "img" and "alt" not in values:
             self.images_without_alt.append(values.get("src", "<unknown>") or "<unknown>")
         if tag in {"img", "link"}:
@@ -116,6 +143,7 @@ def main() -> int:
         CATALOG,
         CATALOG_CSS,
         SERVICE_CARD_CSS,
+        FAQ_ITEM_CSS,
         GENERATED_CSS,
         DOC,
     )
@@ -194,12 +222,22 @@ def main() -> int:
     if service_card.get("dimensions", {}).get("mediaAspectRatio") != "1000/760":
         findings.append("Service Card mediaAspectRatio must remain 1000/760")
 
+    faq_item = components.get("faqItem", {})
+    if faq_item.get("properties", {}).get("state") != EXPECTED_FAQ_ITEM_STATES:
+        findings.append("FAQ Item states do not match the approved contract")
+    if faq_item.get("dimensions", {}).get("minimumTriggerHeight") != 52:
+        findings.append("FAQ Item minimumTriggerHeight must remain 52")
+    if faq_item.get("accessibility", {}).get("nativeDetailsRequired") is not True:
+        findings.append("FAQ Item must require native details/summary semantics")
+    if faq_item.get("accessibility", {}).get("indicatorNotColorOnly") is not True:
+        findings.append("FAQ Item indicator must not depend on color alone")
+
     input_component = components.get("input", {})
     if input_component.get("properties", {}).get("state") != EXPECTED_INPUT_STATES:
         findings.append("input states do not match the approved contract")
 
     token_touch_min = get_path(tokens, "size.touchMin.$value.value")
-    for key in ("button", "input"):
+    for key in ("button", "faqItem", "input"):
         minimum = components.get(key, {}).get("accessibility", {}).get("minimumTouchTarget")
         if not isinstance(minimum, int) or minimum < token_touch_min:
             findings.append(f"{key} minimumTouchTarget must be at least {token_touch_min}")
@@ -207,7 +245,8 @@ def main() -> int:
     html = CATALOG.read_text(encoding="utf-8")
     css = CATALOG_CSS.read_text(encoding="utf-8")
     service_card_css = SERVICE_CARD_CSS.read_text(encoding="utf-8")
-    combined = f"{html}\n{css}\n{service_card_css}".lower()
+    faq_item_css = FAQ_ITEM_CSS.read_text(encoding="utf-8")
+    combined = f"{html}\n{css}\n{service_card_css}\n{faq_item_css}".lower()
 
     for marker in REQUIRED_HTML:
         if marker not in html:
@@ -218,6 +257,9 @@ def main() -> int:
     for marker in REQUIRED_SERVICE_CARD_CSS:
         if marker not in service_card_css:
             findings.append(f"Service Card catalog CSS is missing marker: {marker}")
+    for marker in REQUIRED_FAQ_ITEM_CSS:
+        if marker not in faq_item_css:
+            findings.append(f"FAQ Item catalog CSS is missing marker: {marker}")
     for marker in FORBIDDEN:
         if marker in combined:
             findings.append(f"isolated component catalog contains forbidden marker: {marker}")
@@ -226,6 +268,11 @@ def main() -> int:
     parser.feed(html)
     if parser.h1_count != 1:
         findings.append(f"component catalog must contain exactly one h1, found {parser.h1_count}")
+    if parser.details_count != 4 or parser.summary_count != 4:
+        findings.append(
+            f"FAQ Item catalog must contain four details/summary pairs, found "
+            f"{parser.details_count}/{parser.summary_count}"
+        )
     for source in parser.images_without_alt:
         findings.append(f"component catalog image is missing alt: {source}")
     for raw_path in parser.local_assets:
@@ -251,6 +298,7 @@ def main() -> int:
         TARGET_PAGE,
         "Problem Card",
         "Service Card",
+        "FAQ Item",
         "минимальная зона взаимодействия — 44 px",
     ):
         if marker not in doc:
