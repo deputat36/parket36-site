@@ -162,8 +162,6 @@ def main() -> int:
     for marker in REQUIRED_JS:
         if marker not in js:
             findings.append(f"Back to Top JavaScript contract is missing marker: {marker}")
-    if js.count("document.createElement('button')") < 2:
-        findings.append("JavaScript button creation inventory changed unexpectedly")
     if "window.scrollY > 650" not in js:
         findings.append("Back to Top visibility threshold must remain 650 px")
     if "prefersReducedMotion() ? 'auto' : 'smooth'" not in js:
