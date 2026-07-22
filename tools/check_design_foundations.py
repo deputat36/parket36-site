@@ -53,6 +53,7 @@ EXPECTED_COMPONENTS = [
     "FAQ Item",
     "Section Header",
     "Input",
+    "Mobile CTA",
 ]
 REQUIRED_SECTIONS = ["colors", "typography", "spacing", "shape-and-depth", "layout"]
 REQUIRED_CSS = [
