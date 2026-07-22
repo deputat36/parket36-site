@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "meta": {
     "name": "Parket36 component contract",
-    "version": "1.0.0-draft",
+    "version": "1.1.0-draft",
     "status": "draft",
     "figmaFile": "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH",
     "figmaTargetPage": "Foundations + Components — Дизайн-система",
@@ -63,6 +63,30 @@
         "entireCardClickable": true,
         "focusVisible": true,
         "descriptiveLabelRequired": true
+      }
+    },
+    "serviceCard": {
+      "figmaName": "Service Card",
+      "anatomy": ["Media", "Icon", "Body", "Title", "Description"],
+      "properties": {
+        "variant": ["compact", "media"],
+        "state": ["default", "hover", "focus"],
+        "mediaVisible": "boolean",
+        "iconVisible": "boolean",
+        "title": "text",
+        "description": "text"
+      },
+      "dimensions": {
+        "minimumHeight": 192,
+        "padding": 24,
+        "mediaAspectRatio": "1000/760",
+        "radiusToken": "radius.lg"
+      },
+      "accessibility": {
+        "entireCardClickable": true,
+        "focusVisible": true,
+        "descriptiveLabelRequired": true,
+        "imageAltRequired": true
       }
     },
     "sectionHeader": {
