@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "meta": {
     "name": "Parket36 Figma sync manifest",
-    "version": "1.0.0-draft",
+    "version": "1.1.0-draft",
     "status": "partial-unverified",
     "fileKey": "2ovBluMs8xOKkkUIPevLaH",
     "fileUrl": "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH",
@@ -85,6 +85,7 @@
     "Button": {"nodeId": null, "status": "pending"},
     "Badge": {"nodeId": null, "status": "pending"},
     "Problem Card": {"nodeId": null, "status": "pending"},
+    "Service Card": {"nodeId": null, "status": "pending"},
     "Section Header": {"nodeId": null, "status": "pending"},
     "Input": {"nodeId": null, "status": "pending"}
   },
