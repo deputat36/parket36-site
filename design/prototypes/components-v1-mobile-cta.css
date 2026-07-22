@@ -1,0 +1,79 @@
+.mobile-cta-specimen {
+  width: min(100%, 620px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--p36-spacing-sm);
+  padding: var(--p36-spacing-sm);
+  border: 1px solid var(--p36-color-semantic-border-default);
+  border-radius: var(--p36-radius-lg);
+  background: var(--p36-color-semantic-surface-default);
+  box-shadow: var(--p36-shadow-floating);
+}
+
+.mobile-cta-specimen__action {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  padding: var(--p36-spacing-md) var(--p36-spacing-sm);
+  border-radius: var(--p36-radius-md);
+  font-size: var(--p36-font-size-small);
+  font-weight: var(--p36-font-weight-bold);
+  line-height: 1.2;
+  text-align: center;
+  transition:
+    transform .18s ease,
+    background-color .18s ease,
+    box-shadow .18s ease;
+}
+
+.mobile-cta-specimen__action--primary {
+  background: var(--p36-color-semantic-action-primary);
+  color: var(--p36-color-semantic-text-inverse);
+}
+
+.mobile-cta-specimen__action--secondary {
+  background: var(--p36-color-semantic-action-secondary);
+  color: var(--p36-color-semantic-text-primary);
+}
+
+.mobile-cta-specimen.is-hover .mobile-cta-specimen__action--primary {
+  background: var(--p36-color-semantic-action-primary-hover);
+  transform: translateY(-1px);
+}
+
+.mobile-cta-specimen.is-hover .mobile-cta-specimen__action--secondary {
+  background: var(--p36-color-semantic-action-secondary-hover);
+  color: var(--p36-color-semantic-text-inverse);
+  transform: translateY(-1px);
+}
+
+.mobile-cta-specimen.is-focus .mobile-cta-specimen__action:first-child {
+  outline: 3px solid var(--p36-color-primitive-brass-200);
+  outline-offset: 3px;
+}
+
+.mobile-cta-specimen.is-pressed .mobile-cta-specimen__action {
+  transform: translateY(0) scale(.99);
+  box-shadow: none;
+}
+
+@media (max-width: 520px) {
+  .mobile-cta-specimen {
+    width: 100%;
+  }
+
+  .mobile-cta-specimen__action {
+    padding-inline: var(--p36-spacing-xs);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-cta-specimen__action {
+    transition: none;
+  }
+
+  .mobile-cta-specimen.is-hover .mobile-cta-specimen__action,
+  .mobile-cta-specimen.is-pressed .mobile-cta-specimen__action {
+    transform: none;
+  }
+}
