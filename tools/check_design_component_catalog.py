@@ -21,6 +21,7 @@ CHOICE_CHIP_CSS = ROOT / "design" / "prototypes" / "components-v1-choice-chip.cs
 BACK_TO_TOP_CSS = ROOT / "design" / "prototypes" / "components-v1-back-to-top.css"
 BREADCRUMBS_CSS = ROOT / "design" / "prototypes" / "components-v1-breadcrumbs.css"
 PROOF_CARD_CSS = ROOT / "design" / "prototypes" / "components-v1-proof-card.css"
+PROCESS_STEP_CSS = ROOT / "design" / "prototypes" / "components-v1-process-step.css"
 GENERATED_CSS = ROOT / "design" / "generated" / "parket36-tokens.css"
 DOC = ROOT / "docs" / "design" / "parket36-components-v1.md"
 FIGMA_URL = "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH"
@@ -33,6 +34,7 @@ EXPECTED_COMPONENTS = {
     "backToTop": "Back to Top",
     "breadcrumbs": "Breadcrumbs",
     "proofCard": "Proof Card",
+    "processStep": "Process Step",
     "problemCard": "Problem Card",
     "serviceCard": "Service Card",
     "faqItem": "FAQ Item",
@@ -69,6 +71,7 @@ REQUIRED_HTML = (
     'href="./components-v1-back-to-top.css"',
     'href="./components-v1-breadcrumbs.css"',
     'href="./components-v1-proof-card.css"',
+    'href="./components-v1-process-step.css"',
     'src="../logos/parket36-mark-a.svg"',
     "Базовые компоненты нового сайта",
     "Не является опубликованной страницей",
@@ -76,6 +79,7 @@ REQUIRED_HTML = (
     'id="back-to-top"',
     'id="breadcrumbs"',
     'id="proof-cards"',
+    'id="process-steps"',
     'id="problem-cards"',
     'id="service-cards"',
     'id="faq-items"',
@@ -83,7 +87,9 @@ REQUIRED_HTML = (
     'id="inputs"',
     'id="mobile-cta"',
     "non-interactive · article",
+    "non-interactive · ordered list",
     'aria-label="Вернуться к началу страницы"',
+    'aria-label="Пример последовательности работ"',
     "tel:+79009267929",
 )
 REQUIRED_BASE_CSS = (
@@ -120,6 +126,14 @@ REQUIRED_COMPONENT_CSS = {
         "width: 48px", "height: 4px", "var(--p36-radius-lg)",
         "var(--p36-shadow-card)", "var(--p36-color-semantic-action-secondary)",
         ".proof-card-specimen--long", "@media (prefers-reduced-motion: reduce)",
+    ),
+    PROCESS_STEP_CSS: (
+        ".process-step-specimen-grid", "grid-template-columns: repeat(3, minmax(0, 1fr))",
+        "counter-reset: process-step", ".process-step-specimen {", "min-height: 164px",
+        "var(--p36-radius-lg)", "var(--p36-shadow-card)",
+        "counter-increment: process-step", "content: counter(process-step)",
+        "width: 36px", "height: 36px", "var(--p36-color-semantic-action-primary)",
+        "@media (prefers-reduced-motion: reduce)",
     ),
     SERVICE_CARD_CSS: (
         ".service-card-grid", ".service-card--compact", ".service-card--media",
@@ -161,6 +175,9 @@ class CatalogParser(HTMLParser):
         self.breadcrumbs_specimens = 0
         self.proof_card_articles = 0
         self.proof_card_interactive = 0
+        self.process_step_lists = 0
+        self.process_step_items = 0
+        self.process_step_interactive = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = dict(attrs)
@@ -181,6 +198,12 @@ class CatalogParser(HTMLParser):
             self.proof_card_articles += 1
         if tag in {"a", "button"} and "proof-card-specimen" in classes:
             self.proof_card_interactive += 1
+        if tag == "ol" and "process-step-specimen-grid" in classes:
+            self.process_step_lists += 1
+        if tag == "li" and "process-step-specimen" in classes:
+            self.process_step_items += 1
+        if tag in {"a", "button"} and "process-step-specimen" in classes:
+            self.process_step_interactive += 1
         if tag == "img" and "alt" not in values:
             self.images_without_alt.append(values.get("src", "<unknown>") or "<unknown>")
         if tag in {"img", "link"}:
@@ -213,7 +236,7 @@ def main() -> int:
     required_files = (
         CONTRACT, TOKENS, CATALOG, CATALOG_CSS, SERVICE_CARD_CSS, FAQ_ITEM_CSS,
         MOBILE_CTA_CSS, CHOICE_CHIP_CSS, BACK_TO_TOP_CSS, BREADCRUMBS_CSS,
-        PROOF_CARD_CSS, GENERATED_CSS, DOC,
+        PROOF_CARD_CSS, PROCESS_STEP_CSS, GENERATED_CSS, DOC,
     )
     for path in required_files:
         if not path.is_file():
@@ -301,6 +324,26 @@ def main() -> int:
         if proof_accessibility.get(marker) is not True:
             findings.append(f"Proof Card must keep accessibility guardrail: {marker}")
 
+    process_step = components.get("processStep", {})
+    if process_step.get("properties") != {
+        "number": "generated-counter",
+        "title": "text",
+        "description": "text",
+        "interactive": False,
+    }:
+        findings.append("Process Step properties must preserve generated counter and non-interactivity")
+    if process_step.get("dimensions", {}).get("minimumHeight") != 164:
+        findings.append("Process Step minimumHeight must remain 164")
+    if process_step.get("dimensions", {}).get("numberSize") != 36:
+        findings.append("Process Step numberSize must remain 36")
+    process_accessibility = process_step.get("accessibility", {})
+    for marker in (
+        "nativeOrderedListRequired", "semanticListItemRequired", "nonInteractive",
+        "linksForbidden", "buttonRoleForbidden", "tabindexForbidden", "hoverTransformForbidden",
+    ):
+        if process_accessibility.get(marker) is not True:
+            findings.append(f"Process Step must keep accessibility guardrail: {marker}")
+
     service_card = components.get("serviceCard", {})
     if service_card.get("dimensions", {}).get("mediaAspectRatio") != "1000/760":
         findings.append("Service Card mediaAspectRatio must remain 1000/760")
@@ -346,6 +389,12 @@ def main() -> int:
         findings.append(f"Proof Card catalog must contain three article specimens, found {parser.proof_card_articles}")
     if parser.proof_card_interactive:
         findings.append("Proof Card catalog specimens must not be links or buttons")
+    if parser.process_step_lists != 1:
+        findings.append(f"Process Step catalog must contain one ordered list, found {parser.process_step_lists}")
+    if parser.process_step_items != 3:
+        findings.append(f"Process Step catalog must contain three list item specimens, found {parser.process_step_items}")
+    if parser.process_step_interactive:
+        findings.append("Process Step catalog specimens must not be links or buttons")
     for source in parser.images_without_alt:
         findings.append(f"component catalog image is missing alt: {source}")
     for raw_path in parser.local_assets:
@@ -368,10 +417,10 @@ def main() -> int:
     doc = DOC.read_text(encoding="utf-8")
     for marker in (
         FIGMA_URL, TARGET_PAGE, "Choice Chip", "Back to Top", "Breadcrumbs", "Proof Card",
-        "Problem Card", "Service Card", "FAQ Item", "Mobile CTA",
+        "Process Step", "Problem Card", "Service Card", "FAQ Item", "Mobile CTA",
         "минимальная зона взаимодействия — 44 px", "650 px",
         "Вернуться к началу страницы", "текущий пункт без ссылки", "BreadcrumbList",
-        "неинтерактивный", "hover-смещение",
+        "неинтерактивный", "hover-смещение", "нативного `<ol class=\"steps\">`", "HowToStep",
     ):
         if marker not in doc:
             findings.append(f"component documentation is missing marker: {marker}")
