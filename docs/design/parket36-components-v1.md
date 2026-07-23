@@ -19,6 +19,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - `design/prototypes/components-v1-mobile-cta.css` — изолированные стили Mobile CTA;
 - `design/prototypes/components-v1-choice-chip.css` — изолированные стили Choice Chip;
 - `design/prototypes/components-v1-back-to-top.css` — изолированные стили Back to Top;
+- `design/prototypes/components-v1-breadcrumbs.css` — изолированные стили Breadcrumbs;
 - `tools/check_design_component_catalog.py` — fail-closed проверка.
 
 ## Компоненты v1
@@ -52,6 +53,14 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 Компонент создаётся как нативная кнопка размером 48×48 px с радиусом `radius.full` и доступным именем «Вернуться к началу страницы». Минимальная зона взаимодействия — 44 px.
 
 Кнопка появляется после прокрутки более 650 px. На desktop она расположена справа 18 px и снизу 22 px; на mobile до 640 px — справа 18 px и снизу 82 px, чтобы оставаться над Mobile CTA. При reduced motion плавная прокрутка отключается.
+
+### Breadcrumbs
+
+Состояния: `default`, `hover`, `focus`.
+
+Компонент содержит контейнер, родительские ссылки, разделители `›` и текущий пункт без ссылки. Минимальная высота — 40 px, горизонтальные поля — 12 px, gap — 8 px. На desktop используется `radius.full`, на mobile до 640 px — `radius.md` и ширина 100%.
+
+Первая ссылка всегда ведёт на главную страницу. Цепочка переносится через `flex-wrap` без обрезания. Focus-state видим с клавиатуры. Порядок, тексты и ссылки остаются источником для build-time schema.org `BreadcrumbList`.
 
 ### Problem Card
 
@@ -110,6 +119,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - Mobile CTA в каталоге использует тестовую внутреннюю ссылку вместо production-заявки и не отправляет данные.
 - Choice Chip в каталоге использует нативные кнопки без `data-request-*`, формы и обработчиков.
 - Back to Top в каталоге показывает только статические состояния и не прокручивает страницу программно.
+- Breadcrumbs в каталоге использует тестовые внутренние ссылки и не изменяет маршруты или schema.
 - Компоненты не внедряются в публичные HTML/CSS до отдельного этапа и полного browser smoke.
 
 ## Проверка
