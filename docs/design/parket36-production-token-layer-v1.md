@@ -65,7 +65,11 @@
 
 Шестой разрешённый потребитель — `css/breadcrumbs-polish.css`.
 
-Он переводит `.breadcrumbs`, ссылки, разделители и текущий пункт на состояния default/hover/focus, сохраняя видимую цепочку, разделитель `›`, перенос строк и build-time `BreadcrumbList`. Модуль расположен после `back-to-top-polish.css` и перед `logo-brand.css` в production bundle.
+Он переводит `.breadcrumbs`, ссылки, разделители и текущий пункт на состояния default/hover/focus, сохраняя видимую цепочку, разделитель `›`, перенос строк и build-time `BreadcrumbList`. Модуль расположен после `back-to-top-polish.css` в production bundle.
+
+Седьмой разрешённый потребитель — `css/proof-card-polish.css`.
+
+Он переводит 27 информационных `.proof-card` на tokenized surface, border, radius, shadow, typography и brass-маркер. Proof Card остаётся неинтерактивным `<article>`: модуль явно нейтрализует старое hover-смещение через `transform: none`, не добавляет ссылки, focus или pressed states и расположен после `breadcrumbs-polish.css` перед `logo-brand.css`.
 
 Остальные production CSS-модули пока продолжают использовать прежние значения и не должны обращаться к `var(--p36-...)`.
 
@@ -77,6 +81,7 @@ css/breadcrumbs-polish.css
 css/choice-chip-polish.css
 css/cta-polish.css
 css/enhancements.css
+css/proof-card-polish.css
 css/typography-polish.css
 ```
 
@@ -100,7 +105,8 @@ css/typography-polish.css
 - Mobile CTA с двумя действиями, breakpoint 1000 px, safe-area и нижним отступом страницы;
 - Choice Chip с нативной кнопкой, touch target 44 px и состояниями default/hover/focus/pressed без постоянного selected-state;
 - Back to Top с нативной кнопкой 48×48 px, порогом 650 px, мобильным отступом и состояниями hidden/visible/hover/focus/pressed;
-- Breadcrumbs с цепочкой ссылок, разделителями, текущим пунктом, переносом строк и состояниями default/hover/focus.
+- Breadcrumbs с цепочкой ссылок, разделителями, текущим пунктом, переносом строк и состояниями default/hover/focus;
+- Proof Card как неинтерактивный информационный article с brass-маркером и без hover-transform.
 
 Не изменяются:
 
@@ -128,6 +134,7 @@ python tools/check_badge_token_migration.py
 python tools/check_choice_chip_token_migration.py
 python tools/check_back_to_top_token_migration.py
 python tools/check_breadcrumbs_token_migration.py
+python tools/check_proof_card_token_migration.py
 python tools/check_problem_card_token_migration.py
 python tools/check_section_header_token_migration.py
 python tools/check_input_token_migration.py
@@ -143,5 +150,5 @@ python tools/build_pages.py
 - объявлено ровно 80 переменных;
 - `design-tokens.css` расположен первым модулем;
 - токены используют только утверждённые CSS-файлы;
-- Button, Badge, Choice Chip, Back to Top, Breadcrumbs, Problem Card, Service Card, FAQ Item, Section Header, Input и Mobile CTA соответствуют контракту компонентов;
+- Button, Badge, Choice Chip, Back to Top, Breadcrumbs, Proof Card, Problem Card, Service Card, FAQ Item, Section Header, Input и Mobile CTA соответствуют контракту компонентов;
 - публичная сборка содержит один cache-busted CSS-бандл.
