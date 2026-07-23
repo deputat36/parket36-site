@@ -78,7 +78,9 @@ REQUEST_PAGE_MARKERS = {
     'id="request-task" rows="6" required': "required task field",
     'id="request-contact" autocomplete="tel" inputmode="tel" required': "required contact field",
     '>Отправить заявку и скопировать текст</button>': "submit and copy action",
-    "Заявка отправляется Ивану через защищённую форму.": "lead submission disclosure",
+    "Заполните форму — получите понятный следующий шаг": "honest request heading",
+    "Форма попробует сохранить заявку в защищённой системе.": "fail-closed lead submission disclosure",
+    "Если уведомление Ивану не подтвердится, сразу появится кнопка звонка.": "notification fallback disclosure",
     FORM_POLICY_NOTICE: "privacy policy consent notice",
 }
 
@@ -94,8 +96,9 @@ SCRIPT_MARKERS = {
 }
 
 POLICY_MARKERS = {
-    "Заявка отправляется Ивану через защищённую форму": "current lead submission disclosure",
-    "Supabase": "Supabase storage disclosure",
+    "Форма пытается сохранить заявку в защищённой системе": "fail-closed lead storage disclosure",
+    "подтверждено ли автоматическое уведомление Ивану": "notification status disclosure",
+    "Успешно принятые заявки сохраняются в защищённом хранилище Supabase": "Supabase storage disclosure",
     "сервисный ключ Supabase не передаётся в браузер": "no browser service role disclosure",
     "IP хранится только в виде хэша": "hashed IP audit disclosure",
 }
@@ -107,6 +110,15 @@ STALE_DISCLOSURES = {
     "Отправка данных на сервер не выполняется",
     "Данные не сохраняются на сайте",
     "Данные никуда не отправляются",
+}
+
+UNCONDITIONAL_DELIVERY_DISCLOSURES = {
+    "заявка уйдёт Ивану",
+    "сайт отправит заявку Ивану",
+    "Форма отправит заявку Ивану через защищённую форму",
+    "заявка передаётся Ивану через защищённую форму",
+    "Заявка отправляется Ивану через защищённую форму",
+    "Иван получит заявку через ту же защищённую систему",
 }
 
 
@@ -242,6 +254,9 @@ def main() -> int:
     for marker, label in REQUEST_PAGE_MARKERS.items():
         if marker not in request_text:
             findings.append(f"zayavka/index.html: missing {label}: {marker}")
+    for marker in UNCONDITIONAL_DELIVERY_DISCLOSURES:
+        if marker in request_text:
+            findings.append(f"zayavka/index.html: contains unconditional delivery disclosure: {marker}")
 
     script_text = read_page("js/main.js", findings)
     for marker, label in SCRIPT_MARKERS.items():
@@ -252,7 +267,7 @@ def main() -> int:
     for marker, label in POLICY_MARKERS.items():
         if marker not in policy_text:
             findings.append(f"politika/index.html: missing {label}: {marker}")
-    for marker in STALE_DISCLOSURES:
+    for marker in STALE_DISCLOSURES | UNCONDITIONAL_DELIVERY_DISCLOSURES:
         if marker in policy_text:
             findings.append(f"politika/index.html: contains stale lead disclosure: {marker}")
 
