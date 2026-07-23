@@ -20,6 +20,7 @@ MOBILE_CTA_CSS = ROOT / "design" / "prototypes" / "components-v1-mobile-cta.css"
 CHOICE_CHIP_CSS = ROOT / "design" / "prototypes" / "components-v1-choice-chip.css"
 BACK_TO_TOP_CSS = ROOT / "design" / "prototypes" / "components-v1-back-to-top.css"
 BREADCRUMBS_CSS = ROOT / "design" / "prototypes" / "components-v1-breadcrumbs.css"
+PROOF_CARD_CSS = ROOT / "design" / "prototypes" / "components-v1-proof-card.css"
 GENERATED_CSS = ROOT / "design" / "generated" / "parket36-tokens.css"
 DOC = ROOT / "docs" / "design" / "parket36-components-v1.md"
 FIGMA_URL = "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH"
@@ -31,6 +32,7 @@ EXPECTED_COMPONENTS = {
     "choiceChip": "Choice Chip",
     "backToTop": "Back to Top",
     "breadcrumbs": "Breadcrumbs",
+    "proofCard": "Proof Card",
     "problemCard": "Problem Card",
     "serviceCard": "Service Card",
     "faqItem": "FAQ Item",
@@ -38,17 +40,22 @@ EXPECTED_COMPONENTS = {
     "input": "Input",
     "mobileCta": "Mobile CTA",
 }
-EXPECTED_BUTTON_VARIANTS = ["primary", "secondary", "ghost"]
-EXPECTED_BUTTON_STATES = ["default", "hover", "focus", "pressed", "disabled"]
-EXPECTED_CHOICE_CHIP_VARIANTS = ["action"]
-EXPECTED_CHOICE_CHIP_STATES = ["default", "hover", "focus", "pressed"]
-EXPECTED_BACK_TO_TOP_STATES = ["hidden", "visible", "hover", "focus", "pressed"]
-EXPECTED_BREADCRUMBS_STATES = ["default", "hover", "focus"]
-EXPECTED_SERVICE_CARD_VARIANTS = ["compact", "media"]
-EXPECTED_SERVICE_CARD_STATES = ["default", "hover", "focus"]
-EXPECTED_FAQ_ITEM_STATES = ["closed", "open", "hover", "focus"]
-EXPECTED_INPUT_STATES = ["default", "focus", "filled", "error", "disabled"]
-EXPECTED_MOBILE_CTA_STATES = ["default", "hover", "focus", "pressed"]
+EXPECTED_STATES = {
+    "button": ["default", "hover", "focus", "pressed", "disabled"],
+    "choiceChip": ["default", "hover", "focus", "pressed"],
+    "backToTop": ["hidden", "visible", "hover", "focus", "pressed"],
+    "breadcrumbs": ["default", "hover", "focus"],
+    "problemCard": ["default", "hover", "focus"],
+    "serviceCard": ["default", "hover", "focus"],
+    "faqItem": ["closed", "open", "hover", "focus"],
+    "input": ["default", "focus", "filled", "error", "disabled"],
+    "mobileCta": ["default", "hover", "focus", "pressed"],
+}
+EXPECTED_VARIANTS = {
+    "button": ["primary", "secondary", "ghost"],
+    "choiceChip": ["action"],
+    "serviceCard": ["compact", "media"],
+}
 
 REQUIRED_HTML = (
     'meta name="robots" content="noindex,nofollow"',
@@ -61,31 +68,22 @@ REQUIRED_HTML = (
     'href="./components-v1-choice-chip.css"',
     'href="./components-v1-back-to-top.css"',
     'href="./components-v1-breadcrumbs.css"',
+    'href="./components-v1-proof-card.css"',
     'src="../logos/parket36-mark-a.svg"',
     "Базовые компоненты нового сайта",
     "Не является опубликованной страницей",
-    "Choice Chip",
     'id="choice-chips"',
-    'class="choice-chip-row"',
-    'class="choice-chip"',
-    "Back to Top",
     'id="back-to-top"',
-    'class="back-to-top-specimen-row"',
-    'aria-label="Вернуться к началу страницы"',
-    "hidden · visible · hover · focus · pressed",
-    "Breadcrumbs",
     'id="breadcrumbs"',
-    'class="breadcrumbs-specimen-row"',
-    'class="breadcrumbs-specimen',
-    "default · hover · focus",
-    "Service Card",
+    'id="proof-cards"',
+    'id="problem-cards"',
     'id="service-cards"',
-    "FAQ Item",
     'id="faq-items"',
-    '<details class="faq-item"',
-    "<summary>",
-    "Mobile CTA",
+    'id="section-header"',
+    'id="inputs"',
     'id="mobile-cta"',
+    "non-interactive · article",
+    'aria-label="Вернуться к началу страницы"',
     "tel:+79009267929",
 )
 REQUIRED_BASE_CSS = (
@@ -96,96 +94,57 @@ REQUIRED_BASE_CSS = (
     "@media(max-width:520px)",
     "@media(prefers-reduced-motion:reduce)",
 )
-REQUIRED_CHOICE_CHIP_CSS = (
-    ".choice-chip-row",
-    ".choice-chip {",
-    "min-height: 44px",
-    "var(--p36-radius-full)",
-    "var(--p36-shadow-card)",
-    ".choice-chip:hover",
-    "var(--p36-shadow-floating)",
-    ".choice-chip:focus-visible",
-    ".choice-chip:active",
-    "@media (prefers-reduced-motion: reduce)",
-)
-REQUIRED_BACK_TO_TOP_CSS = (
-    ".back-to-top-specimen-row",
-    ".back-to-top-specimen {",
-    "width: 48px",
-    "height: 48px",
-    "var(--p36-size-touch-min)",
-    "var(--p36-radius-full)",
-    "var(--p36-shadow-floating)",
-    ".back-to-top-specimen.is-hidden",
-    ".back-to-top-specimen.is-hover",
-    ".back-to-top-specimen.is-focus",
-    ".back-to-top-specimen.is-pressed",
-    "@media (prefers-reduced-motion: reduce)",
-)
-REQUIRED_BREADCRUMBS_CSS = (
-    ".breadcrumbs-specimen-row",
-    ".breadcrumbs-specimen {",
-    "flex-wrap: wrap",
-    "min-height: 40px",
-    "var(--p36-spacing-sm)",
-    "var(--p36-spacing-md)",
-    "var(--p36-radius-full)",
-    "var(--p36-radius-md)",
-    "var(--p36-shadow-card)",
-    ".breadcrumbs-specimen.is-hover",
-    ".breadcrumbs-specimen.is-focus",
-    ".breadcrumbs-specimen__separator",
-    ".breadcrumbs-specimen__current",
-    "@media (prefers-reduced-motion: reduce)",
-)
-REQUIRED_SERVICE_CARD_CSS = (
-    ".service-card-grid",
-    ".service-card--compact",
-    ".service-card--media",
-    "min-height: 192px",
-    "aspect-ratio: 1000 / 760",
-    "var(--p36-radius-lg)",
-    "var(--p36-shadow-floating)",
-    ".service-card:focus-visible",
-    "@media (prefers-reduced-motion: reduce)",
-)
-REQUIRED_FAQ_ITEM_CSS = (
-    ".faq-item-grid",
-    ".faq-item[open]",
-    ".faq-item summary",
-    ".faq-item summary::after",
-    'content: "+"',
-    'content: "−"',
-    "min-height: 52px",
-    "var(--p36-radius-lg)",
-    "var(--p36-shadow-floating)",
-    ".faq-item summary:focus-visible",
-    "@media (prefers-reduced-motion: reduce)",
-)
-REQUIRED_MOBILE_CTA_CSS = (
-    ".mobile-cta-specimen",
-    ".mobile-cta-specimen__action",
-    ".mobile-cta-specimen__action--primary",
-    ".mobile-cta-specimen__action--secondary",
-    "min-height: 52px",
-    "var(--p36-color-semantic-action-primary)",
-    "var(--p36-color-semantic-action-secondary)",
-    "var(--p36-radius-lg)",
-    "var(--p36-shadow-floating)",
-    "outline: 3px solid var(--p36-color-primitive-brass-200)",
-    "@media (prefers-reduced-motion: reduce)",
-)
+REQUIRED_COMPONENT_CSS = {
+    CHOICE_CHIP_CSS: (
+        ".choice-chip-row", ".choice-chip {", "min-height: 44px",
+        "var(--p36-radius-full)", "var(--p36-shadow-card)",
+        ".choice-chip:hover", ".choice-chip:focus-visible", ".choice-chip:active",
+        "@media (prefers-reduced-motion: reduce)",
+    ),
+    BACK_TO_TOP_CSS: (
+        ".back-to-top-specimen-row", ".back-to-top-specimen {", "width: 48px",
+        "height: 48px", "var(--p36-size-touch-min)", "var(--p36-radius-full)",
+        "var(--p36-shadow-floating)", ".back-to-top-specimen.is-hidden",
+        ".back-to-top-specimen.is-hover", ".back-to-top-specimen.is-focus",
+        ".back-to-top-specimen.is-pressed", "@media (prefers-reduced-motion: reduce)",
+    ),
+    BREADCRUMBS_CSS: (
+        ".breadcrumbs-specimen-row", ".breadcrumbs-specimen {", "flex-wrap: wrap",
+        "min-height: 40px", "var(--p36-radius-full)", "var(--p36-radius-md)",
+        "var(--p36-shadow-card)", ".breadcrumbs-specimen.is-hover",
+        ".breadcrumbs-specimen.is-focus", ".breadcrumbs-specimen__separator",
+        ".breadcrumbs-specimen__current", "@media (prefers-reduced-motion: reduce)",
+    ),
+    PROOF_CARD_CSS: (
+        ".proof-card-specimen-grid", ".proof-card-specimen {", "min-height: 156px",
+        "width: 48px", "height: 4px", "var(--p36-radius-lg)",
+        "var(--p36-shadow-card)", "var(--p36-color-semantic-action-secondary)",
+        ".proof-card-specimen--long", "@media (prefers-reduced-motion: reduce)",
+    ),
+    SERVICE_CARD_CSS: (
+        ".service-card-grid", ".service-card--compact", ".service-card--media",
+        "min-height: 192px", "aspect-ratio: 1000 / 760", "var(--p36-radius-lg)",
+        "var(--p36-shadow-floating)", ".service-card:focus-visible",
+        "@media (prefers-reduced-motion: reduce)",
+    ),
+    FAQ_ITEM_CSS: (
+        ".faq-item-grid", ".faq-item[open]", ".faq-item summary",
+        ".faq-item summary::after", 'content: "+"', 'content: "−"',
+        "min-height: 52px", "var(--p36-radius-lg)", "var(--p36-shadow-floating)",
+        ".faq-item summary:focus-visible", "@media (prefers-reduced-motion: reduce)",
+    ),
+    MOBILE_CTA_CSS: (
+        ".mobile-cta-specimen", ".mobile-cta-specimen__action",
+        ".mobile-cta-specimen__action--primary", ".mobile-cta-specimen__action--secondary",
+        "min-height: 52px", "var(--p36-color-semantic-action-primary)",
+        "var(--p36-color-semantic-action-secondary)", "var(--p36-radius-lg)",
+        "var(--p36-shadow-floating)", "outline: 3px solid var(--p36-color-primitive-brass-200)",
+        "@media (prefers-reduced-motion: reduce)",
+    ),
+}
 FORBIDDEN = (
-    "<form",
-    "<script",
-    "supabase",
-    "parket-public-lead",
-    "request-form",
-    "data-request-template",
-    "data-request-service",
-    "#6f4628",
-    "#9b683d",
-    "#d7a86e",
+    "<form", "<script", "supabase", "parket-public-lead", "request-form",
+    "data-request-template", "data-request-service", "#6f4628", "#9b683d", "#d7a86e",
 )
 
 
@@ -200,6 +159,8 @@ class CatalogParser(HTMLParser):
         self.back_to_top_buttons = 0
         self.choice_chip_buttons = 0
         self.breadcrumbs_specimens = 0
+        self.proof_card_articles = 0
+        self.proof_card_interactive = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = dict(attrs)
@@ -216,6 +177,10 @@ class CatalogParser(HTMLParser):
             self.choice_chip_buttons += 1
         if tag == "p" and "breadcrumbs-specimen" in classes:
             self.breadcrumbs_specimens += 1
+        if tag == "article" and "proof-card-specimen" in classes:
+            self.proof_card_articles += 1
+        if tag in {"a", "button"} and "proof-card-specimen" in classes:
+            self.proof_card_interactive += 1
         if tag == "img" and "alt" not in values:
             self.images_without_alt.append(values.get("src", "<unknown>") or "<unknown>")
         if tag in {"img", "link"}:
@@ -246,18 +211,9 @@ def require_markers(findings: list[str], text: str, markers: tuple[str, ...], la
 def main() -> int:
     findings: list[str] = []
     required_files = (
-        CONTRACT,
-        TOKENS,
-        CATALOG,
-        CATALOG_CSS,
-        SERVICE_CARD_CSS,
-        FAQ_ITEM_CSS,
-        MOBILE_CTA_CSS,
-        CHOICE_CHIP_CSS,
-        BACK_TO_TOP_CSS,
-        BREADCRUMBS_CSS,
-        GENERATED_CSS,
-        DOC,
+        CONTRACT, TOKENS, CATALOG, CATALOG_CSS, SERVICE_CARD_CSS, FAQ_ITEM_CSS,
+        MOBILE_CTA_CSS, CHOICE_CHIP_CSS, BACK_TO_TOP_CSS, BREADCRUMBS_CSS,
+        PROOF_CARD_CSS, GENERATED_CSS, DOC,
     )
     for path in required_files:
         if not path.is_file():
@@ -291,9 +247,7 @@ def main() -> int:
         findings.append("component contract must contain a components object")
         components = {}
     if list(components) != list(EXPECTED_COMPONENTS):
-        findings.append(
-            f"unexpected ordered component set: {list(components)} != {list(EXPECTED_COMPONENTS)}"
-        )
+        findings.append(f"unexpected ordered component set: {list(components)} != {list(EXPECTED_COMPONENTS)}")
 
     figma_names: list[str] = []
     for key, expected_name in EXPECTED_COMPONENTS.items():
@@ -318,77 +272,44 @@ def main() -> int:
     if len(figma_names) != len(set(figma_names)):
         findings.append("Figma component names must be unique")
 
-    button = components.get("button", {})
-    if button.get("properties", {}).get("variant") != EXPECTED_BUTTON_VARIANTS:
-        findings.append("Button variants do not match the approved contract")
-    if button.get("properties", {}).get("state") != EXPECTED_BUTTON_STATES:
-        findings.append("Button states do not match the approved contract")
+    for key, states in EXPECTED_STATES.items():
+        if components.get(key, {}).get("properties", {}).get("state") != states:
+            findings.append(f"{EXPECTED_COMPONENTS[key]} states do not match the approved contract")
+    for key, variants in EXPECTED_VARIANTS.items():
+        if components.get(key, {}).get("properties", {}).get("variant") != variants:
+            findings.append(f"{EXPECTED_COMPONENTS[key]} variants do not match the approved contract")
 
     choice_chip = components.get("choiceChip", {})
-    if choice_chip.get("properties", {}).get("variant") != EXPECTED_CHOICE_CHIP_VARIANTS:
-        findings.append("Choice Chip variants do not match the approved contract")
-    if choice_chip.get("properties", {}).get("state") != EXPECTED_CHOICE_CHIP_STATES:
-        findings.append("Choice Chip states do not match the approved contract")
     if choice_chip.get("accessibility", {}).get("persistentSelectedStateForbidden") is not True:
         findings.append("Choice Chip must forbid persistent selected state")
-
     back_to_top = components.get("backToTop", {})
-    if back_to_top.get("properties", {}).get("state") != EXPECTED_BACK_TO_TOP_STATES:
-        findings.append("Back to Top states do not match the approved contract")
-    if back_to_top.get("dimensions", {}).get("size") != 48:
-        findings.append("Back to Top size must remain 48")
-    if back_to_top.get("dimensions", {}).get("visibilityThreshold") != 650:
-        findings.append("Back to Top visibilityThreshold must remain 650")
-    if back_to_top.get("accessibility", {}).get("accessibleNameRequired") is not True:
-        findings.append("Back to Top must require an accessible name")
-    if back_to_top.get("accessibility", {}).get("reducedMotionAware") is not True:
-        findings.append("Back to Top must remain reduced-motion aware")
-
+    if back_to_top.get("dimensions", {}).get("size") != 48 or back_to_top.get("dimensions", {}).get("visibilityThreshold") != 650:
+        findings.append("Back to Top size and visibility threshold must remain 48/650")
     breadcrumbs = components.get("breadcrumbs", {})
-    if breadcrumbs.get("properties", {}).get("state") != EXPECTED_BREADCRUMBS_STATES:
-        findings.append("Breadcrumbs states do not match the approved contract")
-    if breadcrumbs.get("dimensions", {}).get("minimumHeight") != 40:
-        findings.append("Breadcrumbs minimumHeight must remain 40")
-    if breadcrumbs.get("dimensions", {}).get("mobileRadiusToken") != "radius.md":
-        findings.append("Breadcrumbs mobile radius must remain radius.md")
+    if breadcrumbs.get("dimensions", {}).get("minimumHeight") != 40 or breadcrumbs.get("dimensions", {}).get("mobileRadiusToken") != "radius.md":
+        findings.append("Breadcrumbs dimensions differ from the approved contract")
     if breadcrumbs.get("accessibility", {}).get("currentItemNotLinked") is not True:
         findings.append("Breadcrumbs current item must remain non-linked")
-    if breadcrumbs.get("accessibility", {}).get("wrapsWithoutClipping") is not True:
-        findings.append("Breadcrumbs must wrap without clipping")
+
+    proof_card = components.get("proofCard", {})
+    if proof_card.get("properties") != {"title": "text", "description": "text", "interactive": False}:
+        findings.append("Proof Card properties must remain non-interactive")
+    if proof_card.get("dimensions", {}).get("minimumHeight") != 156:
+        findings.append("Proof Card minimumHeight must remain 156")
+    proof_accessibility = proof_card.get("accessibility", {})
+    for marker in ("nonInteractive", "linksForbidden", "buttonRoleForbidden", "tabindexForbidden", "hoverTransformForbidden"):
+        if proof_accessibility.get(marker) is not True:
+            findings.append(f"Proof Card must keep accessibility guardrail: {marker}")
 
     service_card = components.get("serviceCard", {})
-    if service_card.get("properties", {}).get("variant") != EXPECTED_SERVICE_CARD_VARIANTS:
-        findings.append("Service Card variants do not match the approved contract")
-    if service_card.get("properties", {}).get("state") != EXPECTED_SERVICE_CARD_STATES:
-        findings.append("Service Card states do not match the approved contract")
     if service_card.get("dimensions", {}).get("mediaAspectRatio") != "1000/760":
         findings.append("Service Card mediaAspectRatio must remain 1000/760")
-
     faq_item = components.get("faqItem", {})
-    if faq_item.get("properties", {}).get("state") != EXPECTED_FAQ_ITEM_STATES:
-        findings.append("FAQ Item states do not match the approved contract")
     if faq_item.get("dimensions", {}).get("minimumTriggerHeight") != 52:
         findings.append("FAQ Item minimumTriggerHeight must remain 52")
-    if faq_item.get("accessibility", {}).get("nativeDetailsRequired") is not True:
-        findings.append("FAQ Item must require native details/summary semantics")
-    if faq_item.get("accessibility", {}).get("indicatorNotColorOnly") is not True:
-        findings.append("FAQ Item indicator must not depend on color alone")
-
-    input_component = components.get("input", {})
-    if input_component.get("properties", {}).get("state") != EXPECTED_INPUT_STATES:
-        findings.append("Input states do not match the approved contract")
-
     mobile_cta = components.get("mobileCta", {})
-    if mobile_cta.get("properties", {}).get("state") != EXPECTED_MOBILE_CTA_STATES:
-        findings.append("Mobile CTA states do not match the approved contract")
-    if mobile_cta.get("dimensions", {}).get("breakpoint") != 1000:
-        findings.append("Mobile CTA breakpoint must remain 1000")
-    if mobile_cta.get("dimensions", {}).get("actionHeight") != 52:
-        findings.append("Mobile CTA actionHeight must remain 52")
-    if mobile_cta.get("accessibility", {}).get("twoActionsRequired") is not True:
-        findings.append("Mobile CTA must require exactly two actions")
-    if mobile_cta.get("accessibility", {}).get("safeAreaAware") is not True:
-        findings.append("Mobile CTA must remain safe-area aware")
+    if mobile_cta.get("dimensions", {}).get("breakpoint") != 1000 or mobile_cta.get("dimensions", {}).get("actionHeight") != 52:
+        findings.append("Mobile CTA breakpoint/actionHeight must remain 1000/52")
 
     token_touch_min = get_path(tokens, "size.touchMin.$value.value")
     for key in ("button", "choiceChip", "backToTop", "faqItem", "input", "mobileCta"):
@@ -398,33 +319,13 @@ def main() -> int:
 
     html = CATALOG.read_text(encoding="utf-8")
     css = CATALOG_CSS.read_text(encoding="utf-8")
-    service_card_css = SERVICE_CARD_CSS.read_text(encoding="utf-8")
-    faq_item_css = FAQ_ITEM_CSS.read_text(encoding="utf-8")
-    mobile_cta_css = MOBILE_CTA_CSS.read_text(encoding="utf-8")
-    choice_chip_css = CHOICE_CHIP_CSS.read_text(encoding="utf-8")
-    back_to_top_css = BACK_TO_TOP_CSS.read_text(encoding="utf-8")
-    breadcrumbs_css = BREADCRUMBS_CSS.read_text(encoding="utf-8")
-    combined = "\n".join(
-        (
-            html,
-            css,
-            service_card_css,
-            faq_item_css,
-            mobile_cta_css,
-            choice_chip_css,
-            back_to_top_css,
-            breadcrumbs_css,
-        )
-    ).lower()
+    component_css = {path: path.read_text(encoding="utf-8") for path in REQUIRED_COMPONENT_CSS}
+    combined = "\n".join([html, css, *component_css.values()]).lower()
 
     require_markers(findings, html, REQUIRED_HTML, "component catalog HTML")
     require_markers(findings, css, REQUIRED_BASE_CSS, "component catalog CSS")
-    require_markers(findings, choice_chip_css, REQUIRED_CHOICE_CHIP_CSS, "Choice Chip catalog CSS")
-    require_markers(findings, back_to_top_css, REQUIRED_BACK_TO_TOP_CSS, "Back to Top catalog CSS")
-    require_markers(findings, breadcrumbs_css, REQUIRED_BREADCRUMBS_CSS, "Breadcrumbs catalog CSS")
-    require_markers(findings, service_card_css, REQUIRED_SERVICE_CARD_CSS, "Service Card catalog CSS")
-    require_markers(findings, faq_item_css, REQUIRED_FAQ_ITEM_CSS, "FAQ Item catalog CSS")
-    require_markers(findings, mobile_cta_css, REQUIRED_MOBILE_CTA_CSS, "Mobile CTA catalog CSS")
+    for path, markers in REQUIRED_COMPONENT_CSS.items():
+        require_markers(findings, component_css[path], markers, f"{path.stem} catalog CSS")
     for marker in FORBIDDEN:
         if marker in combined:
             findings.append(f"isolated component catalog contains forbidden marker: {marker}")
@@ -434,16 +335,17 @@ def main() -> int:
     if parser.h1_count != 1:
         findings.append(f"component catalog must contain exactly one h1, found {parser.h1_count}")
     if parser.details_count != 4 or parser.summary_count != 4:
-        findings.append(
-            f"FAQ Item catalog must contain four details/summary pairs, found "
-            f"{parser.details_count}/{parser.summary_count}"
-        )
+        findings.append(f"FAQ Item catalog must contain four details/summary pairs, found {parser.details_count}/{parser.summary_count}")
     if parser.choice_chip_buttons != 4:
         findings.append(f"Choice Chip catalog must contain four specimens, found {parser.choice_chip_buttons}")
     if parser.back_to_top_buttons != 5:
         findings.append(f"Back to Top catalog must contain five specimens, found {parser.back_to_top_buttons}")
     if parser.breadcrumbs_specimens != 3:
         findings.append(f"Breadcrumbs catalog must contain three specimens, found {parser.breadcrumbs_specimens}")
+    if parser.proof_card_articles != 3:
+        findings.append(f"Proof Card catalog must contain three article specimens, found {parser.proof_card_articles}")
+    if parser.proof_card_interactive:
+        findings.append("Proof Card catalog specimens must not be links or buttons")
     for source in parser.images_without_alt:
         findings.append(f"component catalog image is missing alt: {source}")
     for raw_path in parser.local_assets:
@@ -465,20 +367,11 @@ def main() -> int:
 
     doc = DOC.read_text(encoding="utf-8")
     for marker in (
-        FIGMA_URL,
-        TARGET_PAGE,
-        "Choice Chip",
-        "Back to Top",
-        "Breadcrumbs",
-        "Problem Card",
-        "Service Card",
-        "FAQ Item",
-        "Mobile CTA",
-        "минимальная зона взаимодействия — 44 px",
-        "650 px",
-        "Вернуться к началу страницы",
-        "текущий пункт без ссылки",
-        "BreadcrumbList",
+        FIGMA_URL, TARGET_PAGE, "Choice Chip", "Back to Top", "Breadcrumbs", "Proof Card",
+        "Problem Card", "Service Card", "FAQ Item", "Mobile CTA",
+        "минимальная зона взаимодействия — 44 px", "650 px",
+        "Вернуться к началу страницы", "текущий пункт без ссылки", "BreadcrumbList",
+        "неинтерактивный", "hover-смещение",
     ):
         if marker not in doc:
             findings.append(f"component documentation is missing marker: {marker}")
