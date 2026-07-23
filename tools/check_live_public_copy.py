@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check that the live homepage exposes client-ready copy, not editor placeholders."""
+"""Check that live commercial pages expose client-ready and honest lead copy."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from urllib.request import Request, urlopen
 from site_settings import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
-USER_AGENT = "Parket36-Live-Public-Copy/1.1"
+USER_AGENT = "Parket36-Live-Public-Copy/1.2"
 MAX_RESPONSE_BYTES = 2_000_000
 
 FORBIDDEN = (
@@ -42,6 +42,22 @@ REQUIRED = (
     "Для первого ориентира достаточно фото пола и короткого описания задачи.",
 )
 
+REQUEST_FORBIDDEN = (
+    "заявка уйдёт Ивану",
+    "сайт отправит заявку Ивану",
+    "Форма отправит заявку Ивану через защищённую форму",
+    "заявка передаётся Ивану через защищённую форму",
+    "Заявка отправляется Ивану через защищённую форму",
+    "Иван получит заявку через ту же защищённую систему",
+)
+
+REQUEST_REQUIRED = (
+    "сервис попробует сохранить заявку",
+    "Заполните форму — получите понятный следующий шаг",
+    "Если автоматическое уведомление не подтвердится",
+    "Форма попробует сохранить заявку в защищённой системе",
+)
+
 
 @dataclass(frozen=True)
 class Result:
@@ -60,10 +76,27 @@ def evaluate(text: str) -> Result:
     return Result(not details, "client-ready markers found" if not details else "; ".join(details))
 
 
-def request_url(domain: str, attempt: int, nonce: int | None = None) -> str:
+def evaluate_request(text: str) -> Result:
+    forbidden = [phrase for phrase in REQUEST_FORBIDDEN if phrase in text]
+    missing = [phrase for phrase in REQUEST_REQUIRED if phrase not in text]
+    details: list[str] = []
+    if forbidden:
+        details.append("forbidden: " + ", ".join(forbidden))
+    if missing:
+        details.append("missing: " + ", ".join(missing))
+    return Result(not details, "honest lead markers found" if not details else "; ".join(details))
+
+
+def request_url(
+    domain: str,
+    attempt: int,
+    nonce: int | None = None,
+    path: str = "/",
+) -> str:
     token = time.time_ns() if nonce is None else nonce
     query = urlencode({"verify_public_copy": str(token), "attempt": str(attempt)})
-    return domain.rstrip("/") + "/?" + query
+    normalized_path = "/" if path.strip("/") == "" else "/" + path.strip("/") + "/"
+    return domain.rstrip("/") + normalized_path + "?" + query
 
 
 def fetch_homepage(url: str, timeout: float) -> tuple[int, str, str]:
@@ -83,22 +116,54 @@ def fetch_homepage(url: str, timeout: float) -> tuple[int, str, str]:
         return response.status, response.geturl(), body.decode("utf-8", errors="replace")
 
 
-def run_once(domain: str, timeout: float, attempt: int) -> Result:
-    url = request_url(domain, attempt)
+def fetch_and_evaluate(
+    label: str,
+    url: str,
+    timeout: float,
+    evaluator,
+    attempt: int,
+) -> Result:
     try:
         status, final_url, text = fetch_homepage(url, timeout)
     except HTTPError as exc:
-        return Result(False, f"HTTP {exc.code}: {exc.reason}; cache_bust_attempt={attempt}")
+        return Result(False, f"{label}: HTTP {exc.code}: {exc.reason}; cache_bust_attempt={attempt}")
     except (URLError, TimeoutError, ssl.SSLError, ValueError) as exc:
-        return Result(False, f"{exc}; cache_bust_attempt={attempt}")
+        return Result(False, f"{label}: {exc}; cache_bust_attempt={attempt}")
 
     if status != 200:
-        return Result(False, f"HTTP {status}, final URL: {final_url}; cache_bust_attempt={attempt}")
-    copy_result = evaluate(text)
+        return Result(
+            False,
+            f"{label}: HTTP {status}, final URL: {final_url}; cache_bust_attempt={attempt}",
+        )
+
+    copy_result = evaluator(text)
     return Result(
         copy_result.ok,
-        f"HTTP 200, final URL: {final_url}; {copy_result.detail}; cache_bust_attempt={attempt}",
+        f"{label}: HTTP 200, final URL: {final_url}; {copy_result.detail}; "
+        f"cache_bust_attempt={attempt}",
     )
+
+
+def run_once(domain: str, timeout: float, attempt: int) -> Result:
+    checks = (
+        (
+            "Homepage client-ready copy",
+            request_url(domain, attempt),
+            evaluate,
+        ),
+        (
+            "Request page honest lead copy",
+            request_url(domain, attempt, path="/zayavka/"),
+            evaluate_request,
+        ),
+    )
+    details: list[str] = []
+    for label, url, evaluator in checks:
+        result = fetch_and_evaluate(label, url, timeout, evaluator, attempt)
+        details.append(result.detail)
+        if not result.ok:
+            return Result(False, "; ".join(details))
+    return Result(True, "; ".join(details))
 
 
 def run_with_retries(domain: str, timeout: float, attempts: int, retry_delay: float) -> tuple[Result, int]:
@@ -127,7 +192,7 @@ def append_report(path: Path, domain: str, result: Result, attempts_used: int) -
             "",
             "| Check | Result | Detail |",
             "| --- | --- | --- |",
-            f"| Homepage client-ready copy | {state} | {detail} |",
+            f"| Homepage client-ready copy and request page honest lead copy | {state} | {detail} |",
             "",
         )
     )
@@ -146,21 +211,46 @@ def validate_args(timeout: float, attempts: int, retry_delay: float) -> None:
 
 
 def self_test() -> int:
-    good = " ".join(REQUIRED)
-    passing = evaluate(good)
-    forbidden = evaluate(good + " Фото вместо иллюстрации")
-    missing = evaluate("Оценка по фото")
+    good_homepage = " ".join(REQUIRED)
+    good_request = " ".join(REQUEST_REQUIRED)
+    passing_homepage = evaluate(good_homepage)
+    forbidden_homepage = evaluate(good_homepage + " Фото вместо иллюстрации")
+    missing_homepage = evaluate("Оценка по фото")
+    passing_request = evaluate_request(good_request)
+    forbidden_request = evaluate_request(good_request + " заявка уйдёт Ивану")
+    missing_request = evaluate_request("сервис попробует сохранить заявку")
     cache_busted = request_url("https://example.test", 3, nonce=123456)
+    request_cache_busted = request_url(
+        "https://example.test",
+        4,
+        nonce=654321,
+        path="/zayavka/",
+    )
     findings: list[str] = []
-    if not passing.ok:
-        findings.append("complete client-ready copy must pass")
-    if forbidden.ok or "Фото вместо иллюстрации" not in forbidden.detail:
+
+    if not passing_homepage.ok:
+        findings.append("complete client-ready homepage copy must pass")
+    if forbidden_homepage.ok or "Фото вместо иллюстрации" not in forbidden_homepage.detail:
         findings.append("forbidden editor copy must fail with detail")
-    if missing.ok or "missing:" not in missing.detail:
-        findings.append("incomplete client-ready copy must fail")
+    if missing_homepage.ok or "missing:" not in missing_homepage.detail:
+        findings.append("incomplete client-ready homepage copy must fail")
+    if not passing_request.ok:
+        findings.append("complete honest request copy must pass")
+    if forbidden_request.ok or "заявка уйдёт Ивану" not in forbidden_request.detail:
+        findings.append("unconditional request-delivery claim must fail with detail")
+    if missing_request.ok or "missing:" not in missing_request.detail:
+        findings.append("incomplete request-page copy must fail")
+
     for marker in ("https://example.test/?", "verify_public_copy=123456", "attempt=3"):
         if marker not in cache_busted:
             findings.append(f"cache-busted homepage URL missing marker: {marker}")
+    for marker in (
+        "https://example.test/zayavka/?",
+        "verify_public_copy=654321",
+        "attempt=4",
+    ):
+        if marker not in request_cache_busted:
+            findings.append(f"cache-busted request URL missing marker: {marker}")
 
     for valid in ((20, 1, 0), (20, 6, 10)):
         try:
@@ -205,7 +295,7 @@ def main() -> int:
     result, attempts_used = run_with_retries(domain, args.timeout, args.attempts, args.retry_delay)
     append_report(ROOT / args.report, domain, result, attempts_used)
     state = "PASS" if result.ok else "FAIL"
-    print(f"[{state}] Homepage client-ready copy: {result.detail}")
+    print(f"[{state}] Homepage client-ready copy and request page honest lead copy: {result.detail}")
     print(f"Report: {args.report}")
     return 0 if result.ok else 1
 
