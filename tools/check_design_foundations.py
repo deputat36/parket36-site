@@ -52,6 +52,7 @@ EXPECTED_COMPONENTS = [
     "Back to Top",
     "Breadcrumbs",
     "Proof Card",
+    "Process Step",
     "Problem Card",
     "Service Card",
     "FAQ Item",
