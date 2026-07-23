@@ -220,9 +220,9 @@ def main() -> int:
         findings.append(str(exc))
         modules = ()
     expected_tail = (
-        "choice-chip-polish.css",
         "back-to-top-polish.css",
         "breadcrumbs-polish.css",
+        "proof-card-polish.css",
         "logo-brand.css",
     )
     if modules and tuple(modules[-4:]) != expected_tail:
