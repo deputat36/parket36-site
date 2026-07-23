@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate live homepage public-copy monitoring and its offline contracts."""
+"""Validate live public-copy monitoring and its offline contracts."""
 
 from __future__ import annotations
 
@@ -28,9 +28,16 @@ WORKFLOW_MARKERS = (
 HELPER_MARKERS = (
     "Live homepage public copy",
     "Homepage client-ready copy",
+    "Request page honest lead copy",
     "Фото вместо иллюстрации",
     "Как подготовить фотографии пола для предварительной оценки",
+    "REQUEST_FORBIDDEN = (",
+    "REQUEST_REQUIRED = (",
+    "заявка уйдёт Ивану",
+    "Форма попробует сохранить заявку в защищённой системе",
+    'path="/zayavka/"',
     "def request_url",
+    "evaluate_request",
     "verify_public_copy",
     "cache_bust_attempt",
     '"Cache-Control": "no-cache, no-store, max-age=0"',
