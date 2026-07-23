@@ -72,7 +72,9 @@ REQUEST_STATIC_PAGE_MARKERS = {
     'id="request-callback"': "callback field",
     'id="request-contact"': "contact field",
     'type="submit">Отправить заявку и скопировать текст</button>': "submit and copy action",
-    'Заявка отправляется Ивану через защищённую форму.': "lead submission disclosure",
+    'Заполните форму — получите понятный следующий шаг': "honest request section heading",
+    'Форма попробует сохранить заявку в защищённой системе.': "fail-closed lead submission disclosure",
+    'Если уведомление Ивану не подтвердится, сразу появится кнопка звонка.': "notification fallback disclosure",
     FORM_POLICY_NOTICE: "privacy policy consent notice",
     '<section class="final-cta">': "final conversion section",
     'href="#request">Собрать текст для оценки</a>': "final local request CTA",
@@ -131,6 +133,15 @@ STALE_LABELS = {
     "Без отправки данных на сайт",
     "Данные не сохраняются на сайте",
     "Данные никуда не отправляются",
+}
+
+REQUEST_STALE_LABELS = {
+    "заявка уйдёт Ивану",
+    "сайт отправит заявку Ивану",
+    "Форма отправит заявку Ивану через защищённую форму",
+    "заявка передаётся Ивану через защищённую форму",
+    "Заявка отправляется Ивану через защищённую форму",
+    "Иван получит заявку через ту же защищённую систему",
 }
 
 
@@ -208,7 +219,7 @@ def main() -> int:
         check_markers(request_rel, request_text, request_page_markers, findings)
         if request_text.count('href="#request"') < 3:
             findings.append(f"{request_rel}: expected hero, final and mobile links to #request")
-        for label in sorted(STALE_LABELS):
+        for label in sorted(STALE_LABELS | REQUEST_STALE_LABELS):
             if label in request_text:
                 findings.append(f"{request_rel}: contains stale lead disclosure: {label}")
 
