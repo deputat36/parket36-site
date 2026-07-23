@@ -223,9 +223,10 @@ def main() -> int:
         "back-to-top-polish.css",
         "breadcrumbs-polish.css",
         "proof-card-polish.css",
+        "process-step-polish.css",
         "logo-brand.css",
     )
-    if modules and tuple(modules[-4:]) != expected_tail:
+    if modules and tuple(modules[-5:]) != expected_tail:
         findings.append("Breadcrumbs bundle order differs from approved tail")
 
     catalog = CATALOG.read_text(encoding="utf-8")
