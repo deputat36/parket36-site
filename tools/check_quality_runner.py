@@ -27,6 +27,7 @@ EXPECTED_CHECKS = [
     ["tools/check_badge_token_migration.py"],
     ["tools/check_choice_chip_token_migration.py"],
     ["tools/check_back_to_top_token_migration.py"],
+    ["tools/check_breadcrumbs_token_migration.py"],
     ["tools/check_problem_card_token_migration.py"],
     ["tools/check_service_card_token_migration.py"],
     ["tools/check_faq_item_token_migration.py"],

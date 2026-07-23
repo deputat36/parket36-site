@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "meta": {
     "name": "Parket36 component contract",
-    "version": "1.5.0-draft",
+    "version": "1.6.0-draft",
     "status": "draft",
     "figmaFile": "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH",
     "figmaTargetPage": "Foundations + Components — Дизайн-система",
@@ -87,6 +87,29 @@
         "focusVisible": true,
         "reducedMotionAware": true,
         "minimumTouchTarget": 44
+      }
+    },
+    "breadcrumbs": {
+      "figmaName": "Breadcrumbs",
+      "anatomy": ["Container", "Link", "Separator", "Current"],
+      "properties": {
+        "state": ["default", "hover", "focus"],
+        "separator": "chevron-right",
+        "currentLabel": "text",
+        "wraps": "boolean"
+      },
+      "dimensions": {
+        "minimumHeight": 40,
+        "horizontalPadding": 12,
+        "gap": 8,
+        "radiusToken": "radius.full",
+        "mobileRadiusToken": "radius.md"
+      },
+      "accessibility": {
+        "firstItemHome": true,
+        "currentItemNotLinked": true,
+        "focusVisible": true,
+        "wrapsWithoutClipping": true
       }
     },
     "problemCard": {

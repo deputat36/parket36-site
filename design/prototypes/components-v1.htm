@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="./components-v1-mobile-cta.css">
   <link rel="stylesheet" href="./components-v1-choice-chip.css">
   <link rel="stylesheet" href="./components-v1-back-to-top.css">
+  <link rel="stylesheet" href="./components-v1-breadcrumbs.css">
 </head>
 <body>
   <main class="catalog" data-design-component-catalog>
@@ -79,6 +80,18 @@
         <div class="back-to-top-specimen-state"><span class="state-caption">hover</span><button class="back-to-top-specimen is-hover" type="button" aria-label="Вернуться к началу страницы">↑</button></div>
         <div class="back-to-top-specimen-state"><span class="state-caption">focus</span><button class="back-to-top-specimen is-focus" type="button" aria-label="Вернуться к началу страницы">↑</button></div>
         <div class="back-to-top-specimen-state"><span class="state-caption">pressed</span><button class="back-to-top-specimen is-pressed" type="button" aria-label="Вернуться к началу страницы">↑</button></div>
+      </div>
+    </section>
+
+    <section class="specimen" id="breadcrumbs">
+      <div class="specimen__head">
+        <div><h2>Breadcrumbs</h2><p class="specimen__description">Навигационная цепочка сохраняет порядок разделов, переносится на новую строку и оставляет текущую страницу обычным текстом.</p></div>
+        <span class="specimen__tag">default · hover · focus</span>
+      </div>
+      <div class="breadcrumbs-specimen-row" aria-label="Статические состояния Breadcrumbs">
+        <div class="breadcrumbs-specimen-state"><span class="state-caption">default</span><p class="breadcrumbs-specimen"><a href="#breadcrumbs">Главная</a><span class="breadcrumbs-specimen__separator">›</span><span class="breadcrumbs-specimen__current">Услуги</span></p></div>
+        <div class="breadcrumbs-specimen-state"><span class="state-caption">hover</span><p class="breadcrumbs-specimen is-hover"><a href="#breadcrumbs">Главная</a><span class="breadcrumbs-specimen__separator">›</span><a href="#breadcrumbs">Услуги</a><span class="breadcrumbs-specimen__separator">›</span><span class="breadcrumbs-specimen__current">Циклёвка паркета</span></p></div>
+        <div class="breadcrumbs-specimen-state"><span class="state-caption">focus</span><p class="breadcrumbs-specimen is-focus"><a href="#breadcrumbs">Главная</a><span class="breadcrumbs-specimen__separator">›</span><a href="#breadcrumbs">Советы</a><span class="breadcrumbs-specimen__separator">›</span><span class="breadcrumbs-specimen__current">Почему скрипит паркет</span></p></div>
       </div>
     </section>
 

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "meta": {
     "name": "Parket36 Figma sync manifest",
-    "version": "1.5.0-draft",
+    "version": "1.6.0-draft",
     "status": "partial-unverified",
     "fileKey": "2ovBluMs8xOKkkUIPevLaH",
     "fileUrl": "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH",
@@ -86,6 +86,7 @@
     "Badge": {"nodeId": null, "status": "pending"},
     "Choice Chip": {"nodeId": null, "status": "pending"},
     "Back to Top": {"nodeId": null, "status": "pending"},
+    "Breadcrumbs": {"nodeId": null, "status": "pending"},
     "Problem Card": {"nodeId": null, "status": "pending"},
     "Service Card": {"nodeId": null, "status": "pending"},
     "FAQ Item": {"nodeId": null, "status": "pending"},
