@@ -24,7 +24,7 @@ PRODUCTION_DOC = ROOT / "docs" / "design" / "parket36-production-token-layer-v1.
 EXPECTED_DIMENSIONS = {
     "minimumHeight": 156,
     "padding": 24,
-    "gap": 10,
+    "gap": 12,
     "accentWidth": 48,
     "accentHeight": 4,
     "radiusToken": "radius.lg",
@@ -42,13 +42,14 @@ EXPECTED_ACCESSIBILITY = {
 EXPECTED_PAGE_COUNTS = {
     "index.html": 6,
     "kak-rabotaem/index.html": 6,
-    "resheniya/index.html": 6,
     "resheniya/dlya-rieltorov-i-sobstvennikov/index.html": 6,
+    "resheniya/index.html": 6,
     "uslugi/melkiy-remont/index.html": 3,
 }
 REQUIRED_CSS = (
     "/* Tokenized Proof Card:",
     ".proof-card {",
+    "gap: var(--p36-spacing-md)",
     "min-height: 156px",
     "border: 1px solid var(--p36-color-semantic-border-default)",
     "border-radius: var(--p36-radius-lg)",
@@ -256,6 +257,7 @@ def main() -> int:
     for marker in (
         ".proof-card-specimen-grid",
         ".proof-card-specimen {",
+        "gap: var(--p36-spacing-md)",
         "min-height: 156px",
         "var(--p36-radius-lg)",
         "var(--p36-shadow-card)",
@@ -286,6 +288,7 @@ def main() -> int:
     for marker in (
         "27 элементов",
         "пяти публичных страницах",
+        "12 px",
         "hover-transform",
         "transform: none",
         "proof-card-polish.css",
