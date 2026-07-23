@@ -123,7 +123,7 @@
       "dimensions": {
         "minimumHeight": 156,
         "padding": 24,
-        "gap": 10,
+        "gap": 12,
         "accentWidth": 48,
         "accentHeight": 4,
         "radiusToken": "radius.lg"
