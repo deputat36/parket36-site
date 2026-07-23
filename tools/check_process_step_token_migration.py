@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import ast
+from collections import Counter
 from html.parser import HTMLParser
 import json
 from pathlib import Path
@@ -23,6 +24,7 @@ DOC = ROOT / "docs" / "design" / "parket36-process-step-token-migration-v1.md"
 PRODUCTION_DOC = ROOT / "docs" / "design" / "parket36-production-token-layer-v1.md"
 
 EXPECTED_PAGE_COUNT = 86
+EXPECTED_LIST_COUNT = 87
 EXPECTED_DIMENSIONS = {
     "minimumHeight": 164,
     "paddingTop": 64,
@@ -207,19 +209,20 @@ def howto_step_counts(value: Any) -> list[int]:
         if is_howto:
             steps = value.get("step", [])
             if isinstance(steps, list):
-                count = sum(
-                    1
-                    for step in steps
-                    if isinstance(step, dict)
-                    and (
-                        step.get("@type") == "HowToStep"
-                        or (
-                            isinstance(step.get("@type"), list)
-                            and "HowToStep" in step.get("@type", [])
+                counts.append(
+                    sum(
+                        1
+                        for step in steps
+                        if isinstance(step, dict)
+                        and (
+                            step.get("@type") == "HowToStep"
+                            or (
+                                isinstance(step.get("@type"), list)
+                                and "HowToStep" in step.get("@type", [])
+                            )
                         )
                     )
                 )
-                counts.append(count)
         for child in value.values():
             counts.extend(howto_step_counts(child))
     elif isinstance(value, list):
@@ -228,27 +231,22 @@ def howto_step_counts(value: Any) -> list[int]:
     return counts
 
 
-def validate_page(path: Path, text: str, findings: list[str]) -> tuple[int, int]:
-    parser = StepsParser()
-    parser.feed(text)
-    relative = path.relative_to(ROOT).as_posix()
-    if len(parser.lists) != 1:
-        findings.append(f"{relative}: expected exactly one ol.steps, found {len(parser.lists)}")
-        return len(parser.lists), 0
-
-    process = parser.lists[0]
+def validate_process_list(
+    process: dict[str, Any], relative: str, list_index: int, findings: list[str]
+) -> int:
+    list_label = f"{relative} Process Step list {list_index}"
     if process["tag"] != "ol":
-        findings.append(f"{relative}: Process Step container must remain an ol")
+        findings.append(f"{list_label} must remain an ol")
     if process["tabindex"]:
-        findings.append(f"{relative}: ol.steps must not define tabindex")
+        findings.append(f"{list_label} must not define tabindex")
     if process["role"] in {"button", "link"}:
-        findings.append(f"{relative}: ol.steps must not use action role")
+        findings.append(f"{list_label} must not use action role")
 
     items = process["items"]
     if not 3 <= len(items) <= 8:
-        findings.append(f"{relative}: expected 3–8 process steps, found {len(items)}")
-    for index, item in enumerate(items, start=1):
-        label = f"{relative} Process Step {index}"
+        findings.append(f"{list_label}: expected 3–8 steps, found {len(items)}")
+    for item_index, item in enumerate(items, start=1):
+        label = f"{list_label}, item {item_index}"
         if item["tag"] != "li":
             findings.append(f"{label} must remain a list item")
         if len(item["strong"]) != 1 or not item["strong"][0]:
@@ -261,24 +259,40 @@ def validate_page(path: Path, text: str, findings: list[str]) -> tuple[int, int]
             findings.append(f"{label} must not define tabindex")
         if item["role"] in {"button", "link"}:
             findings.append(f"{label} must not use role={item['role']}")
+    return len(items)
 
-    counts: list[int] = []
+
+def validate_page(path: Path, text: str, findings: list[str]) -> tuple[int, int]:
+    parser = StepsParser()
+    parser.feed(text)
+    relative = path.relative_to(ROOT).as_posix()
+    if not parser.lists:
+        findings.append(f"{relative}: class=steps marker exists but no ol.steps was parsed")
+        return 0, 0
+
+    visible_counts: list[int] = []
+    for list_index, process in enumerate(parser.lists, start=1):
+        visible_counts.append(validate_process_list(process, relative, list_index, findings))
+
+    schema_counts: list[int] = []
     for payload_text in SCRIPT_RE.findall(text):
         try:
             payload = json.loads(payload_text)
         except json.JSONDecodeError as exc:
             findings.append(f"{relative}: invalid JSON-LD while checking HowTo: {exc}")
             continue
-        counts.extend(howto_step_counts(payload))
-    if counts:
-        if len(counts) != 1:
-            findings.append(f"{relative}: expected one HowTo payload, found {len(counts)}")
-        elif counts[0] != len(items):
-            findings.append(
-                f"{relative}: HowToStep count {counts[0]} differs from visible step count {len(items)}"
-            )
+        schema_counts.extend(howto_step_counts(payload))
 
-    return 1, len(items)
+    available = Counter(visible_counts)
+    for count in schema_counts:
+        if available[count] <= 0:
+            findings.append(
+                f"{relative}: HowToStep count {count} does not match any visible Process Step list"
+            )
+        else:
+            available[count] -= 1
+
+    return len(parser.lists), sum(visible_counts)
 
 
 def main() -> int:
@@ -412,8 +426,10 @@ def main() -> int:
         findings.append(
             f"Process Step page inventory changed: expected {EXPECTED_PAGE_COUNT}, found {page_count}"
         )
-    if list_count != page_count:
-        findings.append(f"Process Step list count {list_count} differs from page count {page_count}")
+    if list_count != EXPECTED_LIST_COUNT:
+        findings.append(
+            f"Process Step list inventory changed: expected {EXPECTED_LIST_COUNT}, found {list_count}"
+        )
 
     runner_text = RUNNER.read_text(encoding="utf-8")
     if "tools/check_process_step_token_migration.py" not in runner_text:
@@ -423,6 +439,7 @@ def main() -> int:
     production_doc = PRODUCTION_DOC.read_text(encoding="utf-8").lower()
     for marker in (
         "86 публичных страницах",
+        "87 ordered lists",
         "<ol class=\"steps\">",
         "css-counter",
         "hover-transform",
