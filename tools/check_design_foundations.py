@@ -51,6 +51,7 @@ EXPECTED_COMPONENTS = [
     "Choice Chip",
     "Back to Top",
     "Breadcrumbs",
+    "Proof Card",
     "Problem Card",
     "Service Card",
     "FAQ Item",

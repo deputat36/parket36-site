@@ -25,6 +25,7 @@ APPROVED_CONSUMERS = {
     "css/choice-chip-polish.css",
     "css/cta-polish.css",
     "css/enhancements.css",
+    "css/proof-card-polish.css",
     "css/typography-polish.css",
 }
 
@@ -97,14 +98,14 @@ def main() -> int:
         if css_modules.count("design-tokens.css") != 1:
             findings.append("design-tokens.css must appear exactly once in CSS_MODULES")
         expected_tail = (
-            "choice-chip-polish.css",
             "back-to-top-polish.css",
             "breadcrumbs-polish.css",
+            "proof-card-polish.css",
             "logo-brand.css",
         )
         if tuple(css_modules[-4:]) != expected_tail:
             findings.append(
-                "component bundle order must remain choice-chip, back-to-top, breadcrumbs, logo-brand"
+                "component bundle order must remain back-to-top, breadcrumbs, proof-card, logo-brand"
             )
 
     consumers: set[str] = set()
@@ -132,6 +133,7 @@ def main() -> int:
         "css/choice-chip-polish.css",
         "css/cta-polish.css",
         "css/enhancements.css",
+        "css/proof-card-polish.css",
         "css/typography-polish.css",
         "следующий компонентный pr",
     ):

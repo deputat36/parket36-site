@@ -20,6 +20,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - `design/prototypes/components-v1-choice-chip.css` — изолированные стили Choice Chip;
 - `design/prototypes/components-v1-back-to-top.css` — изолированные стили Back to Top;
 - `design/prototypes/components-v1-breadcrumbs.css` — изолированные стили Breadcrumbs;
+- `design/prototypes/components-v1-proof-card.css` — изолированные стили Proof Card;
 - `tools/check_design_component_catalog.py` — fail-closed проверка.
 
 ## Компоненты v1
@@ -61,6 +62,12 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 Компонент содержит контейнер, родительские ссылки, разделители `›` и текущий пункт без ссылки. Минимальная высота — 40 px, горизонтальные поля — 12 px, gap — 8 px. На desktop используется `radius.full`, на mobile до 640 px — `radius.md` и ширина 100%.
 
 Первая ссылка всегда ведёт на главную страницу. Цепочка переносится через `flex-wrap` без обрезания. Focus-state видим с клавиатуры. Порядок, тексты и ссылки остаются источником для build-time schema.org `BreadcrumbList`.
+
+### Proof Card
+
+Proof Card — неинтерактивный `<article>` с brass-маркером, заголовком `<strong>` и одним абзацем. Минимальная высота — 156 px, внутреннее поле — 24 px, gap — 12 px (`spacing.md`), радиус — `radius.lg`.
+
+Ссылки, кнопки, `tabindex`, роли действия и курсор `pointer` запрещены. Компонент не имеет hover, focus, pressed или selected states. Старое hover-смещение обязательно нейтрализуется через `transform: none`, чтобы информационная карточка не выглядела кликабельной.
 
 ### Problem Card
 
@@ -120,6 +127,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 - Choice Chip в каталоге использует нативные кнопки без `data-request-*`, формы и обработчиков.
 - Back to Top в каталоге показывает только статические состояния и не прокручивает страницу программно.
 - Breadcrumbs в каталоге использует тестовые внутренние ссылки и не изменяет маршруты или schema.
+- Proof Card в каталоге состоит только из неинтерактивных `<article>` без ссылок и обработчиков.
 - Компоненты не внедряются в публичные HTML/CSS до отдельного этапа и полного browser smoke.
 
 ## Проверка
