@@ -69,7 +69,11 @@
 
 Седьмой разрешённый потребитель — `css/proof-card-polish.css`.
 
-Он переводит 27 информационных `.proof-card` на tokenized surface, border, radius, shadow, typography и brass-маркер. Proof Card остаётся неинтерактивным `<article>`: модуль явно нейтрализует старое hover-смещение через `transform: none`, не добавляет ссылки, focus или pressed states и расположен после `breadcrumbs-polish.css` перед `logo-brand.css`.
+Он переводит 27 информационных `.proof-card` на tokenized surface, border, radius, shadow, typography и brass-маркер. Proof Card остаётся неинтерактивным `<article>`: модуль явно нейтрализует старое hover-смещение через `transform: none`, не добавляет ссылки, focus или pressed states и расположен после `breadcrumbs-polish.css`.
+
+Восьмой разрешённый потребитель — `css/process-step-polish.css`.
+
+Он переводит `.steps` и дочерние `<li>` на tokenized grid, surface, border, radius, shadow, typography и forest–brass номер. Process Step сохраняет нативный `<ol>`, порядок этапов и CSS-counter, остаётся неинтерактивным и не меняет HowTo JSON-LD. Модуль расположен после `proof-card-polish.css` перед `logo-brand.css`.
 
 Остальные production CSS-модули пока продолжают использовать прежние значения и не должны обращаться к `var(--p36-...)`.
 
@@ -81,6 +85,7 @@ css/breadcrumbs-polish.css
 css/choice-chip-polish.css
 css/cta-polish.css
 css/enhancements.css
+css/process-step-polish.css
 css/proof-card-polish.css
 css/typography-polish.css
 ```
@@ -106,7 +111,8 @@ css/typography-polish.css
 - Choice Chip с нативной кнопкой, touch target 44 px и состояниями default/hover/focus/pressed без постоянного selected-state;
 - Back to Top с нативной кнопкой 48×48 px, порогом 650 px, мобильным отступом и состояниями hidden/visible/hover/focus/pressed;
 - Breadcrumbs с цепочкой ссылок, разделителями, текущим пунктом, переносом строк и состояниями default/hover/focus;
-- Proof Card как неинтерактивный информационный article с brass-маркером и без hover-transform.
+- Proof Card как неинтерактивный информационный article с brass-маркером и без hover-transform;
+- Process Step как неинтерактивный ordered-list item с CSS-counter, сеткой 3→1 и без hover-transform.
 
 Не изменяются:
 
@@ -119,6 +125,7 @@ css/typography-polish.css
 - формирование payload и fallback;
 - FAQPage JSON-LD;
 - BreadcrumbList JSON-LD;
+- HowTo JSON-LD;
 - аналитика;
 - Supabase.
 
@@ -135,6 +142,7 @@ python tools/check_choice_chip_token_migration.py
 python tools/check_back_to_top_token_migration.py
 python tools/check_breadcrumbs_token_migration.py
 python tools/check_proof_card_token_migration.py
+python tools/check_process_step_token_migration.py
 python tools/check_problem_card_token_migration.py
 python tools/check_section_header_token_migration.py
 python tools/check_input_token_migration.py
@@ -150,5 +158,5 @@ python tools/build_pages.py
 - объявлено ровно 80 переменных;
 - `design-tokens.css` расположен первым модулем;
 - токены используют только утверждённые CSS-файлы;
-- Button, Badge, Choice Chip, Back to Top, Breadcrumbs, Proof Card, Problem Card, Service Card, FAQ Item, Section Header, Input и Mobile CTA соответствуют контракту компонентов;
+- Button, Badge, Choice Chip, Back to Top, Breadcrumbs, Proof Card, Process Step, Problem Card, Service Card, FAQ Item, Section Header, Input и Mobile CTA соответствуют контракту компонентов;
 - публичная сборка содержит один cache-busted CSS-бандл.
