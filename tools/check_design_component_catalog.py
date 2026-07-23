@@ -19,6 +19,7 @@ FAQ_ITEM_CSS = ROOT / "design" / "prototypes" / "components-v1-faq-item.css"
 MOBILE_CTA_CSS = ROOT / "design" / "prototypes" / "components-v1-mobile-cta.css"
 CHOICE_CHIP_CSS = ROOT / "design" / "prototypes" / "components-v1-choice-chip.css"
 BACK_TO_TOP_CSS = ROOT / "design" / "prototypes" / "components-v1-back-to-top.css"
+BREADCRUMBS_CSS = ROOT / "design" / "prototypes" / "components-v1-breadcrumbs.css"
 GENERATED_CSS = ROOT / "design" / "generated" / "parket36-tokens.css"
 DOC = ROOT / "docs" / "design" / "parket36-components-v1.md"
 FIGMA_URL = "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH"
@@ -29,6 +30,7 @@ EXPECTED_COMPONENTS = {
     "badge": "Badge",
     "choiceChip": "Choice Chip",
     "backToTop": "Back to Top",
+    "breadcrumbs": "Breadcrumbs",
     "problemCard": "Problem Card",
     "serviceCard": "Service Card",
     "faqItem": "FAQ Item",
@@ -41,6 +43,7 @@ EXPECTED_BUTTON_STATES = ["default", "hover", "focus", "pressed", "disabled"]
 EXPECTED_CHOICE_CHIP_VARIANTS = ["action"]
 EXPECTED_CHOICE_CHIP_STATES = ["default", "hover", "focus", "pressed"]
 EXPECTED_BACK_TO_TOP_STATES = ["hidden", "visible", "hover", "focus", "pressed"]
+EXPECTED_BREADCRUMBS_STATES = ["default", "hover", "focus"]
 EXPECTED_SERVICE_CARD_VARIANTS = ["compact", "media"]
 EXPECTED_SERVICE_CARD_STATES = ["default", "hover", "focus"]
 EXPECTED_FAQ_ITEM_STATES = ["closed", "open", "hover", "focus"]
@@ -57,6 +60,7 @@ REQUIRED_HTML = (
     'href="./components-v1-mobile-cta.css"',
     'href="./components-v1-choice-chip.css"',
     'href="./components-v1-back-to-top.css"',
+    'href="./components-v1-breadcrumbs.css"',
     'src="../logos/parket36-mark-a.svg"',
     "Базовые компоненты нового сайта",
     "Не является опубликованной страницей",
@@ -69,6 +73,11 @@ REQUIRED_HTML = (
     'class="back-to-top-specimen-row"',
     'aria-label="Вернуться к началу страницы"',
     "hidden · visible · hover · focus · pressed",
+    "Breadcrumbs",
+    'id="breadcrumbs"',
+    'class="breadcrumbs-specimen-row"',
+    'class="breadcrumbs-specimen',
+    "default · hover · focus",
     "Service Card",
     'id="service-cards"',
     "FAQ Item",
@@ -111,6 +120,22 @@ REQUIRED_BACK_TO_TOP_CSS = (
     ".back-to-top-specimen.is-hover",
     ".back-to-top-specimen.is-focus",
     ".back-to-top-specimen.is-pressed",
+    "@media (prefers-reduced-motion: reduce)",
+)
+REQUIRED_BREADCRUMBS_CSS = (
+    ".breadcrumbs-specimen-row",
+    ".breadcrumbs-specimen {",
+    "flex-wrap: wrap",
+    "min-height: 40px",
+    "var(--p36-spacing-sm)",
+    "var(--p36-spacing-md)",
+    "var(--p36-radius-full)",
+    "var(--p36-radius-md)",
+    "var(--p36-shadow-card)",
+    ".breadcrumbs-specimen.is-hover",
+    ".breadcrumbs-specimen.is-focus",
+    ".breadcrumbs-specimen__separator",
+    ".breadcrumbs-specimen__current",
     "@media (prefers-reduced-motion: reduce)",
 )
 REQUIRED_SERVICE_CARD_CSS = (
@@ -174,6 +199,7 @@ class CatalogParser(HTMLParser):
         self.summary_count = 0
         self.back_to_top_buttons = 0
         self.choice_chip_buttons = 0
+        self.breadcrumbs_specimens = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = dict(attrs)
@@ -188,6 +214,8 @@ class CatalogParser(HTMLParser):
             self.back_to_top_buttons += 1
         if tag == "button" and "choice-chip" in classes:
             self.choice_chip_buttons += 1
+        if tag == "p" and "breadcrumbs-specimen" in classes:
+            self.breadcrumbs_specimens += 1
         if tag == "img" and "alt" not in values:
             self.images_without_alt.append(values.get("src", "<unknown>") or "<unknown>")
         if tag in {"img", "link"}:
@@ -227,6 +255,7 @@ def main() -> int:
         MOBILE_CTA_CSS,
         CHOICE_CHIP_CSS,
         BACK_TO_TOP_CSS,
+        BREADCRUMBS_CSS,
         GENERATED_CSS,
         DOC,
     )
@@ -315,6 +344,18 @@ def main() -> int:
     if back_to_top.get("accessibility", {}).get("reducedMotionAware") is not True:
         findings.append("Back to Top must remain reduced-motion aware")
 
+    breadcrumbs = components.get("breadcrumbs", {})
+    if breadcrumbs.get("properties", {}).get("state") != EXPECTED_BREADCRUMBS_STATES:
+        findings.append("Breadcrumbs states do not match the approved contract")
+    if breadcrumbs.get("dimensions", {}).get("minimumHeight") != 40:
+        findings.append("Breadcrumbs minimumHeight must remain 40")
+    if breadcrumbs.get("dimensions", {}).get("mobileRadiusToken") != "radius.md":
+        findings.append("Breadcrumbs mobile radius must remain radius.md")
+    if breadcrumbs.get("accessibility", {}).get("currentItemNotLinked") is not True:
+        findings.append("Breadcrumbs current item must remain non-linked")
+    if breadcrumbs.get("accessibility", {}).get("wrapsWithoutClipping") is not True:
+        findings.append("Breadcrumbs must wrap without clipping")
+
     service_card = components.get("serviceCard", {})
     if service_card.get("properties", {}).get("variant") != EXPECTED_SERVICE_CARD_VARIANTS:
         findings.append("Service Card variants do not match the approved contract")
@@ -362,14 +403,25 @@ def main() -> int:
     mobile_cta_css = MOBILE_CTA_CSS.read_text(encoding="utf-8")
     choice_chip_css = CHOICE_CHIP_CSS.read_text(encoding="utf-8")
     back_to_top_css = BACK_TO_TOP_CSS.read_text(encoding="utf-8")
+    breadcrumbs_css = BREADCRUMBS_CSS.read_text(encoding="utf-8")
     combined = "\n".join(
-        (html, css, service_card_css, faq_item_css, mobile_cta_css, choice_chip_css, back_to_top_css)
+        (
+            html,
+            css,
+            service_card_css,
+            faq_item_css,
+            mobile_cta_css,
+            choice_chip_css,
+            back_to_top_css,
+            breadcrumbs_css,
+        )
     ).lower()
 
     require_markers(findings, html, REQUIRED_HTML, "component catalog HTML")
     require_markers(findings, css, REQUIRED_BASE_CSS, "component catalog CSS")
     require_markers(findings, choice_chip_css, REQUIRED_CHOICE_CHIP_CSS, "Choice Chip catalog CSS")
     require_markers(findings, back_to_top_css, REQUIRED_BACK_TO_TOP_CSS, "Back to Top catalog CSS")
+    require_markers(findings, breadcrumbs_css, REQUIRED_BREADCRUMBS_CSS, "Breadcrumbs catalog CSS")
     require_markers(findings, service_card_css, REQUIRED_SERVICE_CARD_CSS, "Service Card catalog CSS")
     require_markers(findings, faq_item_css, REQUIRED_FAQ_ITEM_CSS, "FAQ Item catalog CSS")
     require_markers(findings, mobile_cta_css, REQUIRED_MOBILE_CTA_CSS, "Mobile CTA catalog CSS")
@@ -390,6 +442,8 @@ def main() -> int:
         findings.append(f"Choice Chip catalog must contain four specimens, found {parser.choice_chip_buttons}")
     if parser.back_to_top_buttons != 5:
         findings.append(f"Back to Top catalog must contain five specimens, found {parser.back_to_top_buttons}")
+    if parser.breadcrumbs_specimens != 3:
+        findings.append(f"Breadcrumbs catalog must contain three specimens, found {parser.breadcrumbs_specimens}")
     for source in parser.images_without_alt:
         findings.append(f"component catalog image is missing alt: {source}")
     for raw_path in parser.local_assets:
@@ -415,6 +469,7 @@ def main() -> int:
         TARGET_PAGE,
         "Choice Chip",
         "Back to Top",
+        "Breadcrumbs",
         "Problem Card",
         "Service Card",
         "FAQ Item",
@@ -422,6 +477,8 @@ def main() -> int:
         "минимальная зона взаимодействия — 44 px",
         "650 px",
         "Вернуться к началу страницы",
+        "текущий пункт без ссылки",
+        "BreadcrumbList",
     ):
         if marker not in doc:
             findings.append(f"component documentation is missing marker: {marker}")
