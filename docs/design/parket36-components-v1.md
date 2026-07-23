@@ -65,7 +65,7 @@ Figma: https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH
 
 ### Proof Card
 
-Proof Card — неинтерактивный `<article>` с brass-маркером, заголовком `<strong>` и одним абзацем. Минимальная высота — 156 px, внутреннее поле — 24 px, gap — 10 px, радиус — `radius.lg`.
+Proof Card — неинтерактивный `<article>` с brass-маркером, заголовком `<strong>` и одним абзацем. Минимальная высота — 156 px, внутреннее поле — 24 px, gap — 12 px (`spacing.md`), радиус — `radius.lg`.
 
 Ссылки, кнопки, `tabindex`, роли действия и курсор `pointer` запрещены. Компонент не имеет hover, focus, pressed или selected states. Старое hover-смещение обязательно нейтрализуется через `transform: none`, чтобы информационная карточка не выглядела кликабельной.
 
