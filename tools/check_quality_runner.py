@@ -29,6 +29,7 @@ EXPECTED_CHECKS = [
     ["tools/check_back_to_top_token_migration.py"],
     ["tools/check_breadcrumbs_token_migration.py"],
     ["tools/check_proof_card_token_migration.py"],
+    ["tools/check_process_step_token_migration.py"],
     ["tools/check_problem_card_token_migration.py"],
     ["tools/check_service_card_token_migration.py"],
     ["tools/check_faq_item_token_migration.py"],
