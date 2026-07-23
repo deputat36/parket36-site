@@ -1,0 +1,94 @@
+/* Tokenized Process Step: ordered, semantic and intentionally non-interactive. */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--p36-spacing-lg);
+  margin: var(--p36-spacing-0);
+  padding: var(--p36-spacing-0);
+  list-style: none;
+  counter-reset: step;
+}
+
+.steps li {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--p36-spacing-sm);
+  min-height: 164px;
+  padding: var(--p36-spacing-4xl) var(--p36-spacing-xl) var(--p36-spacing-xl);
+  border: 1px solid var(--p36-color-semantic-border-default);
+  border-radius: var(--p36-radius-lg);
+  background: var(--p36-color-semantic-surface-default);
+  color: var(--p36-color-semantic-text-primary);
+  box-shadow: var(--p36-shadow-card);
+  cursor: default;
+  transform: none;
+  transition: none;
+}
+
+.steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  top: var(--p36-spacing-xl);
+  left: var(--p36-spacing-xl);
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--p36-color-semantic-surface-accent);
+  border-radius: var(--p36-radius-full);
+  background: var(--p36-color-semantic-action-primary);
+  color: var(--p36-color-semantic-text-inverse);
+  font-family: var(--p36-font-family-display), Arial, sans-serif;
+  font-size: var(--p36-font-size-small);
+  font-weight: var(--p36-font-weight-extrabold);
+  line-height: 1;
+}
+
+.steps strong {
+  display: block;
+  margin: var(--p36-spacing-0);
+  color: var(--p36-color-semantic-text-primary);
+  font-family: var(--p36-font-family-display), Arial, sans-serif;
+  font-size: var(--p36-font-size-lead);
+  font-weight: var(--p36-font-weight-extrabold);
+  line-height: 1.25;
+}
+
+.steps span {
+  display: block;
+  color: var(--p36-color-semantic-text-secondary);
+  font-family: var(--p36-font-family-body), Arial, sans-serif;
+  font-size: var(--p36-font-size-body);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.steps li:hover {
+  border-color: var(--p36-color-semantic-border-default);
+  box-shadow: var(--p36-shadow-card);
+  transform: none;
+}
+
+@media (max-width: 640px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .steps li {
+    min-height: 0;
+    padding: var(--p36-spacing-4xl) var(--p36-spacing-lg) var(--p36-spacing-xl);
+  }
+
+  .steps li::before {
+    left: var(--p36-spacing-lg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .steps li {
+    transition: none;
+    transform: none;
+  }
+}

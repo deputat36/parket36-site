@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "meta": {
     "name": "Parket36 component contract",
-    "version": "1.7.0-draft",
+    "version": "1.8.0-draft",
     "status": "draft",
     "figmaFile": "https://www.figma.com/design/2ovBluMs8xOKkkUIPevLaH",
     "figmaTargetPage": "Foundations + Components — Дизайн-система",
@@ -130,6 +130,36 @@
       },
       "accessibility": {
         "semanticArticlePreferred": true,
+        "nonInteractive": true,
+        "linksForbidden": true,
+        "buttonRoleForbidden": true,
+        "tabindexForbidden": true,
+        "hoverTransformForbidden": true,
+        "titleRequired": true,
+        "descriptionRequired": true
+      }
+    },
+    "processStep": {
+      "figmaName": "Process Step",
+      "anatomy": ["Number", "Title", "Description"],
+      "properties": {
+        "number": "generated-counter",
+        "title": "text",
+        "description": "text",
+        "interactive": false
+      },
+      "dimensions": {
+        "minimumHeight": 164,
+        "paddingTop": 64,
+        "horizontalPadding": 24,
+        "bottomPadding": 24,
+        "gridGap": 16,
+        "numberSize": 36,
+        "radiusToken": "radius.lg"
+      },
+      "accessibility": {
+        "nativeOrderedListRequired": true,
+        "semanticListItemRequired": true,
         "nonInteractive": true,
         "linksForbidden": true,
         "buttonRoleForbidden": true,
