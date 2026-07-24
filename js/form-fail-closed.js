@@ -46,9 +46,18 @@
     return actions;
   };
 
+  const releaseSubmissionState = () => {
+    form.removeAttribute('aria-busy');
+    submitButton.disabled = true;
+    window.requestAnimationFrame(() => {
+      submitButton.disabled = false;
+    });
+  };
+
   const showIncompleteLoad = () => {
     status.textContent = `Форма загрузилась не полностью. Данные не отправлены и остались в полях. Позвоните Ивану по номеру ${PHONE_DISPLAY} или обновите страницу.`;
     status.dataset.statusTone = 'error';
+    releaseSubmissionState();
     const actions = ensureSafetyFallback();
     actions.focus({ preventScroll: true });
     actions.scrollIntoView({ block: 'nearest', behavior: 'auto' });
