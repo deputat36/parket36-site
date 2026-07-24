@@ -34,7 +34,7 @@ REQUIRED_MARKERS = {
         "role', 'progressbar'",
         "aria-valuenow",
         "aria-live', 'polite'",
-        "form.dataset.requestReadiness",
+        "form.dataset.requestReadinessState",
         "type: 'request-readiness'",
         "parket36:request-readiness",
         "parket36_request_readiness",
@@ -142,6 +142,8 @@ def main() -> int:
     for marker in FORBIDDEN_SCRIPT_MARKERS:
         if marker in script:
             findings.append(f"request readiness must not store or transmit form values: {marker}")
+    if "form.dataset.requestReadiness =" in script:
+        findings.append("form state must not reuse the panel data-request-readiness selector")
 
     if script.count("window.dataLayer.push({") != 1:
         findings.append("request readiness must emit exactly one bounded dataLayer event")
