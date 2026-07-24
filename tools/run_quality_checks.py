@@ -77,6 +77,7 @@ CHECKS = [
     ("Validate homepage callback paths", ["tools/check_home_callback_links.py"]),
     ("Validate lead paths", ["tools/check_lead_paths.py"]),
     ("Validate lead reliability", ["tools/check_lead_reliability.py"]),
+    ("Validate fail-closed forms", ["tools/check_form_fail_closed.py"]),
     ("Validate lead notification feedback", ["tools/check_lead_notification_feedback.py"]),
     ("Validate request fallback reset", ["tools/check_request_fallback_reset.py"]),
     ("Validate request status tones", ["tools/check_request_status_tones.py"]),
