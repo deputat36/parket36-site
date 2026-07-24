@@ -71,7 +71,7 @@ REQUIRED_FILE_MARKERS = {
         "from lead_copy import normalize_lead_copy",
         "normalize_lead_copy(destination, errors)",
         "mapping = build_mapping(js_dir, errors)",
-        "Normalize lead copy, fingerprint every public JS file",
+        "Normalize lead copy, harden forms, fingerprint JS",
     ),
     E2E: (
         "главная не обещает доставку без подтверждения",
@@ -142,12 +142,13 @@ def main() -> int:
 
     js_assets = texts.get(JS_ASSETS, "")
     normalize_position = js_assets.find("normalize_lead_copy(destination, errors)")
-    error_guard_position = js_assets.find("if errors:\n        return {}", normalize_position)
+    safety_position = js_assets.find("prepare_fail_closed_forms(destination, errors)", normalize_position)
+    error_guard_position = js_assets.find("if errors:\n        return {}", safety_position)
     mapping_position = js_assets.find("mapping = build_mapping(js_dir, errors)", error_guard_position)
-    if min(normalize_position, error_guard_position, mapping_position) < 0 or not (
-        normalize_position < error_guard_position < mapping_position
+    if min(normalize_position, safety_position, error_guard_position, mapping_position) < 0 or not (
+        normalize_position < safety_position < error_guard_position < mapping_position
     ):
-        findings.append("lead copy must normalize and fail closed before JavaScript fingerprint mapping")
+        findings.append("lead copy and form safety must fail closed before JavaScript fingerprint mapping")
 
     runner = texts.get(RUNNER, "")
     honesty_position = runner.find(
