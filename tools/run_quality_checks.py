@@ -80,6 +80,7 @@ CHECKS = [
     ("Validate lead notification feedback", ["tools/check_lead_notification_feedback.py"]),
     ("Validate request fallback reset", ["tools/check_request_fallback_reset.py"]),
     ("Validate request status tones", ["tools/check_request_status_tones.py"]),
+    ("Validate request readiness", ["tools/check_request_readiness.py"]),
     ("Validate lead payload shape", ["tools/check_payload_shape.py"]),
     ("Validate IndexNow workflow", ["tools/check_indexnow_workflow.py"]),
     ("Validate IndexNow discovery", ["tools/submit_indexnow.py", "--check"]),
