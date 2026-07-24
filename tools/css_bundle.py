@@ -26,10 +26,10 @@ CSS_MODULES = (
     "cta-polish.css",
     "choice-chip-polish.css",
     "back-to-top-polish.css",
+    "request-readiness.css",
     "breadcrumbs-polish.css",
     "proof-card-polish.css",
     "process-step-polish.css",
-    "request-readiness.css",
     "logo-brand.css",
 )
 CSS_LINK_RE = re.compile(
