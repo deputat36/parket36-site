@@ -78,6 +78,7 @@ EXPECTED_CHECKS = [
     ["tools/check_home_callback_links.py"],
     ["tools/check_lead_paths.py"],
     ["tools/check_lead_reliability.py"],
+    ["tools/check_form_fail_closed.py"],
     ["tools/check_lead_notification_feedback.py"],
     ["tools/check_request_fallback_reset.py"],
     ["tools/check_request_status_tones.py"],
