@@ -6,6 +6,8 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 
+from form_fail_closed import self_test as form_safety_self_test
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "js" / "form-fail-closed.js"
 BUILDER = ROOT / "tools" / "form_fail_closed.py"
@@ -41,6 +43,7 @@ REQUIRED_MARKERS = {
         "JavaScript отключён, поэтому данные не отправлены",
         'tel:+79009267929',
         'FORM_SAFETY_SCRIPT = \'<script src="/js/form-fail-closed.js" defer></script>\'',
+        'updated.replace(MAIN_SCRIPT, FORM_SAFETY_SCRIPT + "\\n" + MAIN_SCRIPT, 1)',
         "request contact must not be part of native form submission",
         "fail-closed hardening is not idempotent",
     ),
@@ -108,6 +111,9 @@ def main() -> int:
     findings: list[str] = []
     texts: dict[Path, str] = {}
 
+    if form_safety_self_test() != 0:
+        findings.append("form fail-closed builder self-test failed")
+
     for path, markers in REQUIRED_MARKERS.items():
         if not path.is_file():
             findings.append(f"missing required file: {path.relative_to(ROOT)}")
@@ -126,14 +132,14 @@ def main() -> int:
 
     if script.count("form.addEventListener('submit'") != 1:
         findings.append("form fail-closed module must install exactly one submit guard")
-    if script.find("event.preventDefault()") > script.find("window.setTimeout"):
+    prevent_position = script.find("event.preventDefault()")
+    timeout_position = script.find("window.setTimeout")
+    if min(prevent_position, timeout_position) < 0 or prevent_position > timeout_position:
         findings.append("native submit must be prevented before incomplete-load detection")
 
     builder = texts.get(BUILDER, "")
-    if builder.count("FORM_SAFETY_SCRIPT") < 3:
+    if builder.count("FORM_SAFETY_SCRIPT") < 4:
         findings.append("form builder must define, inject and validate the safety script")
-    if builder.find("FORM_SAFETY_SCRIPT +") > builder.find("MAIN_SCRIPT, 1"):
-        findings.append("form safety script must be inserted before main.js")
 
     js_assets = texts.get(JS_ASSETS, "")
     copy_position = js_assets.find("normalize_lead_copy(destination, errors)")
