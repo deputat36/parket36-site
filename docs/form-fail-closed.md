@@ -51,18 +51,26 @@
 
 После выполнения скрипта форма получает `data-form-safety="active"`, а кнопка становится доступной.
 
+## Live-контроль
+
+Ежедневная и post-deploy проверка читает `/zayavka/` и `/kontakty/` на реальном домене. Она требует увидеть состояние `pending`, отключённую кнопку, no-JS сообщение, телефон и cache-busted модуль `form-fail-closed`.
+
+Проверка не нажимает кнопку, не вызывает lead endpoint и не создаёт production-заявки. Если опубликована старая или неполная форма, общий live workflow завершается ошибкой и сохраняет диагностический отчёт.
+
 ## Проверка
 
 - `tests/e2e/no-js-accessibility.spec.mjs` — полностью отключённый JavaScript, отключённая кнопка, сохранение полей при Enter и телефонный fallback.
 - `tests/e2e/form-fail-closed.spec.mjs` — основной `main.js` не загрузился, но форма не перезагрузилась, значения остались, появился честный статус и звонок.
 - `tools/check_form_fail_closed.py` — структура build-time защиты, порядок скриптов, отсутствие транспорта и локального хранения.
 - `tools/form_fail_closed.py` — отдельный self-test преобразования.
+- `tools/check_live_conversion.py` — live-маркеры обеих форм без отправки данных.
 
 Локальная проверка:
 
 ```bash
 python tools/form_fail_closed.py
 python tools/check_form_fail_closed.py
+python tools/check_live_conversion.py --self-test
 python tools/build_pages.py
 npm run test:e2e -- tests/e2e/form-fail-closed.spec.mjs tests/e2e/no-js-accessibility.spec.mjs
 python tools/run_quality_checks.py
