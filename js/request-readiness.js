@@ -137,7 +137,7 @@
     progress.setAttribute('aria-valuenow', String(completed));
     progressBar.style.width = `${Math.round((completed / criteria.length) * 100)}%`;
     panel.classList.toggle('is-ready', ready);
-    form.dataset.requestReadiness = `${completed}/${criteria.length}`;
+    form.dataset.requestReadinessState = `${completed}/${criteria.length}`;
 
     states.forEach(item => {
       const nodes = listItems.get(item.key);
