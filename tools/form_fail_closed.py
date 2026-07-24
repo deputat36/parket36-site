@@ -63,18 +63,23 @@ def harden_form(match: re.Match[str], errors: list[str], relative: str) -> str:
 
 
 def prepare_fail_closed_forms(destination: Path, errors: list[str]) -> int:
+    form_pages = []
+    for html_file in sorted(destination.rglob("*.html")):
+        text = html_file.read_text(encoding="utf-8")
+        if FORM_RE.search(text):
+            form_pages.append((html_file, text))
+
+    if not form_pages:
+        return 0
+
     script_path = destination / "js" / "form-fail-closed.js"
     if not script_path.is_file():
         errors.append("Public js/form-fail-closed.js is missing")
         return 0
 
     hardened_count = 0
-    for html_file in sorted(destination.rglob("*.html")):
-        text = html_file.read_text(encoding="utf-8")
+    for html_file, text in form_pages:
         relative = html_file.relative_to(destination).as_posix()
-        matches = list(FORM_RE.finditer(text))
-        if not matches:
-            continue
 
         def replace(match: re.Match[str]) -> str:
             nonlocal hardened_count
@@ -154,6 +159,13 @@ def self_test() -> int:
         prepare_fail_closed_forms(root, errors)
         if not any("native form submission" in error for error in errors):
             failures.append("named contact field was not rejected")
+
+    with tempfile.TemporaryDirectory(prefix="parket36-form-safety-empty-") as temp:
+        root = Path(temp)
+        (root / "index.html").write_text("<p>No form</p>", encoding="utf-8")
+        errors = []
+        if prepare_fail_closed_forms(root, errors) != 0 or errors:
+            failures.append("pages without request forms must remain untouched")
 
     if failures:
         print("Form fail-closed self-test failed:")
