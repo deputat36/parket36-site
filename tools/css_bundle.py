@@ -24,6 +24,7 @@ CSS_MODULES = (
     "scroll-progress.css",
     "accessibility-polish.css",
     "cta-polish.css",
+    "request-readiness.css",
     "choice-chip-polish.css",
     "back-to-top-polish.css",
     "breadcrumbs-polish.css",

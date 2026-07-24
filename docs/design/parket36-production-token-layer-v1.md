@@ -65,7 +65,7 @@
 
 Шестой разрешённый потребитель — `css/breadcrumbs-polish.css`.
 
-Он переводит `.breadcrumbs`, ссылки, разделители и текущий пункт на состояния default/hover/focus, сохраняя видимую цепочку, разделитель `›`, перенос строк и build-time `BreadcrumbList`. Модуль расположен после `back-to-top-polish.css` в production bundle.
+Он переводит `.breadcrumbs`, ссылки, разделители и текущий пункт на состояния default/hover/focus, сохраняя видимую цепочку, разделитель `›`, перенос строк и build-time `BreadcrumbList`. Модуль расположен после дополнительных form-компонентов и перед `proof-card-polish.css` в production bundle.
 
 Седьмой разрешённый потребитель — `css/proof-card-polish.css`.
 
@@ -74,6 +74,10 @@
 Восьмой разрешённый потребитель — `css/process-step-polish.css`.
 
 Он переводит `.steps` и дочерние `<li>` на tokenized grid, surface, border, radius, shadow, typography и forest–brass номер. Process Step сохраняет нативный `<ol>`, порядок этапов и CSS-counter, остаётся неинтерактивным и не меняет HowTo JSON-LD. Модуль расположен после `proof-card-polish.css` перед `logo-brand.css`.
+
+Девятый разрешённый потребитель — `css/request-readiness.css`.
+
+Он оформляет неблокирующий компонент Request Readiness для подробной заявки и обратного звонка: surface, border, radius, shadow, прогресс, completed/missing состояния, мобильную компоновку и reduced motion. Модуль не изменяет поля формы, required-атрибуты, payload или отправку. В production bundle он расположен до закреплённого хвоста `breadcrumbs → proof-card → process-step → logo-brand`, поэтому прежний каскад этих компонентов сохраняется.
 
 Остальные production CSS-модули пока продолжают использовать прежние значения и не должны обращаться к `var(--p36-...)`.
 
@@ -87,6 +91,7 @@ css/cta-polish.css
 css/enhancements.css
 css/process-step-polish.css
 css/proof-card-polish.css
+css/request-readiness.css
 css/typography-polish.css
 ```
 
@@ -112,22 +117,24 @@ css/typography-polish.css
 - Back to Top с нативной кнопкой 48×48 px, порогом 650 px, мобильным отступом и состояниями hidden/visible/hover/focus/pressed;
 - Breadcrumbs с цепочкой ссылок, разделителями, текущим пунктом, переносом строк и состояниями default/hover/focus;
 - Proof Card как неинтерактивный информационный article с brass-маркером и без hover-transform;
-- Process Step как неинтерактивный ordered-list item с CSS-counter, сеткой 3→1 и без hover-transform.
+- Process Step как неинтерактивный ordered-list item с CSS-counter, сеткой 3→1 и без hover-transform;
+- Request Readiness как доступный progress-компонент с completed/missing состояниями без блокировки формы.
 
 Не изменяются:
 
 - тексты страниц и шаблонов;
 - уровни заголовков;
 - ссылки и телефон;
-- обработчики JavaScript;
+- основная логика обработчиков отправки;
 - `data-request-template` и `data-request-service`;
 - ID, required и metadata полей;
-- формирование payload и fallback;
+- формирование lead payload и fallback;
 - FAQPage JSON-LD;
 - BreadcrumbList JSON-LD;
 - HowTo JSON-LD;
-- аналитика;
 - Supabase.
+
+Request Readiness создаёт отдельное безопасное агрегированное аналитическое событие, но не передаёт значения полей и не меняет существующие лид-события.
 
 Следующий компонентный PR должен мигрировать только один новый тип интерфейса и пройти Browser smoke, axe и Lighthouse.
 
@@ -143,6 +150,7 @@ python tools/check_back_to_top_token_migration.py
 python tools/check_breadcrumbs_token_migration.py
 python tools/check_proof_card_token_migration.py
 python tools/check_process_step_token_migration.py
+python tools/check_request_readiness.py
 python tools/check_problem_card_token_migration.py
 python tools/check_section_header_token_migration.py
 python tools/check_input_token_migration.py
@@ -158,5 +166,5 @@ python tools/build_pages.py
 - объявлено ровно 80 переменных;
 - `design-tokens.css` расположен первым модулем;
 - токены используют только утверждённые CSS-файлы;
-- Button, Badge, Choice Chip, Back to Top, Breadcrumbs, Proof Card, Process Step, Problem Card, Service Card, FAQ Item, Section Header, Input и Mobile CTA соответствуют контракту компонентов;
+- Button, Badge, Choice Chip, Back to Top, Breadcrumbs, Proof Card, Process Step, Request Readiness, Problem Card, Service Card, FAQ Item, Section Header, Input и Mobile CTA соответствуют контракту компонентов;
 - публичная сборка содержит один cache-busted CSS-бандл.

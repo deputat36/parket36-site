@@ -32,7 +32,8 @@ async function prepareAnalyticsCapture(page) {
       'parket36:phone-click',
       'parket36:lead-notification',
       'parket36:callback-open',
-      'parket36:callback-request'
+      'parket36:callback-request',
+      'parket36:request-readiness'
     ].forEach(capture);
 
     Object.defineProperty(navigator, 'clipboard', {
@@ -125,6 +126,18 @@ test('полная заявка не передаёт контакт и своб
         notificationConfirmed: true,
         formKind: 'assessment'
       })
+    }),
+    expect.objectContaining({
+      channel: 'custom-event',
+      name: 'parket36:request-readiness',
+      detail: expect.objectContaining({
+        formKind: 'assessment',
+        completed: 4,
+        total: 5,
+        ready: false,
+        missing: ['photos'],
+        page: '/zayavka/'
+      })
     })
   ]));
   expect(analytics.dataLayer).toEqual(expect.arrayContaining([
@@ -132,6 +145,14 @@ test('полная заявка не передаёт контакт и своб
       event: 'parket36_lead_notification',
       notification_state: 'sent',
       form_kind: 'assessment'
+    }),
+    expect.objectContaining({
+      event: 'parket36_request_readiness',
+      form_kind: 'assessment',
+      completed_count: 4,
+      total_count: 5,
+      ready: false,
+      missing_keys: ['photos']
     })
   ]));
 });
@@ -177,6 +198,18 @@ test('callback-заявка не передаёт контакт, адрес и 
         notification: 'sent',
         notificationConfirmed: true
       })
+    }),
+    expect.objectContaining({
+      channel: 'custom-event',
+      name: 'parket36:request-readiness',
+      detail: expect.objectContaining({
+        formKind: 'callback',
+        completed: 3,
+        total: 3,
+        ready: true,
+        missing: [],
+        page: '/kontakty/'
+      })
     })
   ]));
   expect(analytics.dataLayer).toEqual(expect.arrayContaining([
@@ -184,6 +217,14 @@ test('callback-заявка не передаёт контакт, адрес и 
       event: 'parket36_callback_request',
       page: '/kontakty/',
       notification_state: 'sent'
+    }),
+    expect.objectContaining({
+      event: 'parket36_request_readiness',
+      form_kind: 'callback',
+      completed_count: 3,
+      total_count: 3,
+      ready: true,
+      missing_keys: []
     })
   ]));
 });

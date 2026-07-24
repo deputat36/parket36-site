@@ -27,6 +27,7 @@ APPROVED_CONSUMERS = {
     "css/enhancements.css",
     "css/process-step-polish.css",
     "css/proof-card-polish.css",
+    "css/request-readiness.css",
     "css/typography-polish.css",
 }
 
@@ -136,6 +137,7 @@ def main() -> int:
         "css/enhancements.css",
         "css/process-step-polish.css",
         "css/proof-card-polish.css",
+        "css/request-readiness.css",
         "css/typography-polish.css",
         "следующий компонентный pr",
     ):
