@@ -28,6 +28,7 @@ FIRST_TOUCH_REFERRER_SCRIPT = '<script src="/js/first-touch-referrer.js" defer><
 MAIN_SCRIPT = '<script src="/js/main.js" defer></script>'
 LEAD_NOTIFICATION_FEEDBACK_SCRIPT = '<script src="/js/lead-notification-feedback.js" defer></script>'
 REQUEST_STATUS_TONE_SCRIPT = '<script src="/js/request-status-tone.js" defer></script>'
+REQUEST_READINESS_SCRIPT = '<script src="/js/request-readiness.js" defer></script>'
 
 PUBLIC_COPY_REPLACEMENTS = (
     (
@@ -174,6 +175,10 @@ def inject_lead_reliability(errors: list[str]) -> None:
             DEST / "js" / "request-status-tone.js",
             REQUEST_STATUS_TONE_SCRIPT,
         ),
+        "request readiness": (
+            DEST / "js" / "request-readiness.js",
+            REQUEST_READINESS_SCRIPT,
+        ),
     }
     missing_scripts = [label for label, (path, _) in required_scripts.items() if not path.exists()]
     if missing_scripts:
@@ -199,7 +204,8 @@ def inject_lead_reliability(errors: list[str]) -> None:
         scripts_before = [script for script in before_main_scripts if script not in text]
         needs_feedback = LEAD_NOTIFICATION_FEEDBACK_SCRIPT not in text
         needs_status_tone = REQUEST_STATUS_TONE_SCRIPT not in text
-        if not scripts_before and not needs_feedback and not needs_status_tone:
+        needs_readiness = REQUEST_READINESS_SCRIPT not in text
+        if not scripts_before and not needs_feedback and not needs_status_tone and not needs_readiness:
             continue
 
         replacement = [*scripts_before, MAIN_SCRIPT]
@@ -207,6 +213,8 @@ def inject_lead_reliability(errors: list[str]) -> None:
             replacement.append(LEAD_NOTIFICATION_FEEDBACK_SCRIPT)
         if needs_status_tone:
             replacement.append(REQUEST_STATUS_TONE_SCRIPT)
+        if needs_readiness:
+            replacement.append(REQUEST_READINESS_SCRIPT)
 
         text = text.replace(
             MAIN_SCRIPT,
