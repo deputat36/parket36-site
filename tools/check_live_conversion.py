@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check live call conversion, built shared shell and the deployed IndexNow key."""
+"""Check live call conversion, fail-closed forms, built shared shell and IndexNow key."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from site_settings import load_config
 from submit_indexnow import key_location, load_indexnow_config
 
 ROOT = Path(__file__).resolve().parents[1]
-USER_AGENT = "Parket36-Live-Conversion/1.1"
+USER_AGENT = "Parket36-Live-Conversion/1.2"
 MAX_RESPONSE_BYTES = 2_000_000
 
 SHARED_SHELL_MARKERS = (
@@ -27,6 +27,20 @@ SHARED_SHELL_MARKERS = (
     "<!-- shared-shell:footer -->",
     "<!-- shared-shell:mobile-cta -->",
     'data-css-bundle="true"',
+)
+FORM_SAFETY_MARKERS = (
+    'data-form-safety="pending"',
+    'data-form-safety-submit="true"',
+    'data-form-no-script="true"',
+    'disabled',
+    'aria-disabled="true"',
+    'src="/js/form-fail-closed.',
+    "JavaScript отключён, поэтому данные не отправлены",
+    'href="tel:+79009267929"',
+)
+FORM_PAGES = (
+    ("/zayavka/", "Assessment form fail-closed"),
+    ("/kontakty/", "Callback form fail-closed"),
 )
 
 
@@ -141,6 +155,18 @@ def run_once(timeout: float, attempt: int) -> tuple[str, list[CheckResult]]:
             )
         )
 
+    for index, (path, label) in enumerate(FORM_PAGES, start=1):
+        form_http, form_body = request_result(
+            f"{label} HTTP",
+            domain + path,
+            timeout,
+            attempt,
+            f"form_safety_{index}",
+        )
+        results.append(form_http)
+        if form_http.ok:
+            results.append(marker_result(label, form_body, FORM_SAFETY_MARKERS))
+
     live_key_url = key_location(domain, indexnow)
     key_http, key_body = request_result(
         "IndexNow key HTTP",
@@ -175,7 +201,7 @@ def append_report(path: Path, domain: str, results: list[CheckResult], attempts_
     generated = datetime.now(timezone.utc).isoformat()
     lines = [
         "",
-        "## Live call, shared shell and IndexNow checks",
+        "## Live call, fail-closed forms, shared shell and IndexNow checks",
         "",
         f"Generated: `{generated}`",
         f"Domain: `{domain or 'unavailable'}`",
@@ -213,9 +239,12 @@ def self_test() -> int:
     missing = marker_result("Homepage call route", "Позвонить Ивану", ('href="tel:+79009267929"',))
     shell_ok = marker_result("Homepage built shared shell", " ".join(SHARED_SHELL_MARKERS), SHARED_SHELL_MARKERS)
     shell_bad = marker_result("Homepage built shared shell", SHARED_SHELL_MARKERS[0], SHARED_SHELL_MARKERS)
+    form_ok = marker_result("Assessment form fail-closed", " ".join(FORM_SAFETY_MARKERS), FORM_SAFETY_MARKERS)
+    form_bad = marker_result("Assessment form fail-closed", FORM_SAFETY_MARKERS[0], FORM_SAFETY_MARKERS)
     key_ok = exact_result("IndexNow key content", "abc12345\n", "abc12345")
     key_bad = exact_result("IndexNow key content", "wrong", "abc12345")
     home_url = cache_busted_url("https://example.test/", 3, "conversion", nonce=123456)
+    form_url = cache_busted_url("https://example.test/zayavka/", 2, "form_safety_1", nonce=112233)
     key_url = cache_busted_url("https://example.test/indexnow-key.txt", 4, "indexnow_key", nonce=654321)
     findings: list[str] = []
 
@@ -227,12 +256,19 @@ def self_test() -> int:
         findings.append("complete built shared-shell markers must pass")
     if shell_bad.ok or "missing:" not in shell_bad.detail:
         findings.append("incomplete built shared-shell markers must fail")
+    if not form_ok.ok:
+        findings.append("complete fail-closed form markers must pass")
+    if form_bad.ok or "missing:" not in form_bad.detail:
+        findings.append("incomplete fail-closed form markers must fail")
     if not key_ok.ok or key_bad.ok:
         findings.append("IndexNow key must require exact content")
 
     for marker in ("https://example.test/?", "verify_conversion=123456", "attempt=3"):
         if marker not in home_url:
             findings.append(f"cache-busted homepage URL missing marker: {marker}")
+    for marker in ("https://example.test/zayavka/?", "verify_form_safety_1=112233", "attempt=2"):
+        if marker not in form_url:
+            findings.append(f"cache-busted form URL missing marker: {marker}")
     for marker in (
         "https://example.test/indexnow-key.txt?",
         "verify_indexnow_key=654321",
