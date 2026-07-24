@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MAIN_JS = ROOT / "js" / "main.js"
 CALLBACK_JS = ROOT / "js" / "callback-form.js"
 NOTIFICATION_JS = ROOT / "js" / "lead-notification-feedback.js"
+READINESS_JS = ROOT / "js" / "request-readiness.js"
 E2E_SPEC = ROOT / "tests" / "e2e" / "analytics-privacy.spec.mjs"
 DOC = ROOT / "docs" / "analytics-privacy-contract.md"
 RUNNER = ROOT / "tools" / "run_quality_checks.py"
@@ -26,6 +27,11 @@ REQUIRED_MARKERS = {
         "parket36:lead-notification",
         "parket36:callback-open",
         "parket36:callback-request",
+        "parket36:request-readiness",
+        "parket36_request_readiness",
+        "completed_count",
+        "total_count",
+        "missing_keys",
         "window.dataLayer",
         "window.ym",
         "expectNoPrivateData",
@@ -46,6 +52,10 @@ REQUIRED_MARKERS = {
         "CustomEvent",
         "window.dataLayer",
         "window.ym",
+        "parket36:request-readiness",
+        "parket36_request_readiness",
+        "счётчики, вид формы, путь и ключи",
+        "readiness payload начинает включать значения формы",
         "tests/e2e/analytics-privacy.spec.mjs",
         "tools/check_analytics_privacy.py",
         "не заменяет юридическую проверку",
@@ -75,6 +85,22 @@ FORBIDDEN_NOTIFICATION_FIELDS = (
     "callbackTime:",
 )
 
+FORBIDDEN_READINESS_FIELDS = (
+    "contact:",
+    "task:",
+    "location:",
+    "area:",
+    "callback_time:",
+    "callbackTime:",
+    "utm_source:",
+    "utm_medium:",
+    "utm_campaign:",
+    "utm_content:",
+    "utm_term:",
+    "attribution:",
+    "text:",
+)
+
 
 def read(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="ignore")
@@ -94,7 +120,7 @@ def main() -> int:
     findings: list[str] = []
     texts: dict[Path, str] = {}
 
-    for path in (MAIN_JS, CALLBACK_JS, NOTIFICATION_JS, *REQUIRED_MARKERS):
+    for path in (MAIN_JS, CALLBACK_JS, NOTIFICATION_JS, READINESS_JS, *REQUIRED_MARKERS):
         if path in texts:
             continue
         if not path.is_file():
@@ -114,6 +140,10 @@ def main() -> int:
         findings.append("analytics privacy spec must verify both assessment and callback signals")
     if spec.count("expect(lead.getPayload()).toMatchObject") < 2:
         findings.append("analytics privacy spec must prove private values still reach both protected lead payloads")
+    if spec.count("name: 'parket36:request-readiness'") < 2:
+        findings.append("analytics privacy spec must verify readiness events for both forms")
+    if spec.count("event: 'parket36_request_readiness'") < 2:
+        findings.append("analytics privacy spec must verify readiness dataLayer events for both forms")
     for marker in ("9001112233", "+79001112233"):
         if marker not in spec:
             findings.append(f"analytics privacy spec must reject normalized phone marker: {marker}")
@@ -157,7 +187,31 @@ def main() -> int:
             if field in callback_datalayer:
                 findings.append(f"callback dataLayer payload contains private field: {field}")
 
-    for path in (MAIN_JS, CALLBACK_JS, NOTIFICATION_JS):
+    readiness_js = texts.get(READINESS_JS, "")
+    readiness_detail = block(
+        readiness_js,
+        "const detail = {",
+        "\n    };",
+    )
+    readiness_datalayer = block(
+        readiness_js,
+        "event: 'parket36_request_readiness'",
+        "\n      });",
+    )
+    if not readiness_detail:
+        findings.append("could not isolate request readiness custom event payload")
+    else:
+        for field in FORBIDDEN_READINESS_FIELDS:
+            if field in readiness_detail:
+                findings.append(f"request readiness custom event contains private field: {field}")
+    if not readiness_datalayer:
+        findings.append("could not isolate request readiness dataLayer payload")
+    else:
+        for field in FORBIDDEN_READINESS_FIELDS:
+            if field in readiness_datalayer:
+                findings.append(f"request readiness dataLayer payload contains private field: {field}")
+
+    for path in (MAIN_JS, CALLBACK_JS, NOTIFICATION_JS, READINESS_JS):
         text = texts.get(path, "")
         for direct_leak in (
             "window.ym(contact",
