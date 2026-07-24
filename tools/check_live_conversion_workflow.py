@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate live call, built shell and IndexNow monitoring integration."""
+"""Validate live call, fail-closed forms, built shell and IndexNow monitoring integration."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "live-site-health.yml"
 HELPER = ROOT / "tools" / "check_live_conversion.py"
+DOC = ROOT / "docs" / "live-conversion-build-contract.md"
 
 WORKFLOW_MARKERS = (
     "id: live_conversion",
@@ -25,9 +26,19 @@ WORKFLOW_MARKERS = (
 )
 
 HELPER_MARKERS = (
-    "Live call, shared shell and IndexNow checks",
+    "Live call, fail-closed forms, shared shell and IndexNow checks",
     "Homepage call route",
     "Homepage built shared shell",
+    "Assessment form fail-closed",
+    "Callback form fail-closed",
+    'data-form-safety="pending"',
+    'data-form-safety-submit="true"',
+    'data-form-no-script="true"',
+    'aria-disabled="true"',
+    'src="/js/form-fail-closed.',
+    "JavaScript отключён, поэтому данные не отправлены",
+    "FORM_PAGES",
+    "FORM_SAFETY_MARKERS",
     "IndexNow key HTTP",
     "IndexNow key content",
     'href="tel:{phone_e164}"',
@@ -40,6 +51,7 @@ HELPER_MARKERS = (
     'data-css-bundle="true"',
     "def cache_busted_url",
     "verify_conversion",
+    "verify_form_safety_1",
     "verify_indexnow_key",
     '"Cache-Control": "no-cache, no-store, max-age=0"',
     '"Pragma": "no-cache"',
@@ -47,6 +59,17 @@ HELPER_MARKERS = (
     "def run_with_retries",
     "def append_report",
     "def self_test",
+)
+
+DOC_MARKERS = (
+    "Fail-closed формы",
+    "`/zayavka/`",
+    "`/kontakty/`",
+    'data-form-safety="pending"',
+    'data-form-safety-submit="true"',
+    "form-fail-closed",
+    "данные не отправлены",
+    "не отправляет заявки",
 )
 
 FORBIDDEN_MARKERS = (
@@ -59,7 +82,7 @@ FORBIDDEN_MARKERS = (
 def main() -> int:
     findings: list[str] = []
 
-    for path in (WORKFLOW, HELPER):
+    for path in (WORKFLOW, HELPER, DOC):
         if not path.is_file():
             findings.append(f"{path.relative_to(ROOT)} is missing")
 
@@ -71,6 +94,7 @@ def main() -> int:
 
     workflow_text = WORKFLOW.read_text(encoding="utf-8")
     helper_text = HELPER.read_text(encoding="utf-8")
+    doc_text = DOC.read_text(encoding="utf-8")
 
     for marker in WORKFLOW_MARKERS:
         if marker not in workflow_text:
@@ -78,6 +102,9 @@ def main() -> int:
     for marker in HELPER_MARKERS:
         if marker not in helper_text:
             findings.append(f"tools/check_live_conversion.py must contain {marker}")
+    for marker in DOC_MARKERS:
+        if marker not in doc_text:
+            findings.append(f"docs/live-conversion-build-contract.md must contain {marker}")
     for marker in FORBIDDEN_MARKERS:
         if marker in workflow_text:
             findings.append(f".github/workflows/live-site-health.yml must not contain {marker}")
