@@ -11,6 +11,7 @@ import shutil
 import sys
 import tempfile
 
+from form_fail_closed import prepare_fail_closed_forms
 from lead_copy import normalize_lead_copy
 
 HASH_LENGTH = 12
@@ -115,13 +116,14 @@ def validate_public_javascript(destination: Path, errors: list[str]) -> None:
 
 
 def prepare_js_assets(destination: Path, errors: list[str]) -> dict[str, str]:
-    """Normalize lead copy, fingerprint every public JS file and update built HTML references."""
+    """Normalize lead copy, harden forms, fingerprint JS and update built HTML references."""
     js_dir = destination / "js"
     if not js_dir.is_dir():
         errors.append("Public JavaScript directory is missing")
         return {}
 
     normalize_lead_copy(destination, errors)
+    prepare_fail_closed_forms(destination, errors)
     if errors:
         return {}
 
