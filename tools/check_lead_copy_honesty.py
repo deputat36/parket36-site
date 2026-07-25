@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate honest public copy for lead storage, notification and manual fallback."""
+"""Validate honest public copy for lead storage, notification and photo handoff."""
 
 from __future__ import annotations
 
@@ -11,7 +11,12 @@ TOOLS = ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from lead_copy import FORBIDDEN_MARKERS, REPLACEMENTS, apply_replacements  # noqa: E402
+from lead_copy import (  # noqa: E402
+    FORBIDDEN_MARKERS,
+    REPLACEMENTS,
+    apply_replacements,
+    self_test as lead_copy_self_test,
+)
 
 NORMALIZER = ROOT / "tools" / "lead_copy.py"
 JS_ASSETS = ROOT / "tools" / "js_assets.py"
@@ -19,6 +24,9 @@ E2E = ROOT / "tests" / "e2e" / "lead-copy-honesty.spec.mjs"
 DOC = ROOT / "docs" / "lead-copy-honesty.md"
 RUNNER = ROOT / "tools" / "run_quality_checks.py"
 QUALITY_CHECKER = ROOT / "tools" / "check_quality_runner.py"
+LEAD_RELIABILITY = ROOT / "js" / "lead-reliability.js"
+LEAD_NOTIFICATION_FEEDBACK = ROOT / "js" / "lead-notification-feedback.js"
+REQUEST_READINESS = ROOT / "js" / "request-readiness.js"
 
 SOURCE_PATHS = (
     ROOT / "index.html",
@@ -26,6 +34,9 @@ SOURCE_PATHS = (
     ROOT / "kontakty" / "index.html",
     ROOT / "politika" / "index.html",
     ROOT / "js" / "main.js",
+    LEAD_RELIABILITY,
+    LEAD_NOTIFICATION_FEEDBACK,
+    REQUEST_READINESS,
 )
 
 REQUIRED_NORMALIZED_MARKERS = {
@@ -33,12 +44,15 @@ REQUIRED_NORMALIZED_MARKERS = {
         "Форма попробует сохранить заявку в защищённой системе",
         "Если уведомление Ивану не подтвердится",
         "сразу появится кнопка звонка",
+        "Способ передачи фото согласуйте с Иваном",
     ),
     ROOT / "zayavka" / "index.html": (
         "сервис попробует сохранить заявку",
         "Заполните форму — получите понятный следующий шаг",
         "Если автоматическое уведомление не подтвердится",
-        "Форма попробует сохранить заявку в защищённой системе",
+        "После связи Иван подскажет, каким способом передать фотографии пола",
+        "После связи Иван подскажет, каким способом передать фотографии",
+        "Способ передачи фото согласуйте с Иваном",
     ),
     ROOT / "kontakty" / "index.html": (
         "Форма попробует сохранить контакт в защищённой системе",
@@ -53,6 +67,20 @@ REQUIRED_NORMALIZED_MARKERS = {
     ROOT / "js" / "main.js": (
         "Форма попробует сохранить заявку в защищённой системе",
         "сразу появится кнопка звонка",
+        "Фотографии подготовлю заранее",
+        "Способ передачи фото согласуйте",
+        "Заявка сохранена",
+    ),
+    LEAD_RELIABILITY: (
+        "Сохранить заявку автоматически не удалось",
+        "способ передачи фото согласуйте во время разговора",
+        "способ передачи фотографий согласуйте во время разговора",
+    ),
+    LEAD_NOTIFICATION_FEEDBACK: (
+        "Способ передачи фотографий согласуйте во время разговора",
+    ),
+    REQUEST_READINESS: (
+        "После связи Иван подскажет, как передать фотографии и видео",
     ),
 }
 
@@ -64,8 +92,10 @@ REQUIRED_FILE_MARKERS = {
         "def normalize_lead_copy(destination: Path, errors: list[str]) -> None:",
         'destination.rglob("*.html")',
         'destination.rglob("*.js")',
-        "unconditional lead-delivery claim remains",
+        "unconditional lead or photo-handoff claim remains",
+        "Способ передачи фото согласуйте",
         "def self_test() -> int:",
+        "lead copy normalization is not idempotent",
     ),
     JS_ASSETS: (
         "from lead_copy import normalize_lead_copy",
@@ -75,18 +105,20 @@ REQUIRED_FILE_MARKERS = {
     ),
     E2E: (
         "главная не обещает доставку без подтверждения",
-        "страница оценки различает сохранение и уведомление",
+        "страница оценки различает сохранение, уведомление и передачу фото",
+        "полная заявка объясняет следующий шаг без выдуманного мессенджера",
         "callback не обещает получение заявки без подтверждения",
         "политика описывает хранение отдельно от уведомления",
         "expectNoStaleClaims",
-        "сервис попробует сохранить заявку",
+        "После связи Иван подскажет, как передать фотографии и видео",
         "Успешно принятые заявки сохраняются",
     ),
     DOC: (
         "Честный текст заявки",
         "форма пытается сохранить заявку",
         "подтверждено ли автоматическое уведомление Ивану",
-        "notification: sent",
+        "подтверждённого публичного канала передачи фотографий пока нет",
+        "после связи Иван подскажет",
         "tools/lead_copy.py",
         "lead-copy-honesty.spec.mjs",
         "не вызывает production endpoint",
@@ -110,6 +142,9 @@ def main() -> int:
     findings: list[str] = []
     texts: dict[Path, str] = {}
 
+    if lead_copy_self_test() != 0:
+        findings.append("lead copy normalizer self-test failed")
+
     for path, markers in REQUIRED_FILE_MARKERS.items():
         if not path.is_file():
             findings.append(f"missing required file: {path.relative_to(ROOT)}")
@@ -121,7 +156,7 @@ def main() -> int:
             if marker not in text:
                 findings.append(f"{path.relative_to(ROOT)}: missing marker: {marker}")
 
-    if len(REPLACEMENTS) < 10:
+    if len(REPLACEMENTS) < 20:
         findings.append("lead copy normalizer must keep the complete approved replacement set")
 
     for source_path in SOURCE_PATHS:
@@ -148,7 +183,7 @@ def main() -> int:
     if min(normalize_position, safety_position, error_guard_position, mapping_position) < 0 or not (
         normalize_position < safety_position < error_guard_position < mapping_position
     ):
-        findings.append("lead copy and form safety must fail closed before JavaScript fingerprint mapping")
+        findings.append("lead copy must normalize before form hardening and JavaScript fingerprint mapping")
 
     runner = texts.get(RUNNER, "")
     honesty_position = runner.find(
