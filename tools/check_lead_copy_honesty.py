@@ -27,6 +27,7 @@ QUALITY_CHECKER = ROOT / "tools" / "check_quality_runner.py"
 LEAD_RELIABILITY = ROOT / "js" / "lead-reliability.js"
 LEAD_NOTIFICATION_FEEDBACK = ROOT / "js" / "lead-notification-feedback.js"
 REQUEST_READINESS = ROOT / "js" / "request-readiness.js"
+REQUEST_STATUS_TONE = ROOT / "js" / "request-status-tone.js"
 
 SOURCE_PATHS = (
     ROOT / "index.html",
@@ -37,6 +38,7 @@ SOURCE_PATHS = (
     LEAD_RELIABILITY,
     LEAD_NOTIFICATION_FEEDBACK,
     REQUEST_READINESS,
+    REQUEST_STATUS_TONE,
 )
 
 REQUIRED_NORMALIZED_MARKERS = {
@@ -81,6 +83,12 @@ REQUIRED_NORMALIZED_MARKERS = {
     ),
     REQUEST_READINESS: (
         "После связи Иван подскажет, как передать фотографии и видео",
+    ),
+    REQUEST_STATUS_TONE: (
+        "next.startsWith('Заявка сохранена')",
+        "text.startsWith('Заявка сохранена')",
+        "Сохранить заявку автоматически не удалось",
+        "Способ передачи фотографий согласуйте во время разговора",
     ),
 }
 
