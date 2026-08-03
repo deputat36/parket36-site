@@ -54,7 +54,7 @@ def api_request(
             "Accept": "application/vnd.github+json",
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
-            "User-Agent": "Parket36-Lead-Endpoint-Issue-Manager/2.0",
+            "User-Agent": "Parket36-Lead-Endpoint-Issue-Manager/2.1",
             "X-GitHub-Api-Version": API_VERSION,
         },
     )
@@ -130,6 +130,7 @@ def failure_body(kind: str, report: str, run_link: str) -> str:
             report,
             "",
             "This issue is maintained automatically and will close after a successful check of the same kind.",
+            "Repeated failures replace this issue body with the latest diagnostic snapshot instead of adding duplicate comments.",
             config["safety"],
         ]
     )
@@ -160,14 +161,24 @@ def add_comment(repository: str, token: str, issue_number: int, body: str) -> No
     )
 
 
+def update_issue_body(repository: str, token: str, issue_number: int, body: str) -> None:
+    api_request(
+        "PATCH",
+        api_base(repository) + f"/issues/{issue_number}",
+        token,
+        {"body": body},
+    )
+
+
 def handle_failure(kind: str, report_path: Path) -> int:
     repository, token, run_id, server = github_context()
     config = monitor_config(kind)
     issue = find_open_issue(repository, token, config["title"])
     body = failure_body(kind, report_excerpt(report_path, kind), run_url(server, repository, run_id))
     if issue:
-        add_comment(repository, token, int(issue["number"]), body)
-        print(f"Updated {kind} lead endpoint issue #{issue['number']}")
+        issue_number = int(issue["number"])
+        update_issue_body(repository, token, issue_number, body)
+        print(f"Refreshed {kind} lead endpoint issue #{issue_number}")
         return 0
 
     created = api_request(
@@ -207,7 +218,13 @@ def self_test() -> int:
     for kind in MONITORS:
         failure = failure_body(kind, report, "https://example.test/actions/runs/1")
         config = monitor_config(kind)
-        for marker in (config["heading"], report, config["safety"], "same kind"):
+        for marker in (
+            config["heading"],
+            report,
+            config["safety"],
+            "same kind",
+            "latest diagnostic snapshot",
+        ):
             if marker not in failure:
                 failures.append(f"{kind} failure body missing marker: {marker}")
 
@@ -222,6 +239,12 @@ def self_test() -> int:
 
     if MONITORS["protected"]["title"] == MONITORS["preflight"]["title"]:
         failures.append("monitoring issue titles must be distinct")
+
+    source = Path(__file__).read_text(encoding="utf-8")
+    if "update_issue_body(repository, token, issue_number, body)" not in source:
+        failures.append("existing monitoring issues must refresh their body in place")
+    if 'add_comment(repository, token, int(issue["number"]), body)' in source:
+        failures.append("repeated failures must not append duplicate diagnostic comments")
 
     if failures:
         print("Production lead endpoint issue manager self-test failed:")
