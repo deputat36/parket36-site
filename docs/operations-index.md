@@ -16,6 +16,7 @@
 - `docs/verified-deploy-drift.md` — сверка текущего `main` с долговечным ledger подтверждённой публикации и одно issue после повторного расхождения.
 - `docs/downstream-default-branch-guard.md` — независимая защита Live site health и IndexNow от запуска из feature-веток.
 - `docs/search-discovery-launch.md` — запуск индексации, IndexNow и ручные действия в кабинетах поисковиков.
+- `docs/search-launch-readiness.md` — единый read-only отчёт по live-домену, robots/sitemap, ключу IndexNow и готовности Метрики.
 - `docs/indexnow-automation.md` — автоматическая post-deploy отправка sitemap URL, диагностический artifact и одно monitoring issue после повторного сбоя.
 - `docs/browser-smoke-tests.md` — Playwright-проверки меню, телефона, формы, fallback и 404.
 - `docs/accessibility-audit.md` — автоматический axe-аудит ключевых страниц по WCAG A/AA.
