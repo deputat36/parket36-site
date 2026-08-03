@@ -67,6 +67,7 @@ CHECKS = [
     ("Validate live conversion monitoring", ["tools/check_live_conversion_workflow.py"]),
     ("Validate live public copy monitoring", ["tools/check_live_public_copy_workflow.py"]),
     ("Validate Supabase retention", ["tools/check_supabase_retention.py"]),
+    ("Validate Parket production security snapshot", ["tools/check_parket_security_snapshot.py"]),
     ("Validate link attributes", ["tools/check_empty_link_attributes.py"]),
     ("Run static audit", ["tools/check_site.py"]),
     ("Run extra guardrails", ["tools/check_guardrails.py"]),
