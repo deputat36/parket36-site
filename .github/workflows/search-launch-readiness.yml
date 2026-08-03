@@ -2,9 +2,13 @@ name: Search launch readiness
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Deploy GitHub Pages"]
+    types: [completed]
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: search-launch-readiness
@@ -12,14 +16,19 @@ concurrency:
 
 jobs:
   readiness:
-    if: github.ref_name == github.event.repository.default_branch
+    if: >-
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref_name == github.event.repository.default_branch) ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == github.event.repository.default_branch)
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.event.repository.default_branch }}
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -46,12 +55,14 @@ jobs:
       - name: Build search launch readiness
         id: readiness
         continue-on-error: true
+        env:
+          SEARCH_SOURCE_COMMIT: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
         run: >-
           python tools/build_search_launch_readiness.py
           --live-health search-live-health.md
           --indexnow search-indexnow.md
           --report search-launch-readiness.md
-          --source-commit "${GITHUB_SHA}"
+          --source-commit "$SEARCH_SOURCE_COMMIT"
       - name: Add readiness to job summary
         if: always()
         run: cat search-launch-readiness.md >> "$GITHUB_STEP_SUMMARY"
@@ -66,6 +77,12 @@ jobs:
             search-indexnow.md
           if-no-files-found: error
           retention-days: 30
+      - name: Update roadmap readiness snapshot
+        if: always()
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python tools/manage_search_launch_readiness.py --report search-launch-readiness.md
       - name: Fail on blocked technical readiness
         if: steps.readiness.outcome == 'failure'
         run: exit 1

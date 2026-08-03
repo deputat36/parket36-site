@@ -4,6 +4,29 @@ Workflow `.github/workflows/search-launch-readiness.yml` собирает оди
 
 Он не меняет сайт, DNS, поисковые кабинеты или IndexNow. Проверка выполняет только чтение публичных файлов и конфигурации репозитория.
 
+## Когда запускается
+
+Workflow запускается автоматически после каждого успешного `Deploy GitHub Pages` для default branch.
+
+Также его можно обновить вручную:
+
+1. Открыть `Actions → Search launch readiness`.
+2. Нажать `Run workflow`.
+3. Выбрать ветку `main`.
+4. Скачать artifact `search-launch-readiness` или открыть job summary.
+
+Автоматический запуск проверяет точный `head_sha` завершившейся публикации. Ручной запуск разрешён только для default branch.
+
+## Где хранится результат
+
+После каждого запуска:
+
+- создаётся artifact `search-launch-readiness` сроком хранения 30 дней;
+- итог добавляется в job summary;
+- один обновляемый комментарий в issue #308 получает последнюю безопасную сводку.
+
+Повторные запуски обновляют тот же комментарий, а не создают новые. Component reports остаются только в Actions artifact.
+
 ## Что проверяется
 
 1. DNS корневого домена и `www` ведут на GitHub Pages.
@@ -12,15 +35,7 @@ Workflow `.github/workflows/search-launch-readiness.yml` собирает оди
 4. `sitemap.xml` валиден, содержит достаточное число URL и использует только `parket36.ru`.
 5. Публичный файл ключа IndexNow доступен и совпадает с `data/indexnow.json`.
 6. В `data/site.json` заполнен или не заполнен `metrika_id`.
-
-## Как запустить
-
-1. Открыть `Actions → Search launch readiness`.
-2. Нажать `Run workflow`.
-3. Выбрать ветку `main`.
-4. Скачать artifact `search-launch-readiness` или открыть job summary.
-
-Workflow запускается только вручную и только для default branch. Ему не нужны secrets, environment approval или доступы к поисковым кабинетам.
+7. В отчёте фиксируется точный commit SHA проверенного состояния.
 
 ## Уровни готовности
 
@@ -58,15 +73,18 @@ Workflow:
 
 - не вызывает `--submit` для IndexNow;
 - не использует токены поисковых кабинетов;
-- не пишет в issues;
+- пишет только один управляемый status-комментарий в issue #308;
 - не меняет `data/site.json`;
-- не публикует сайт;
+- не публикует сайт самостоятельно;
 - не выполняет production-заявки;
 - не считает успешную техническую проверку гарантией индексации или позиций.
+
+Сбой синхронизации комментария не скрывает artifact и не меняет рассчитанный уровень готовности.
 
 Локальная проверка контракта:
 
 ```bash
 python tools/build_search_launch_readiness.py --self-test
+python tools/manage_search_launch_readiness.py --self-test
 python tools/check_search_launch_readiness.py
 ```

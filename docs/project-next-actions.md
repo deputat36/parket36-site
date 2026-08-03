@@ -98,17 +98,19 @@ Readiness-снимок привязан к точному commit SHA. Перед
 
 ## Поисковые кабинеты и аналитика
 
-Сначала выполнить безопасную техническую сводку:
+Техническая сводка теперь выполняется автоматически после каждого успешного `Deploy GitHub Pages`.
 
-1. Открыть `Actions → Search launch readiness`.
-2. Выбрать ветку `main`.
-3. Запустить workflow.
-4. Открыть job summary или artifact `search-launch-readiness`.
-5. Устранить технический `BLOCKED`, если он появился.
+Последний результат хранится:
+
+- в одном обновляемом комментарии `Search launch readiness` в issue #308;
+- в job summary;
+- в artifact `search-launch-readiness`.
+
+При необходимости сводку можно повторить вручную через `Actions → Search launch readiness` из ветки `main`.
 
 Уровень `TECHNICAL_READY_ANALYTICS_PENDING` означает, что домен, robots, sitemap и ключ IndexNow готовы, но ID Метрики ещё не заполнен. Уровень `SEARCH_LAUNCH_READY` дополнительно подтверждает наличие `metrika_id`, но не подтверждает права или индексацию внутри поисковых кабинетов.
 
-После технической проверки нужно вручную:
+Вручную остаётся:
 
 - добавить сайт в Яндекс Вебмастер и отправить sitemap;
 - добавить сайт в Google Search Console и отправить sitemap;
