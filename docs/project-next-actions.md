@@ -17,6 +17,27 @@
 
 Документация: `docs/github-pages-switch-checklist.md`, `docs/live-site-monitoring.md`, `docs/deployment-manifest-cache.md`.
 
+## Подтверждённый production-baseline Supabase
+
+Последняя read-only проверка объектов Паркет36 выполнена 3 августа 2026 года.
+
+Подтверждено:
+
+- RLS включён на `parket_leads` и `parket_public_lead_audit`;
+- для `anon` и `authenticated` действует явный deny-all;
+- прямые табличные права есть только у `postgres` и `service_role`;
+- retention-функции исполняются только `postgres` и `service_role`;
+- в обеих таблицах было 0 строк;
+- критических advisor-предупреждений, относящихся именно к объектам Паркет36, не обнаружено;
+- Edge Function `parket-public-lead` всё ещё развёрнута как version 1 и отстаёт от `main`.
+
+Повторяемая проверка: `supabase/verify-parket-security.sql`.
+
+Она защищена обязательным CI-контролем `tools/check_parket_security_snapshot.py`: проверка не может содержать изменяющие SQL-команды, прямое чтение строк заявок или сетевые вызовы.
+
+Текущий отчёт: `docs/supabase-production-security-status-2026-08-03.md`.
+Исторический снимок 10 июля: `docs/supabase-production-status-2026-07-10.md`.
+
 ## Production Edge Functions и заявки
 
 Сначала выполнить единый безопасный аудит готовности:
@@ -27,6 +48,8 @@
 4. Запустить workflow.
 5. Скачать artifact `production-lead-launch-readiness`.
 6. Устранить все причины уровня `BLOCKED` или `DEPLOY_READY`.
+
+Readiness-снимок привязан к точному commit SHA. Перед deploy обязательно запускать его повторно для текущего `main`, а не использовать прежний результат после новых merge.
 
 Этот workflow:
 
