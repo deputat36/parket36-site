@@ -6,7 +6,6 @@ from __future__ import annotations
 from pathlib import Path
 import re
 import sys
-import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 SQL_PATH = ROOT / "supabase" / "verify-parket-security.sql"
@@ -67,7 +66,7 @@ FORBIDDEN_CAPABILITIES = (
 
 REQUIRED_DOC_MARKERS = (
     "Проверка выполнялась только чтением",
-    "RLS включён",
+    "включён RLS",
     "deny-all policy",
     "0 строк",
     "Edge Function `parket-public-lead`",
