@@ -89,6 +89,9 @@ REQUIRED_MARKERS = {
         '"protected"',
         '"preflight"',
         "find_open_issue",
+        "update_issue_body",
+        "latest diagnostic snapshot",
+        "Refreshed {kind} lead endpoint issue",
         "successful check of the same kind",
         '"state": "closed"',
         "--kind",
@@ -126,6 +129,10 @@ FORBIDDEN_WORKFLOW_MARKERS = (
     'echo "$PARKET_HEALTHCHECK_TOKEN"',
     "printenv PARKET_HEALTHCHECK_TOKEN",
     "--health-token",
+)
+
+FORBIDDEN_ISSUE_MANAGER_MARKERS = (
+    'add_comment(repository, token, int(issue["number"]), body)',
 )
 
 
@@ -216,6 +223,15 @@ def main() -> int:
         token_position = workflow_text.find("Detect protected health token")
         if preflight_position < 0 or token_position < 0 or preflight_position > token_position:
             findings.append("public preflight must run before protected token detection")
+
+    if ISSUE_MANAGER.is_file():
+        issue_manager_text = ISSUE_MANAGER.read_text(encoding="utf-8", errors="ignore")
+        for marker in FORBIDDEN_ISSUE_MANAGER_MARKERS:
+            if marker in issue_manager_text:
+                findings.append(
+                    "existing monitoring failures must refresh the issue body instead of appending comments: "
+                    + marker
+                )
 
     for path in (PREFLIGHT_CHECKER, PROTECTED_CHECKER, ISSUE_MANAGER):
         if path.is_file():
