@@ -243,7 +243,8 @@ def self_test() -> int:
     source = Path(__file__).read_text(encoding="utf-8")
     if "update_issue_body(repository, token, issue_number, body)" not in source:
         failures.append("existing monitoring issues must refresh their body in place")
-    if 'add_comment(repository, token, int(issue["number"]), body)' in source:
+    forbidden_failure_call = "add_comment(repository, token, " + 'int(issue["number"]), body)'
+    if forbidden_failure_call in source:
         failures.append("repeated failures must not append duplicate diagnostic comments")
 
     if failures:
