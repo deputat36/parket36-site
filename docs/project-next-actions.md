@@ -98,7 +98,17 @@ Readiness-снимок привязан к точному commit SHA. Перед
 
 ## Поисковые кабинеты и аналитика
 
-Нужно вручную:
+Сначала выполнить безопасную техническую сводку:
+
+1. Открыть `Actions → Search launch readiness`.
+2. Выбрать ветку `main`.
+3. Запустить workflow.
+4. Открыть job summary или artifact `search-launch-readiness`.
+5. Устранить технический `BLOCKED`, если он появился.
+
+Уровень `TECHNICAL_READY_ANALYTICS_PENDING` означает, что домен, robots, sitemap и ключ IndexNow готовы, но ID Метрики ещё не заполнен. Уровень `SEARCH_LAUNCH_READY` дополнительно подтверждает наличие `metrika_id`, но не подтверждает права или индексацию внутри поисковых кабинетов.
+
+После технической проверки нужно вручную:
 
 - добавить сайт в Яндекс Вебмастер и отправить sitemap;
 - добавить сайт в Google Search Console и отправить sitemap;
@@ -107,6 +117,7 @@ Readiness-снимок привязан к точному commit SHA. Перед
 - проверить реальные цели звонка, оценки по фото и обратного звонка по `docs/analytics-events.md`.
 
 Порядок действий: `docs/search-discovery-launch.md`.
+Единый отчёт: `docs/search-launch-readiness.md`.
 
 ## Issue #4 — подтверждённые материалы
 
