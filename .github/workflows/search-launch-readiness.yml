@@ -1,0 +1,71 @@
+name: Search launch readiness
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: search-launch-readiness
+  cancel-in-progress: false
+
+jobs:
+  readiness:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Check live domain, robots and sitemap
+        id: live_health
+        continue-on-error: true
+        run: >-
+          python tools/check_live_site.py
+          --report search-live-health.md
+          --attempts 6
+          --retry-delay 10
+          --timeout 20
+      - name: Verify live IndexNow key
+        id: indexnow
+        continue-on-error: true
+        run: >-
+          python tools/submit_indexnow.py
+          --verify-live-key
+          --attempts 6
+          --retry-delay 10
+          --timeout 20
+          --report search-indexnow.md
+      - name: Build search launch readiness
+        id: readiness
+        continue-on-error: true
+        run: >-
+          python tools/build_search_launch_readiness.py
+          --live-health search-live-health.md
+          --indexnow search-indexnow.md
+          --report search-launch-readiness.md
+          --source-commit "${GITHUB_SHA}"
+      - name: Add readiness to job summary
+        if: always()
+        run: cat search-launch-readiness.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload search launch readiness
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: search-launch-readiness
+          path: |
+            search-launch-readiness.md
+            search-live-health.md
+            search-indexnow.md
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail on blocked technical readiness
+        if: steps.readiness.outcome == 'failure'
+        run: exit 1

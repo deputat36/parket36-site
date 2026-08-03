@@ -84,6 +84,7 @@ CHECKS = [
     ("Validate request status tones", ["tools/check_request_status_tones.py"]),
     ("Validate request readiness", ["tools/check_request_readiness.py"]),
     ("Validate lead payload shape", ["tools/check_payload_shape.py"]),
+    ("Validate search launch readiness", ["tools/check_search_launch_readiness.py"]),
     ("Validate IndexNow workflow", ["tools/check_indexnow_workflow.py"]),
     ("Validate IndexNow discovery", ["tools/submit_indexnow.py", "--check"]),
     ("Build public directory", ["tools/build_pages.py"]),
