@@ -132,7 +132,7 @@ FORBIDDEN_WORKFLOW_MARKERS = (
 )
 
 FORBIDDEN_ISSUE_MANAGER_MARKERS = (
-    'add_comment(repository, token, int(issue["number"]), body)',
+    "add_comment(repository, token, " + 'int(issue["number"]), body)',
 )
 
 
