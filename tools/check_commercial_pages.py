@@ -56,13 +56,20 @@ PAGE_MARKERS = {
     },
     "portfolio/index.html": {
         "Типовые задачи по паркету и деревянным полам": "customer-facing typical task H1",
-        "Что именно показать Ивану": "photo guidance section",
+        "Что происходит с вашим полом?": "customer problem navigation heading",
         "Изношенный лак и потёртости": "worn finish task",
         "Щели между планками": "gap task",
         "Скрип или движение пола": "squeak task",
         "Следы воды": "water damage task",
-        "страница не выдаёт схемы за выполненные объекты": "honest evidence disclosure",
+        "здесь показаны схемы типовых ситуаций": "honest illustration disclosure",
         'href="/zayavka/">Оценить похожую задачу</a>': "portfolio assessment CTA",
+        "В форму сайта фотографии не прикрепляются": "honest photo handoff",
+        'href="/sovety/staryy-lak-na-parkete/"': "old varnish solution",
+        'href="/sovety/shcheli-v-parkete/"': "gaps solution",
+        'href="/sovety/pochemu-skripit-parket/"': "squeak solution",
+        'href="/sovety/parket-posle-vody/"': "water damage solution",
+        'href="/uslugi/restavraciya-parketa/"': "repair solution",
+        'href="/resheniya/podgotovit-parket-k-prodazhe-kvartiry/"': "sale preparation solution",
         'href="tel:+79009267929">Позвонить Ивану</a>': "portfolio phone CTA",
     },
 }
@@ -80,6 +87,7 @@ PAGE_FORBIDDEN_COPY = {
         "места под реальные фото": "internal photo placeholder heading",
         "сюда нужно подставлять": "internal editor instruction",
         "фото-план": "internal photo planning label",
+        "Какие материалы можно публиковать на сайте": "editorial instructions are not customer-facing",
     },
 }
 
