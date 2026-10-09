@@ -14,7 +14,7 @@ HERO_MARKER = (
 PHONE_MARKER = (
     '<div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">'
     'Позвонить Ивану</a><a class="btn btn--ghost" href="#request">'
-    'Отправить фото после звонка</a></div>'
+    'Подготовить данные для оценки</a></div>'
 )
 HERO_CALLBACK = (
     '<p><a class="text-link" href="/kontakty/#callback">'
