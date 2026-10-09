@@ -6,8 +6,8 @@
 ## Сводка
 
 - индексируемых страниц: 94;
-- уникальных внутренних связей во всём HTML: 1409;
-- уникальных контекстных связей внутри `<main>`: 823;
+- уникальных внутренних связей во всём HTML: 1415;
+- уникальных контекстных связей внутри `<main>`: 829;
 - страниц без контекстных входящих ссылок: 0;
 - страниц с 0–1 контекстной входящей ссылкой: 15;
 - страниц, зависящих только от общих элементов: 0;
@@ -43,15 +43,15 @@
 | https://parket36.ru/zayavka/ | 92 | 92 |
 | https://parket36.ru/sovety/ | 70 | 93 |
 | https://parket36.ru/sovety/kak-sfotografirovat-pol-dlya-ocenki/ | 30 | 34 |
-| https://parket36.ru/uslugi/restavraciya-parketa/ | 26 | 32 |
+| https://parket36.ru/uslugi/restavraciya-parketa/ | 27 | 33 |
 | https://parket36.ru/uslugi/ciklevka-parketa/ | 25 | 76 |
 | https://parket36.ru/sovety/skolko-sohnet-lak-na-parkete/ | 25 | 25 |
-| https://parket36.ru/sovety/parket-posle-vody/ | 22 | 22 |
+| https://parket36.ru/sovety/parket-posle-vody/ | 23 | 23 |
+| https://parket36.ru/sovety/pochemu-skripit-parket/ | 20 | 20 |
 | https://parket36.ru/sovety/uhod-za-parketom-posle-ciklevki/ | 20 | 20 |
-| https://parket36.ru/sovety/pochemu-skripit-parket/ | 19 | 19 |
-| https://parket36.ru/sovety/shcheli-v-parkete/ | 18 | 18 |
+| https://parket36.ru/sovety/shcheli-v-parkete/ | 19 | 19 |
 | https://parket36.ru/sovety/lak-ili-maslo-dlya-parketa/ | 16 | 17 |
-| https://parket36.ru/sovety/staryy-lak-na-parkete/ | 15 | 15 |
+| https://parket36.ru/sovety/staryy-lak-na-parkete/ | 16 | 16 |
 | https://parket36.ru/uslugi/pokrytie-lakom-i-maslom/ | 13 | 46 |
 | https://parket36.ru/uslugi/parket-i-poly/ | 13 | 22 |
 | https://parket36.ru/sovety/kak-podgotovit-komnatu-k-ciklevke/ | 13 | 15 |
@@ -85,7 +85,7 @@
 | kak-rabotaem | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 4 | 1 | 0 | 1 |
 | kontakty | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 2 | 0 | 1 |
 | o-mastere | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 5 | 2 | 0 | 1 |
-| portfolio | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 1 |
+| portfolio | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 5 | 1 | 0 | 1 |
 | resheniya | 0 | 6 | 0 | 1 | 1 | 0 | 16 | 2 | 3 | 1 | 6 |
 | sovety | 1 | 70 | 0 | 0 | 0 | 1 | 3 | 467 | 51 | 0 | 71 |
 | uslugi | 5 | 9 | 0 | 0 | 0 | 0 | 0 | 18 | 32 | 0 | 9 |
