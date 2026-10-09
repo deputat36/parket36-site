@@ -29,6 +29,13 @@ LEAD_NOTIFICATION_FEEDBACK = ROOT / "js" / "lead-notification-feedback.js"
 REQUEST_READINESS = ROOT / "js" / "request-readiness.js"
 REQUEST_STATUS_TONE = ROOT / "js" / "request-status-tone.js"
 
+CANONICAL_SOURCE_PATHS = (
+    ROOT / "index.html",
+    ROOT / "zayavka" / "index.html",
+    ROOT / "kontakty" / "index.html",
+    ROOT / "js" / "main.js",
+)
+
 SOURCE_PATHS = (
     ROOT / "index.html",
     ROOT / "zayavka" / "index.html",
@@ -171,7 +178,12 @@ def main() -> int:
         if not source_path.is_file():
             findings.append(f"missing public source: {source_path.relative_to(ROOT)}")
             continue
-        normalized = apply_replacements(read(source_path))
+        source_text = read(source_path)
+        normalized = apply_replacements(source_text)
+        if source_path in CANONICAL_SOURCE_PATHS and normalized != source_text:
+            findings.append(
+                f"{source_path.relative_to(ROOT)}: canonical source still relies on build-time lead-copy normalization"
+            )
         for marker in FORBIDDEN_MARKERS:
             if marker in normalized:
                 findings.append(
