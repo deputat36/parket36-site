@@ -37,7 +37,23 @@ test('страница примеров показывает типовые за
   await expect(page.getByText('Изношенный лак и потёртости', { exact: true })).toBeVisible();
   await expect(page.getByText('Щели между планками', { exact: true })).toBeVisible();
   await expect(page.getByText('Следы воды', { exact: true })).toBeVisible();
-  await expect(page.getByText(/страница не выдаёт схемы за выполненные объекты/i)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Что происходит с вашим полом?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Как подготовиться к предварительной оценке' })).toBeVisible();
+  await expect(page.getByText('В форму сайта фотографии не прикрепляются.')).toBeVisible();
+  await expect(page.getByText('Какие материалы можно публиковать на сайте')).toHaveCount(0);
+  await expect(page.getByText('здесь показаны схемы типовых ситуаций', { exact: false })).toBeVisible();
+  const links = [
+    '/sovety/staryy-lak-na-parkete/',
+    '/sovety/shcheli-v-parkete/',
+    '/sovety/pochemu-skripit-parket/',
+    '/sovety/parket-posle-vody/',
+    '/uslugi/restavraciya-parketa/',
+    '/resheniya/podgotovit-parket-k-prodazhe-kvartiry/'
+  ];
+  await expect(page.locator('.portfolio-grid figcaption .problem-link')).toHaveCount(links.length);
+  for (const href of links) {
+    await expect(page.locator('.portfolio-grid .problem-link[href="' + href + '"]')).toBeVisible();
+  }
 });
 
 test('публичные SVG содержат клиентские схемы вместо указаний разработчику', async ({ request }) => {

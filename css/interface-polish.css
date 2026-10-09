@@ -537,3 +537,25 @@
     text-align: center;
   }
 }
+
+/* Понятные ссылки к решениям на карточках типовых проблем пола. */
+.portfolio-grid figcaption .problem-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  width: fit-content;
+  margin-top: 12px;
+  color: var(--wood);
+  font-weight: 800;
+  line-height: 1.4;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.portfolio-grid figcaption .problem-link:hover {
+  color: var(--ink);
+}
+.portfolio-grid figcaption .problem-link:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
