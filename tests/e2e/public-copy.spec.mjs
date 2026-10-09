@@ -26,6 +26,9 @@ test('главная объясняет, какие материалы нужн�
   await expect(page.getByText('Дефект крупно', { exact: true })).toBeVisible();
   await expect(page.getByText('Короткое видео', { exact: true })).toBeVisible();
   await expect(page.getByText('Скрип или движение', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Что отправить Ивану, чтобы получить полезный ответ' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Что стоит обсудить заранее' })).toBeVisible();
+  await expect(page.getByText('Подготовка помещения', { exact: true })).toBeVisible();
 });
 
 test('страница примеров показывает типовые задачи, а не внутренний план будущих кейсов', async ({ page }) => {
