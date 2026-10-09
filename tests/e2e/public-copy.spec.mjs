@@ -59,6 +59,18 @@ test('страница примеров показывает типовые за
   }
 });
 
+test('страница мастера рассказывает об услугах и первом контакте без внутренних формулировок', async ({ page }) => {
+  await page.goto('/o-mastere/');
+
+  await expectNoPlaceholderCopy(page);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Мастер Иван — паркет и деревянные полы');
+  await expect(page.getByRole('heading', { name: 'С какими задачами можно обратиться' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Что сказать при первом звонке' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Фотографии помогают быстрее понять состояние пола' })).toHaveCount(0);
+  await expect(page.getByText('Живой мастер, а не безликий сайт')).toHaveCount(0);
+  await expect(page.locator('.subhero a[href="tel:+79009267929"]')).toBeVisible();
+});
+
 test('публичные SVG содержат клиентские схемы вместо указаний разработчику', async ({ request }) => {
   for (const path of ['/img/work-floor.svg', '/img/work-tools.svg', '/img/ivan-workwear.svg']) {
     const response = await request.get(path);
