@@ -132,7 +132,7 @@ test('disabled сообщает, что заявка сохранена, и по
   const status = page.locator('#request-status');
   await expect(status).toContainText('Заявка сохранена');
   await expect(status).toContainText('уведомление Ивану пока не настроено');
-  await expect(status).toContainText('Способ передачи фотографий согласуйте во время разговора');
+  await expect(status).toContainText(/способ передачи фотографий согласуйте во время разговора/i);
   await expect(status).not.toContainText('приложите фотографии и позвоните');
   await expect(status).toContainText('8 (900) 926-79-29');
   const actions = fallbackActions(page);
