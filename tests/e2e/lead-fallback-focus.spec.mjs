@@ -16,6 +16,11 @@ async function prepareClipboard(page, { reject = false } = {}) {
 }
 
 async function fillAssessment(page) {
+  const optionalDetails = page.locator('#request-form .request-form__details');
+  // A real mobile visitor opens optional fields before supplying area/location.
+  if (!(await optionalDetails.evaluate(details => details.open))) {
+    await optionalDetails.locator('summary').click();
+  }
   await page.locator('#request-location').fill('Воронеж');
   await page.locator('#request-area').fill('20 м²');
   await page.locator('#request-task').fill('Нужно предварительно оценить состояние старого паркета по фотографиям.');
