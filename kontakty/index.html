@@ -58,8 +58,8 @@
     <div>
       <p class="eyebrow">Короткая заявка без регистрации</p>
       <h2>Оставьте номер для обратного звонка</h2>
-      <p>Не нужно заранее определять услугу или подробно описывать пол. Укажите населённый пункт, удобное время и телефон. При разговоре Иван уточнит задачу и подскажет, какие фотографии понадобятся.</p>
-      <div class="request-note"><strong>Для первого звонка достаточно:</strong><ol class="number-list"><li>имени и телефона;</li><li>района Воронежа или населённого пункта области;</li><li>удобного времени для связи.</li></ol></div>
+      <p>Достаточно имени и телефона. Район и удобное время можно добавить по желанию. После связи Иван уточнит состояние пола и подскажет, какие сведения или фотографии подготовить.</p>
+      <div class="request-note"><strong>Как это работает:</strong> оставьте номер, а если уведомление Ивану не подтвердится, на странице появится возможность позвонить напрямую. Телефон остаётся основным способом связи.</div>
       <p><a class="text-link" href="/zayavka/">Нужна подробная оценка по фото →</a></p>
     </div>
     <form class="request-form" id="request-form" data-form-kind="callback">
@@ -68,9 +68,15 @@
       <input type="hidden" id="request-photos" value="При необходимости отправлю после разговора">
       <input type="hidden" id="request-video" value="При необходимости запишу после разговора">
       <h3>Заказать обратный звонок</h3>
-      <label>Район или населённый пункт<input id="request-location" autocomplete="address-level2" placeholder="Например: Воронеж или Рамонь"></label>
-      <label>Когда удобно связаться?<input id="request-callback" autocomplete="off" placeholder="Например: сегодня после 18:00"></label>
-      <label>Имя и телефон<input id="request-contact" autocomplete="tel" inputmode="tel" required placeholder="Иван, +7 900 000-00-00"></label>
+      <div class="request-form__essentials" aria-label="Обязательные сведения">
+        <p class="request-form__group-title">Начните с номера телефона</p>
+        <label>Имя и телефон<input id="request-contact" autocomplete="tel" inputmode="tel" required placeholder="Иван, +7 900 000-00-00"></label>
+      </div>
+      <div class="request-form__details">
+        <p class="request-form__group-title">Дополнительно <span>(по желанию)</span></p>
+        <label>Район или населённый пункт<input id="request-location" autocomplete="address-level2" placeholder="Например: Воронеж или Рамонь"></label>
+        <label>Когда удобно связаться?<input id="request-callback" autocomplete="off" placeholder="Например: сегодня после 18:00"></label>
+      </div>
       <button class="btn btn--primary" type="submit">Заказать обратный звонок</button>
       <p class="form-status" id="request-status"></p>
       <p class="form-help">Форма попробует сохранить номер в защищённой системе. Если уведомление Ивану не подтвердится, сразу появится кнопка звонка. Нажимая кнопку, вы соглашаетесь с <a href="/politika/">обработкой контактных данных</a>.</p>
