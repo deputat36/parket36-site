@@ -73,6 +73,32 @@ function fallbackActions(page) {
   return page.locator('[data-lead-fallback-actions]');
 }
 
+test('пока сервер не ответил, форма не обещает доставку заявки Ивану', async ({ page }) => {
+  let releaseResponse;
+  const pendingResponse = new Promise(resolve => { releaseResponse = resolve; });
+  await page.route(leadEndpoint, async route => {
+    await pendingResponse;
+    await route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: false, error: 'temporary_unavailable' })
+    });
+  });
+  await prepareSignals(page);
+  await page.goto('/zayavka/');
+  await fillAssessment(page);
+
+  try {
+    await page.getByRole('button', { name: 'Отправить заявку и скопировать текст' }).click();
+    const status = page.locator('#request-status');
+    await expect(status).toContainText('Пробуем сохранить заявку и готовим текст-памятку');
+    await expect(status).not.toContainText('Отправляем заявку Ивану');
+  } finally {
+    releaseResponse();
+  }
+  await expect(page.locator('#request-status')).toContainText('Автоматически отправить заявку не удалось');
+});
+
 test('sent подтверждает отправку Ивану и записывает состояние в аналитику', async ({ page }) => {
   await mockSuccess(page, 'sent', 901);
   await prepareSignals(page);
