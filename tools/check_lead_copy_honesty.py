@@ -34,6 +34,7 @@ CANONICAL_SOURCE_PATHS = (
     ROOT / "zayavka" / "index.html",
     ROOT / "kontakty" / "index.html",
     ROOT / "js" / "main.js",
+    REQUEST_READINESS,
 )
 
 SOURCE_PATHS = (
