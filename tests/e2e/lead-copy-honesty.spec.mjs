@@ -63,6 +63,36 @@ test('полная заявка объясняет следующий шаг б�
   await expectNoStaleClaims(page);
 });
 
+test('обязательные поля идут первыми, подробности остаются необязательными', async ({ page }) => {
+  await page.goto('/zayavka/');
+  const form = page.locator('#request-form');
+  await expect(form.locator('.request-form__essentials #request-task')).toBeVisible();
+  await expect(form.locator('.request-form__essentials #request-contact')).toBeVisible();
+  await expect(form.locator('.request-form__details #request-area')).toBeVisible();
+  await expect(form.locator('.request-form__details #request-photos')).toBeVisible();
+  await expect(form.locator('.request-form__details #request-video')).toBeVisible();
+  const order = await form.locator('input[id^="request-"], select[id^="request-"], textarea[id^="request-"]').evaluateAll(
+    elements => elements.map(element => element.id)
+  );
+  expect(order.indexOf('request-task')).toBeLessThan(order.indexOf('request-service'));
+  expect(order.indexOf('request-contact')).toBeLessThan(order.indexOf('request-service'));
+  await expect(page.locator('.request-shortcut a')).toHaveAttribute('href', '/kontakty/#callback');
+  await expect(page.getByRole('heading', { name: 'Хорошее первое сообщение экономит время на уточнениях' })).toHaveCount(0);
+  await expectNoStaleClaims(page);
+});
+
+test('короткая форма просит только контакт и не делает остальные поля обязательными', async ({ page }) => {
+  await page.goto('/kontakty/#callback');
+  const form = page.locator('#request-form[data-form-kind="callback"]');
+  await expect(form.locator('.request-form__essentials #request-contact')).toBeVisible();
+  await expect(form.locator('.request-form__details #request-location')).toBeVisible();
+  await expect(form.locator('.request-form__details #request-callback')).toBeVisible();
+  await expect(form.locator('input:required')).toHaveCount(1);
+  await expect(form.locator('.request-form__essentials #request-contact')).toHaveAttribute('required', '');
+  await expect(form.locator('.request-form__details input:required')).toHaveCount(0);
+  await expectNoStaleClaims(page);
+});
+
 test('callback не обещает получение заявки без подтверждения', async ({ page }) => {
   await page.goto('/kontakty/#callback');
 
