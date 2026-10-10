@@ -96,7 +96,7 @@ test('ручной текстовый fallback не показывает лож�
   const status = page.locator('#request-status');
   await expect(status).toContainText('доставку уведомления Ивану подтвердить не удалось');
   await expect(status).toContainText('Скопируйте готовый текст ниже');
-  await expect(status).toContainText('Способ передачи фотографий согласуйте во время разговора');
+  await expect(status).toContainText(/способ передачи фотографий согласуйте во время разговора/i);
   await expect(status).not.toContainText('приложите фотографии и позвоните');
   await expect(page.locator('[data-request-fallback]')).toBeVisible();
   await expect(status).toHaveAttribute('data-status-tone', 'warning');
