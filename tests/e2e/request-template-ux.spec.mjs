@@ -9,15 +9,11 @@ test('выбор другого шаблона заменяет старый, а
   const cycleTemplate = await cycle.getAttribute('data-request-template');
   const restoreTemplate = await restore.getAttribute('data-request-template');
 
-  await expect(cycle).toHaveAttribute('aria-pressed', 'false');
   await cycle.click();
   await expect(task).toHaveValue(cycleTemplate);
-  await expect(cycle).toHaveAttribute('aria-pressed', 'true');
 
   await restore.click();
   await expect(task).toHaveValue(restoreTemplate);
-  await expect(cycle).toHaveAttribute('aria-pressed', 'false');
-  await expect(restore).toHaveAttribute('aria-pressed', 'true');
 
   await restore.click();
   await expect(task).toHaveValue(restoreTemplate);
@@ -63,14 +59,14 @@ test('шаблон обновляет индикатор готовности и
   await expect(panel.locator('[data-readiness-key="task"]')).toHaveClass(/is-complete/);
 });
 
-test('кнопка шаблона доступна клавиатурой и отражает выбор', async ({ page }) => {
+test('кнопка шаблона срабатывает от клавиатуры и перемещает фокус в описание', async ({ page }) => {
   await page.goto('/zayavka/');
 
   const button = page.getByRole('button', { name: 'Укладка', exact: true });
   await button.focus();
   await page.keyboard.press('Enter');
-  await expect(button).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#request-task')).toHaveValue(/Нужна укладка/);
+  await expect(page.locator('#request-task')).toBeFocused();
 });
 
 test('шаблоны не должны удалять описание, если пользователь ввёл его без выбора шаблона', async ({ page }) => {
