@@ -559,3 +559,58 @@
   outline-offset: 3px;
   border-radius: 4px;
 }
+
+/* Обязательные сведения в начале обеих форм и ненавязчивые подсказки. */
+.request-form__essentials,
+.request-form__details {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.request-form__essentials {
+  border: 1px solid rgba(111, 70, 40, .24);
+  background: rgba(255, 248, 239, .75);
+  border-radius: 20px;
+  padding: 14px;
+}
+.request-form__details {
+  border-top: 1px solid rgba(111, 70, 40, .15);
+  padding-top: 18px;
+}
+.request-form__group-title {
+  margin: 0;
+  font-weight: 900;
+  line-height: 1.4;
+  color: #3a2416;
+}
+.request-form__group-title span {
+  font-weight: 500;
+  color: #6d6258;
+}
+.request-form__essentials label {
+  background: #fff;
+}
+.request-shortcut {
+  margin-top: 16px;
+  line-height: 1.6;
+}
+.request-shortcut a {
+  color: var(--wood);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.request-shortcut a:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 4px;
+}
+@media (max-width: 640px) {
+  .request-form__essentials {
+    padding: 12px;
+    border-radius: 16px;
+  }
+  .request-form__essentials,
+  .request-form__details {
+    gap: 10px;
+  }
+}
