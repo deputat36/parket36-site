@@ -72,11 +72,11 @@
         <p class="request-form__group-title">Начните с номера телефона</p>
         <label>Имя и телефон<input id="request-contact" autocomplete="tel" inputmode="tel" required placeholder="Иван, +7 900 000-00-00"></label>
       </div>
-      <div class="request-form__details">
-        <p class="request-form__group-title">Дополнительно <span>(по желанию)</span></p>
+      <details class="request-form__details" data-mobile-collapsible open>
+        <summary class="request-form__group-title">Дополнительно <span>(по желанию)</span></summary>
         <label>Район или населённый пункт<input id="request-location" autocomplete="address-level2" placeholder="Например: Воронеж или Рамонь"></label>
         <label>Когда удобно связаться?<input id="request-callback" autocomplete="off" placeholder="Например: сегодня после 18:00"></label>
-      </div>
+      </details>
       <button class="btn btn--primary" type="submit">Заказать обратный звонок</button>
       <p class="form-status" id="request-status"></p>
       <p class="form-help">Форма попробует сохранить номер в защищённой системе. Если уведомление Ивану не подтвердится, сразу появится кнопка звонка. Нажимая кнопку, вы соглашаетесь с <a href="/politika/">обработкой контактных данных</a>.</p>

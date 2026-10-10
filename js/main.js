@@ -378,6 +378,13 @@
 
   const form = document.getElementById('request-form');
   if (form) {
+    // Hide only optional fields on narrow initial viewports. Native <details>
+    // keeps them keyboard-accessible and does not discard entered values.
+    // Desktop stays expanded; after load the visitor controls open/closed state.
+    const optionalDetails = form.querySelector('.request-form__details[data-mobile-collapsible]');
+    if (optionalDetails && typeof window.matchMedia === 'function') {
+      optionalDetails.open = !window.matchMedia('(max-width: 640px)').matches;
+    }
     const status = document.getElementById('request-status');
     const serviceField = document.getElementById('request-service');
     const locationField = document.getElementById('request-location');
