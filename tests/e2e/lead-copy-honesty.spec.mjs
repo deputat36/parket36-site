@@ -40,6 +40,8 @@ test('страница оценки различает сохранение, у�
   await expect(page.locator('#request')).toContainText('сервис попробует сохранить заявку');
   await expect(page.locator('#request')).toContainText('После связи Иван подскажет, каким способом передать фотографии');
   await expect(page.locator('#request')).toContainText('Если автоматическое уведомление не подтвердится');
+  await expect(page.locator('#request')).toContainText('Фотографии через эту форму не загружаются');
+  await expect(page.locator('#request')).toContainText('Фотографии подготовьте заранее');
 
   const disclosure = page.locator('#request-form .form-help').last();
   await expect(disclosure).toContainText('Форма попробует сохранить заявку в защищённой системе');
