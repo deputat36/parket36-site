@@ -21,7 +21,7 @@ test('шаблон задачи показывает нейтральный ин
   await page.getByRole('button', { name: 'Циклёвка' }).click();
 
   const status = page.locator('#request-status');
-  await expect(status).toContainText('Шаблон добавлен');
+  await expect(status).toContainText('Шаблон выбран');
   await expect(status).toHaveAttribute('data-status-tone', 'info');
   await expect(status).toHaveAttribute('role', 'status');
   await expect(status).toHaveAttribute('aria-live', 'polite');
