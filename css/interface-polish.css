@@ -21,6 +21,21 @@
   box-shadow: 0 14px 30px rgba(68, 42, 24, .11);
 }
 
+/* Visually selected task templates are also announced via aria-pressed. */
+.pill-row .pill[aria-pressed="true"],
+.request-form .pill[aria-pressed="true"] {
+  border-color: var(--wood);
+  background: var(--wood);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(68, 42, 24, .18);
+}
+
+.pill-row .pill[aria-pressed="true"]:hover,
+.request-form .pill[aria-pressed="true"]:hover {
+  background: var(--wood);
+  color: #fff;
+}
+
 .pill-row .pill:focus-visible,
 .request-form .pill:focus-visible {
   outline: 3px solid rgba(215, 168, 110, .45);

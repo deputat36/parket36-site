@@ -437,25 +437,49 @@
       status.setAttribute('role', 'status');
     }
 
-    document.querySelectorAll('[data-request-template]').forEach(button => {
-      button.addEventListener('click', () => {
-        const template = button.datasetRequestTemplate || button.dataset.requestTemplate || '';
-        const service = button.datasetRequestService || button.dataset.requestService || '';
+    // A chosen template is editable guidance, not an accumulating list of services.
+    // Preserve customer notes when they switch the suggested task.
+    const templateButtons = Array.from(form.querySelectorAll('[data-request-template]'));
+    let previousTemplate = '';
 
+    templateButtons.forEach(button => {
+      button.setAttribute('aria-pressed', 'false');
+      button.addEventListener('click', () => {
+        const template = button.dataset.requestTemplate || '';
+        const service = button.dataset.requestService || '';
+        if (!taskField || !template) return;
+
+        const current = taskField.value.trim();
+        // Only remove the exact previously inserted template. Never discard
+        // customer edits if the previous suggestion was changed manually.
+        const personalNotes = previousTemplate && current.includes(previousTemplate)
+          ? current.replace(previousTemplate, '').trim()
+          : current;
+        const next = personalNotes && personalNotes !== template
+          ? `${template}\n\n${personalNotes}`
+          : template;
+
+        if (taskField.maxLength > 0 && next.length > taskField.maxLength) {
+          if (status) status.textContent = 'Описание слишком длинное. Сократите текст задачи перед выбором шаблона.';
+          taskField.focus();
+          return;
+        }
+
+        taskField.value = next;
+        previousTemplate = template;
         if (serviceField && service) {
           const option = Array.from(serviceField.options).find(item => item.value === service || item.textContent === service);
-          if (option) serviceField.value = option.value;
+          if (option) {
+            serviceField.value = option.value;
+            serviceField.dispatchEvent(new Event('change', { bubbles: true }));
+          }
         }
 
-        if (taskField && template) {
-          taskField.value = taskField.value.trim()
-            ? `${taskField.value.trim()}\n\n${template}`
-            : template;
-          taskField.focus();
-          taskField.setSelectionRange(taskField.value.length, taskField.value.length);
-        }
-
-        if (status) status.textContent = 'Шаблон добавлен. Уточните детали и отправьте форму.';
+        templateButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+        taskField.dispatchEvent(new Event('input', { bubbles: true }));
+        taskField.focus();
+        taskField.setSelectionRange(taskField.value.length, taskField.value.length);
+        if (status) status.textContent = 'Шаблон выбран. Дополните описание своими словами.';
         emitLead({ type: 'request-template', service: service || 'не указана' });
       });
     });
