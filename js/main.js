@@ -348,7 +348,7 @@
     const title = document.createElement('h2');
     title.textContent = 'Начните с фотографий пола и короткого разговора';
     const text = document.createElement('p');
-    text.textContent = 'Опишите состояние паркета, примерную площадь и приложите несколько фото. Иван подскажет, поможет ли ремонт, шлифовка или лучше рассмотреть другой вариант.';
+    text.textContent = 'Опишите состояние пола и примерную площадь. После связи Иван подскажет, как передать фотографии и что лучше проверить: покрытие, планки или основание. К форме сайта фотографии не прикрепляются.';
     const actions = document.createElement('div');
     actions.className = 'inline-lead__actions';
     const phone = document.createElement('a');

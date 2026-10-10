@@ -71,6 +71,18 @@ test('страница мастера рассказывает об услуга
   await expect(page.locator('.subhero a[href="tel:+79009267929"]')).toBeVisible();
 });
 
+test('встраиваемый блок услуг не обещает отправку фотографий через форму', async ({ page }) => {
+  await page.goto('/uslugi/ciklevka-parketa/');
+
+  const card = page.locator('.inline-lead__card');
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('После связи Иван подскажет, как передать фотографии');
+  await expect(card).toContainText('К форме сайта фотографии не прикрепляются');
+  await expect(card).not.toContainText('приложите несколько фото');
+  await expect(card.getByRole('link', { name: 'Позвонить Ивану' })).toHaveAttribute('href', 'tel:+79009267929');
+  await expect(card.getByRole('link', { name: 'Оценить по фото' })).toHaveAttribute('href', '/zayavka/');
+});
+
 test('публичные SVG содержат клиентские схемы вместо указаний разработчику', async ({ request }) => {
   for (const path of ['/img/work-floor.svg', '/img/work-tools.svg', '/img/ivan-workwear.svg']) {
     const response = await request.get(path);
