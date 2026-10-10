@@ -443,7 +443,6 @@
     let previousTemplate = '';
 
     templateButtons.forEach(button => {
-      button.setAttribute('aria-pressed', 'false');
       button.addEventListener('click', () => {
         const template = button.dataset.requestTemplate || '';
         const service = button.dataset.requestService || '';
@@ -475,7 +474,6 @@
           }
         }
 
-        templateButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
         taskField.dispatchEvent(new Event('input', { bubbles: true }));
         taskField.focus();
         taskField.setSelectionRange(taskField.value.length, taskField.value.length);
