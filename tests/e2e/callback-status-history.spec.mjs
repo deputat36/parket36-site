@@ -59,7 +59,7 @@ test('неподтверждённое callback-уведомление нико�
   await expect(status).toHaveAttribute('data-status-tone', 'warning');
 
   const history = await page.evaluate(() => window.__parketCallbackStatusHistory || []);
-  expect(history).toContain('Отправляем заявку Ивану и готовим текст для копирования...');
+  expect(history).toContain('Пробуем сохранить заявку и готовим текст-памятку...');
   expect(history.some(text => text.includes('Он свяжется по указанному номеру'))).toBe(false);
   expect(history.some(text => text.includes('уведомление Ивану пока не настроено'))).toBe(true);
 });

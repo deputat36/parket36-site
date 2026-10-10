@@ -550,7 +550,7 @@
       let leadDuplicate = false;
       const defaultButtonText = submitButton?.textContent || '';
 
-      if (status) status.textContent = 'Отправляем заявку Ивану и готовим текст для копирования...';
+      if (status) status.textContent = 'Пробуем сохранить заявку и готовим текст-памятку...';
       if (submitButton) {
         submitButton.disabled = true;
         submitButton.textContent = 'Отправляем...';
