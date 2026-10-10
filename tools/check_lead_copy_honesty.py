@@ -34,6 +34,8 @@ CANONICAL_SOURCE_PATHS = (
     ROOT / "zayavka" / "index.html",
     ROOT / "kontakty" / "index.html",
     ROOT / "js" / "main.js",
+    LEAD_NOTIFICATION_FEEDBACK,
+    REQUEST_STATUS_TONE,
     REQUEST_READINESS,
 )
 
