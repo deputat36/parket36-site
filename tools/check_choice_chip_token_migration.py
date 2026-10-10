@@ -90,11 +90,12 @@ FORBIDDEN_CSS_MARKERS = (
     "rgb(",
 )
 REQUIRED_JS_MARKERS = (
-    "document.querySelectorAll('[data-request-template]').forEach(button => {",
+    "const templateButtons = Array.from(form.querySelectorAll('[data-request-template]'))",
     "button.dataset.requestTemplate",
     "button.dataset.requestService",
     "serviceField.value = option.value",
-    "taskField.value = taskField.value.trim()",
+    "taskField.value = next",
+    "taskField.dispatchEvent(new Event('input', { bubbles: true }))",
     "taskField.focus()",
     "emitLead({ type: 'request-template'",
 )
@@ -246,7 +247,7 @@ def main() -> int:
     for marker in REQUIRED_JS_MARKERS:
         if marker not in js:
             findings.append(f"Choice Chip JS integration is missing marker: {marker}")
-    start = js.find("document.querySelectorAll('[data-request-template]')")
+    start = js.find("const templateButtons = Array.from(form.querySelectorAll('[data-request-template]'))")
     end = js.find("form.addEventListener('submit'", start)
     if start < 0 or end < 0:
         findings.append("Choice Chip JS handler block could not be isolated")
