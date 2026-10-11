@@ -82,3 +82,18 @@ test('шаблоны не должны удалять описание, если
   expect(await task.inputValue()).toContain(note);
   expect((await task.inputValue()).startsWith(await template.getAttribute('data-request-template'))).toBe(true);
 });
+
+test('группа быстрых шаблонов доступна скринридеру и управление сохраняет фокус', async ({ page }) => {
+  await page.goto('/zayavka/');
+
+  const group = page.getByRole('group', { name: 'Шаблоны ситуации' });
+  await expect(group).toBeVisible();
+  const first = group.getByRole('button', { name: 'Циклёвка', exact: true });
+  const second = group.getByRole('button', { name: 'Реставрация', exact: true });
+
+  await first.click();
+  await expect(page.locator('#request-task')).toHaveValue(await first.getAttribute('data-request-template'));
+  await second.click();
+  await expect(page.locator('#request-task')).toHaveValue(await second.getAttribute('data-request-template'));
+  await expect(page.locator('#request-task')).toBeFocused();
+});
