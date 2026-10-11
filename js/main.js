@@ -450,7 +450,6 @@
     let previousTemplate = '';
 
     templateButtons.forEach(button => {
-      button.setAttribute('aria-pressed', 'false');
       button.addEventListener('click', () => {
         const template = button.dataset.requestTemplate || '';
         const service = button.dataset.requestService || '';
@@ -474,9 +473,6 @@
 
         taskField.value = next;
         previousTemplate = template;
-        templateButtons.forEach(item => {
-          item.setAttribute('aria-pressed', String(item === button));
-        });
         if (serviceField && service) {
           const option = Array.from(serviceField.options).find(item => item.value === service || item.textContent === service);
           if (option) {
