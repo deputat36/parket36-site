@@ -653,3 +653,69 @@
     gap: 10px;
   }
 }
+
+
+/* Progressive enhancement: fast search within the existing advice catalogue. */
+.advice-search {
+  padding-top: 0;
+}
+.advice-search__panel {
+  max-width: 980px;
+  margin-inline: auto;
+  padding: clamp(18px, 3vw, 30px);
+  border: 1px solid rgba(111, 70, 40, .16);
+  border-radius: 22px;
+  background: #fffaf5;
+  box-shadow: 0 10px 30px rgba(68, 42, 24, .06);
+}
+.advice-search__panel > label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-weight: 800;
+  font-size: clamp(18px, 2vw, 23px);
+}
+.advice-search__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+}
+.advice-search__controls input[type="search"] {
+  flex: 1 1 270px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 11px 14px;
+  border: 1px solid rgba(111, 70, 40, .35);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+.advice-search__controls input[type="search"]:focus-visible {
+  outline: 3px solid rgba(215, 168, 110, .55);
+  outline-offset: 2px;
+}
+.advice-search__controls button {
+  min-height: 48px;
+}
+.advice-search__results {
+  margin: 12px 0 0;
+  font-weight: 700;
+}
+.advice-search[hidden],
+.advice-search [hidden],
+main section:has(> .container .services-grid)[hidden],
+main .services-grid .service-card[hidden] {
+  display: none !important;
+}
+@media (max-width: 640px) {
+  .advice-search__controls {
+    flex-direction: column;
+  }
+  .advice-search__controls input[type="search"],
+  .advice-search__controls button {
+    width: 100%;
+    flex: initial;
+  }
+}
