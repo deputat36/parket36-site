@@ -58,3 +58,16 @@
     transform: none;
   }
 }
+
+/* Persistent selected state: mouse, touch and screen-reader users see the chosen task. */
+.request-form .pill-row .pill[aria-pressed="true"] {
+  border-color: var(--p36-color-semantic-action-primary);
+  background: var(--p36-color-semantic-action-primary);
+  color: var(--p36-color-semantic-text-inverse);
+  box-shadow: var(--p36-shadow-card);
+}
+.request-form .pill-row .pill[aria-pressed="true"]:hover {
+  border-color: var(--p36-color-semantic-action-primary);
+  background: var(--p36-color-semantic-action-primary);
+  color: var(--p36-color-semantic-text-inverse);
+}
