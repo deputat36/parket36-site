@@ -705,7 +705,7 @@
 }
 .advice-search[hidden],
 .advice-search [hidden],
-main section:has(> .container .services-grid)[hidden],
+main section[hidden],
 main .services-grid .service-card[hidden] {
   display: none !important;
 }
