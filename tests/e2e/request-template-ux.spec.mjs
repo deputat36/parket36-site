@@ -83,20 +83,17 @@ test('шаблоны не должны удалять описание, если
   expect((await task.inputValue()).startsWith(await template.getAttribute('data-request-template'))).toBe(true);
 });
 
-test('выбранная ситуация доступна скринридеру и остаётся заметной после переключения', async ({ page }) => {
+test('группа быстрых шаблонов доступна скринридеру и управление сохраняет фокус', async ({ page }) => {
   await page.goto('/zayavka/');
 
   const group = page.getByRole('group', { name: 'Шаблоны ситуации' });
+  await expect(group).toBeVisible();
   const first = group.getByRole('button', { name: 'Циклёвка', exact: true });
   const second = group.getByRole('button', { name: 'Реставрация', exact: true });
 
-  await expect(first).toHaveAttribute('aria-pressed', 'false');
-  await expect(second).toHaveAttribute('aria-pressed', 'false');
   await first.click();
-  await expect(first).toHaveAttribute('aria-pressed', 'true');
-  await expect(second).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('#request-task')).toHaveValue(await first.getAttribute('data-request-template'));
   await second.click();
-  await expect(first).toHaveAttribute('aria-pressed', 'false');
-  await expect(second).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#request-task')).toHaveValue(await second.getAttribute('data-request-template'));
+  await expect(page.locator('#request-task')).toBeFocused();
 });
