@@ -86,3 +86,63 @@ test('серверная ошибка телефона возвращает фо
   await expect(contact).toBeFocused();
   expect(attempts).toBe(1);
 });
+
+
+test('подробная форма принимает только номер телефона без имени', async ({ page }) => {
+  let savedPayload;
+  await page.route(leadEndpoint, async route => {
+    savedPayload = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        request_id: savedPayload.request_id,
+        lead_id: 1001,
+        notification: 'sent'
+      })
+    });
+  });
+  await mockClipboard(page);
+  await page.goto('/zayavka/');
+
+  const contact = page.getByRole('textbox', { name: 'Телефон для связи (имя по желанию)' });
+  await expect(contact).toBeVisible();
+  await page.locator('#request-task').fill('Есть старый паркет и щели, нужна предварительная оценка.');
+  await contact.fill('+7 900 123-45-67');
+  await expect(page.locator('[data-request-readiness]')).toContainText('телефон для связи (имя по желанию)');
+  await page.getByRole('button', { name: 'Отправить заявку и скопировать текст' }).click();
+
+  await expect(page.locator('#request-status')).toContainText('Заявка отправлена Ивану');
+  expect(savedPayload.contact).toBe('+7 900 123-45-67');
+});
+
+test('обратный звонок принимает только номер без имени и необязательных сведений', async ({ page }) => {
+  let savedPayload;
+  await page.route(leadEndpoint, async route => {
+    savedPayload = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        request_id: savedPayload.request_id,
+        lead_id: 1002,
+        notification: 'sent'
+      })
+    });
+  });
+  await mockClipboard(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/kontakty/#callback');
+
+  const contact = page.getByRole('textbox', { name: 'Телефон для обратного звонка (имя по желанию)' });
+  await expect(contact).toBeVisible();
+  await contact.fill('+7 900 123-45-67');
+  await expect(page.locator('[data-request-readiness]')).toContainText('телефон для связи (имя по желанию)');
+  await page.getByRole('button', { name: 'Заказать обратный звонок' }).click();
+
+  await expect(page.locator('#request-status')).toContainText('Заявка на обратный звонок отправлена Ивану');
+  expect(savedPayload.contact).toBe('+7 900 123-45-67');
+  expect(savedPayload.location).toBe('не указан');
+});
