@@ -42,7 +42,7 @@ test('мобильный поиск не скрывает навигацию и 
   const firstLink = page.locator('main .services-grid .service-card:not([hidden]) a').first();
   await expect(firstLink).toBeVisible();
   await expect(firstLink).toHaveAttribute('href', /\/sovety\//);
-  await expect(page.locator('a[href="tel:+79009267929"]').first()).toBeVisible();
+  await expect(page.locator('.mobile-cta a[href="tel:+79009267929"]')).toBeVisible();
 });
 
 test('если скрипт поиска не загрузился, список статей остаётся доступным', async ({ page }) => {
