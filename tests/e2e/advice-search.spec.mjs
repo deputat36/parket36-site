@@ -46,7 +46,7 @@ test('мобильный поиск не скрывает навигацию и 
 });
 
 test('если скрипт поиска не загрузился, список статей остаётся доступным', async ({ page }) => {
-  await page.route('**/js/advice-search.js', route => route.abort());
+  await page.route('**/js/advice-search*.js', route => route.abort());
   await page.goto('/sovety/');
   await expect(page.locator('[data-advice-search]')).toBeHidden();
   const cards = page.locator('main .services-grid .service-card');
