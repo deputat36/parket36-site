@@ -1,5 +1,16 @@
 import { expect, test } from '@playwright/test';
 
+test('стоимость объясняет расчёт клиенту без редакторских формулировок', async ({ page }) => {
+  await page.goto('/ceny/');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Сколько стоит циклёвка и ремонт паркета');
+  await expect(page.getByText('Без выдуманного прайса')).toHaveCount(0);
+  await expect(page.getByText('Как только появится согласованный прайс')).toHaveCount(0);
+  await expect(page.getByText('Почему на странице нет цены за м²?')).toBeVisible();
+  await expect(page.locator('.subhero a[href="tel:+79009267929"]')).toBeVisible();
+  await expect(page.locator('.subhero .hero__actions a[href="/zayavka/"]')).toBeVisible();
+});
+
+
 const forbiddenCopy = [
   'Фото вместо иллюстрации',
   'Место под реальное фото',
