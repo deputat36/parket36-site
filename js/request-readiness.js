@@ -28,7 +28,7 @@
         },
         {
           key: 'contact',
-          label: 'имя и корректный телефон',
+          label: 'телефон для связи (имя по желанию)',
           complete: () => {
             const digits = phoneDigits();
             return value('request-contact').length >= 3 && digits.length >= PHONE_DIGITS_MIN && digits.length <= PHONE_DIGITS_MAX;
@@ -61,7 +61,7 @@
         },
         {
           key: 'contact',
-          label: 'имя и корректный телефон',
+          label: 'телефон для связи (имя по желанию)',
           complete: () => {
             const digits = phoneDigits();
             return value('request-contact').length >= 3 && digits.length >= PHONE_DIGITS_MIN && digits.length <= PHONE_DIGITS_MAX;
