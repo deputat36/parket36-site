@@ -9,3 +9,36 @@ html{scroll-padding-top:104px}body{color:var(--site-ink);background:var(--site-p
 @media(max-width:1000px){.container{width:calc(100% - 40px)}.hero__grid,.subhero__grid{grid-template-columns:1fr;gap:30px}.hero,.subhero{padding:36px 0 44px}.hero h1{max-width:780px}.hero__visual.editorial-figure img{height:auto;max-height:470px;aspect-ratio:1.8}.editorial-figure--hero{max-width:100%}.editorial-figure--hero img{max-height:400px;aspect-ratio:1.8}.subhero .editorial-figure--hero{max-width:760px}.quick-choice__grid{grid-template-columns:repeat(2,minmax(0,1fr))}.request-grid,.intro-grid{grid-template-columns:1fr;gap:30px}.section{padding:54px 0}.intro-grid .editorial-figure{max-width:720px}.mobile-cta{bottom:calc(10px + env(safe-area-inset-bottom));left:50%;right:auto;transform:translateX(-50%);grid-template-columns:1fr 1fr}.footer__grid{gap:25px}.topbar__inner{min-height:74px}.hero__content>.trust{margin-top:20px}}
 @media(max-width:640px){.container{width:calc(100% - 32px)}h1{font-size:36px}h2{font-size:29px}.hero,.subhero{padding:28px 0 36px}.hero__grid{gap:25px}.hero__lead,.subhero p{font-size:16px}.hero__actions .btn{width:100%;min-width:0}.hero__content>.trust{gap:6px 14px}.hero__content>.trust span{font-size:11px}.hero__visual.editorial-figure img{aspect-ratio:1.35;max-height:350px}.editorial-figure--hero img{aspect-ratio:1.5;max-height:320px}.quick-choice__grid{gap:12px}.quick-choice__grid>a>img{aspect-ratio:1.2}.quick-choice__grid>a>strong{margin:12px 12px 7px;font-size:16px}.quick-choice__grid>a>span{margin-inline:12px;font-size:12px}.quick-choice__head h2{font-size:28px}.section{padding:44px 0}.section--visual{padding-top:0}.services-grid,.services-grid--featured,.proof-grid,.price-grid,.steps,.scenario-grid,.footer__grid{grid-template-columns:1fr}.service-card a{display:block}.service-card a>img{aspect-ratio:1.9}.service-card__content{padding:20px}.request-form{padding:20px}.section__head{margin-bottom:24px}.final-cta{padding:44px 0}.subhero h1{font-size:32px}.editorial-figure figcaption{font-size:10px}.footer .brand{padding:0}.phone--header{border:0}.section--request .request-grid>div{min-width:0}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* Reset legacy card decoration where the new photographic layout provides the structure. */
+.section--quick .quick-choice{padding:0;background:none;border:0;border-radius:0;box-shadow:none}
+.section--quick .quick-choice__head{padding:0;background:none;border:0;border-radius:0;box-shadow:none}
+.quick-choice__grid>a{position:relative}
+.quick-choice__grid>a::before,.quick-choice__grid>a::after{display:none}
+.service-card a>img{margin:0;max-width:100%}
+.hero__content a.text-link{display:inline;padding:0;border:0;border-radius:0;box-shadow:none;background:none;text-align:left;line-height:1.5;font-size:13px}
+.hero__content>.trust{display:flex;justify-content:flex-start}
+.hero__content>.trust span{width:auto;display:inline;min-width:0}
+.request-grid .photo-board{min-height:0}
+.request-grid .photo-slot{display:block}
+.request-grid .photo-slot--large{grid-row:auto}
+@media(max-width:640px){
+ .hero h1{font-size:32px}.hero__lead{line-height:1.55}
+ .hero__content .hero__actions{margin-top:20px}
+ .services-grid--featured{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .services-grid--featured .service-card__content{padding:14px}
+ .services-grid--featured .service-card__content h3{font-size:17px}
+ .services-grid--featured .service-card__content p{font-size:13px;line-height:1.5}
+ .services-grid--featured .service-card a>img{aspect-ratio:1.3}
+ .services-grid--featured .text-link{font-size:12px}
+ .proof-grid,.price-grid,.steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .proof-grid .proof-card,.price-grid article{padding:17px}
+ .proof-grid .proof-card strong,.price-grid h3{font-size:17px}
+ .proof-grid .proof-card p,.price-grid p{font-size:13px;line-height:1.55}
+ .steps li{padding:49px 16px 18px}.steps li::before{left:16px}
+ .steps strong{font-size:16px}.steps span{font-size:13px;line-height:1.55}
+}
+.section--summary{padding:0 0 32px;background:var(--site-paper)}
+.section--summary aside{padding:20px 24px;background:#fff;border:1px solid var(--site-line);border-radius:8px;box-shadow:none}
+.section--summary aside h3{font-size:18px}.section--summary aside p,.section--summary aside li{font-size:14px;line-height:1.6}
+.section--summary aside .number-list{display:flex;flex-wrap:wrap;gap:8px 32px;margin-bottom:0}
+.section--summary aside .number-list li{flex:1 1 230px}.section--summary aside .text-link{font-size:14px}

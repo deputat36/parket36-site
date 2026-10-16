@@ -189,18 +189,18 @@
       "hero": "oak-parquet"
     },
     "sovety/ciklevka-ili-zamena-parketa/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/ciklevka-parketa-do-ili-posle-remonta/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/index.html": {
       "hero": "worn-parquet"
     },
     "sovety/kak-podgotovit-komnatu-k-ciklevke/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/kak-ponyat-chto-parket-mozhno-lakirovat/index.html": {
@@ -208,7 +208,7 @@
       "diagram": "finish-guide"
     },
     "sovety/kak-prinyat-rabotu-posle-ciklevki-parketa/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/kak-proverit-shlifovku-parketa-pered-lakom/index.html": {
@@ -285,11 +285,11 @@
       "diagram": "finish-guide"
     },
     "sovety/mozhno-li-ciklevat-krashenyy-derevyannyy-pol/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/mozhno-li-ciklevat-parketnuyu-dosku/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/mozhno-li-pokryt-parket-lakom-bez-ciklevki/index.html": {
@@ -301,7 +301,7 @@
       "diagram": "defect-guide"
     },
     "sovety/mozhno-li-zhit-v-kvartire-vo-vremya-ciklevki-parketa/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/nuzhna-li-mezhsloynaya-shlifovka-laka-na-parkete/index.html": {
@@ -313,11 +313,11 @@
       "diagram": "finish-guide"
     },
     "sovety/nuzhno-li-snimat-plintusy-pered-ciklevkoy-parketa/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/ot-chego-zavisit-stoimost-ciklevki-parketa/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/parket-doska-ili-laminat-kak-ponyat/index.html": {
@@ -377,7 +377,7 @@
       "diagram": "finish-guide"
     },
     "sovety/pyl-i-zapah-pri-ciklevke-parketa/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/pyl-pod-lakom-na-parkete-posle-lakirovki/index.html": {
@@ -392,7 +392,7 @@
       "diagram": "finish-guide"
     },
     "sovety/shcheli-posle-ciklevki-parketa/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/shcheli-v-parkete/index.html": {
@@ -404,11 +404,11 @@
       "diagram": "finish-guide"
     },
     "sovety/skolko-dlitsya-ciklevka-parketa/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/skolko-raz-mozhno-ciklevat-parket/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/skolko-sloev-laka-nanosit-na-parket/index.html": {
@@ -423,7 +423,7 @@
       "hero": "oak-parquet"
     },
     "sovety/skripit-parket-posle-ciklevki/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "sovety/sledy-ot-zhivotnyh-na-parkete/index.html": {
@@ -452,7 +452,7 @@
       "hero": "oak-parquet"
     },
     "uslugi/ciklevka-parketa/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "uslugi/index.html": {
@@ -470,7 +470,7 @@
       "diagram": "defect-guide"
     },
     "uslugi/shlifovka-doshchatogo-pola/index.html": {
-      "hero": "parquet-laying",
+      "hero": "floor-sanding",
       "diagram": "floor-layers"
     },
     "uslugi/terrasy-i-derevyannye-poly/index.html": {

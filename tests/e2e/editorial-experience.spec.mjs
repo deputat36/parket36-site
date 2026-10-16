@@ -28,6 +28,12 @@ for (const width of [1440, 390, 320]) {
         await expect(page.locator('header a.phone--header')).toBeVisible();
       }
       // These captures belong to this exact CI commit and are retained in the standard report artifact.
+      await page.locator('main img[loading="lazy"]').evaluateAll(async images => {
+        await Promise.all(images.map(async image => {
+          image.loading = 'eager';
+          await image.decode().catch(() => {});
+        }));
+      });
       const screenshot = testInfo.outputPath(`page-${width}.png`);
       await page.screenshot({ path: screenshot, fullPage: true, animations: 'disabled' });
       await testInfo.attach('Страница целиком', { path: screenshot, contentType: 'image/png' });

@@ -52,9 +52,13 @@ def apply_editorial_media(root: Path, destination: Path, errors: list[str]) -> N
                 errors.append(f"Editorial media: no subhero on {relative}")
                 continue
             inner = match[2]
+            summary = ""
             if "subhero__grid" in inner:
-                # Existing subheroes have a textual column and a separate lead aside.
-                # Keep the copy/CTAs and replace that repeated instruction with a useful visual.
+                # Preserve useful copy and actions while freeing the second column for media.
+                original_aside = re.search(r'<aside\b[^>]*>.*?</aside>', inner, re.S)
+                if original_aside:
+                    aside = original_aside[0].replace("person-card--photo-plan", "editorial-summary")
+                    summary = '<section class="section section--summary"><div class="container">' + aside + '</div></section>'
                 inner, replaced = re.subn(r'<aside\b[^>]*>.*?</aside>', lambda _: media, inner, count=1, flags=re.S)
                 if not replaced:
                     errors.append(f"Editorial media: unsupported grid on {relative}")
@@ -67,7 +71,7 @@ def apply_editorial_media(root: Path, destination: Path, errors: list[str]) -> N
                     continue
                 copy = inner[opening.end():closing]
                 inner = f'<div class="container subhero__grid"><div class="subhero__copy">{copy}</div>{media}</div>'
-            text = text[:match.start()] + match[1] + inner + match[3] + text[match.end():]
+            text = text[:match.start()] + match[1] + inner + match[3] + summary + text[match.end():]
 
         # Supplement a commercial page or article with a topic-specific explanatory diagram.
         if entry.get("diagram"):
