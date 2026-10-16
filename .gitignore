@@ -8,3 +8,8 @@ lighthouse-report/
 .env
 .env.*
 !.env.example
+
+__pycache__/
+*.pyc
+
+.parket-build.lock

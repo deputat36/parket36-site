@@ -6,7 +6,7 @@
 ## Сводка
 
 - индексируемых страниц: 94;
-- уникальных внутренних связей во всём HTML: 1415;
+- уникальных внутренних связей во всём HTML: 1414;
 - уникальных контекстных связей внутри `<main>`: 830;
 - страниц без контекстных входящих ссылок: 0;
 - страниц с 0–1 контекстной входящей ссылкой: 15;
@@ -32,8 +32,8 @@
 | https://parket36.ru/sovety/sledy-ot-zhivotnyh-na-parkete/ | sovety | 1 | 1 | 3 | нет |
 | https://parket36.ru/uslugi/terrasy-i-derevyannye-poly/ | uslugi | 1 | 1 | 2 | нет |
 | https://parket36.ru/kak-rabotaem/ | kak-rabotaem | 1 | 3 | 1 | нет |
-| https://parket36.ru/voprosy-i-otvety/ | voprosy-i-otvety | 1 | 3 | 2 | нет |
-| https://parket36.ru/o-mastere/ | o-mastere | 1 | 93 | 2 | нет |
+| https://parket36.ru/voprosy-i-otvety/ | voprosy-i-otvety | 1 | 3 | 5 | нет |
+| https://parket36.ru/o-mastere/ | o-mastere | 1 | 93 | 5 | нет |
 | https://parket36.ru/portfolio/ | portfolio | 1 | 93 | 4 | нет |
 
 ## Главные получатели контекстных ссылок
@@ -42,11 +42,11 @@
 |---|---:|---:|
 | https://parket36.ru/zayavka/ | 92 | 92 |
 | https://parket36.ru/sovety/ | 70 | 93 |
-| https://parket36.ru/sovety/kak-sfotografirovat-pol-dlya-ocenki/ | 30 | 34 |
+| https://parket36.ru/sovety/kak-sfotografirovat-pol-dlya-ocenki/ | 29 | 33 |
 | https://parket36.ru/uslugi/restavraciya-parketa/ | 27 | 33 |
 | https://parket36.ru/uslugi/ciklevka-parketa/ | 25 | 76 |
 | https://parket36.ru/sovety/skolko-sohnet-lak-na-parkete/ | 25 | 25 |
-| https://parket36.ru/sovety/parket-posle-vody/ | 23 | 23 |
+| https://parket36.ru/sovety/parket-posle-vody/ | 24 | 24 |
 | https://parket36.ru/sovety/pochemu-skripit-parket/ | 20 | 20 |
 | https://parket36.ru/sovety/uhod-za-parketom-posle-ciklevki/ | 20 | 20 |
 | https://parket36.ru/sovety/shcheli-v-parkete/ | 19 | 19 |
@@ -62,7 +62,7 @@
 |---|---:|---:|
 | https://parket36.ru/sovety/ | 75 | 81 |
 | https://parket36.ru/uslugi/parket-i-poly/ | 14 | 18 |
-| https://parket36.ru/ | 13 | 17 |
+| https://parket36.ru/ | 13 | 16 |
 | https://parket36.ru/uslugi/ | 11 | 17 |
 | https://parket36.ru/resheniya/ | 11 | 16 |
 | https://parket36.ru/sovety/kak-ponyat-chto-parket-mozhno-lakirovat/ | 10 | 17 |
@@ -81,7 +81,7 @@
 | Из раздела \ В раздел | ceny | home | kak-rabotaem | kontakty | o-mastere | portfolio | resheniya | sovety | uslugi | voprosy-i-otvety | zayavka |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | ceny | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 1 |
-| home | 0 | 0 | 1 | 1 | 0 | 0 | 1 | 3 | 7 | 0 | 0 |
+| home | 1 | 0 | 1 | 1 | 0 | 0 | 0 | 3 | 7 | 0 | 0 |
 | kak-rabotaem | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 4 | 1 | 0 | 1 |
 | kontakty | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 2 | 0 | 1 |
 | o-mastere | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 5 | 2 | 0 | 1 |

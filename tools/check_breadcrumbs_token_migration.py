@@ -225,8 +225,9 @@ def main() -> int:
         "proof-card-polish.css",
         "process-step-polish.css",
         "logo-brand.css",
+        "editorial.css",
     )
-    if modules and tuple(modules[-5:]) != expected_tail:
+    if modules and tuple(modules[-6:]) != expected_tail:
         findings.append("Breadcrumbs bundle order differs from approved tail")
 
     catalog = CATALOG.read_text(encoding="utf-8")

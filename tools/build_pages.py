@@ -4,14 +4,17 @@
 from __future__ import annotations
 
 from html.parser import HTMLParser
+import fcntl
 from pathlib import Path
 from urllib.parse import urlsplit
 import shutil
 import sys
+from tempfile import TemporaryDirectory
 import xml.etree.ElementTree as ET
 
 from breadcrumb_schema import inject_breadcrumb_schemas
 from css_bundle import prepare_css_bundle
+from editorial_media import apply_editorial_media
 from image_attributes import normalize_image_attributes
 from js_assets import prepare_js_assets
 from service_callback_links import inject_service_callback_links
@@ -336,7 +339,7 @@ def validate_private_files(errors: list[str]) -> None:
             errors.append(f"Internal working page leaked into public build: {relative.as_posix()}")
 
 
-def main() -> int:
+def build_public_directory() -> int:
     if DEST.exists():
         shutil.rmtree(DEST)
     DEST.mkdir()
@@ -357,6 +360,7 @@ def main() -> int:
     normalize_public_copy(errors)
     inject_service_callback_links(DEST, errors)
     prepare_css_bundle(ROOT, DEST, errors)
+    apply_editorial_media(ROOT, DEST, errors)
     normalize_image_attributes(DEST, errors)
     inject_lead_reliability(errors)
     prepare_js_assets(DEST, errors)
@@ -385,6 +389,36 @@ def main() -> int:
         f"Prepared {total} public files, including {html_total} HTML pages "
         f"and {css_total} CSS bundle, in {DEST}"
     )
+    return 0
+
+
+def main() -> int:
+    """Validate an isolated build before replacing the last successful output."""
+    global DEST
+    published = ROOT / "_site"
+    # Build outside the source tree: parallel read-only inventory checks must not
+    # discover copies of all public pages inside an unfinished staging directory.
+    with TemporaryDirectory(prefix="parket36-build-", dir=ROOT.parent) as temporary:
+        staged = Path(temporary) / "public"
+        DEST = staged
+        try:
+            result = build_public_directory()
+            if result:
+                return result
+            with (ROOT / ".parket-build.lock").open("a") as lock:
+                fcntl.flock(lock, fcntl.LOCK_EX)
+                previous = Path(temporary) / "previous"
+                if published.exists():
+                    published.rename(previous)
+                try:
+                    staged.rename(published)
+                except OSError:
+                    if previous.exists() and not published.exists():
+                        previous.rename(published)
+                    raise
+        finally:
+            DEST = published
+    print(f"Validated public build published to {published}")
     return 0
 
 
