@@ -371,8 +371,9 @@ def main() -> int:
             "proof-card-polish.css",
             "process-step-polish.css",
             "logo-brand.css",
+            "editorial.css",
         )
-        if tuple(modules[-4:]) != expected_tail:
+        if tuple(modules[-5:]) != expected_tail:
             findings.append("Process Step bundle order differs from the approved tail")
         if modules.count("process-step-polish.css") != 1:
             findings.append("process-step-polish.css must appear exactly once in CSS_MODULES")

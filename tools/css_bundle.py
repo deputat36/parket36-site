@@ -31,6 +31,7 @@ CSS_MODULES = (
     "proof-card-polish.css",
     "process-step-polish.css",
     "logo-brand.css",
+    "editorial.css",
 )
 CSS_LINK_RE = re.compile(
     r"[ \t]*<link\b(?=[^>]*\brel=[\"']stylesheet[\"'])"

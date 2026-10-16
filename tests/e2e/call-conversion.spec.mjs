@@ -24,10 +24,11 @@ test('desktop показывает понятный телефон в шапке
     phoneHref
   );
 
-  const heroIcon = await page.locator('.hero__visual--plan .photo-slot--large').evaluate(
-    element => getComputedStyle(element, '::before').content
-  );
-  expect(heroIcon).toContain('☎');
+  const heroImage = page.locator('.hero__visual img');
+  await expect(heroImage).toBeVisible();
+  await expect(heroImage).toHaveAttribute('fetchpriority', 'high');
+  await expect(heroImage).not.toHaveAttribute('loading', 'lazy');
+  await expect(page.locator('.hero__visual figcaption')).toContainText('тематическая иллюстрация');
 });
 
 test('планшетный диапазон всегда сохраняет фиксированный звонок', async ({ page }) => {

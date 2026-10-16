@@ -143,7 +143,7 @@ def main() -> int:
             "/uslugi/ciklevka-parketa/",
             "/sovety/pochemu-skripit-parket/",
             "/sovety/shcheli-v-parkete/",
-            "#request",
+            "/sovety/parket-posle-vody/",
         ]
         if hrefs != expected_hrefs:
             findings.append(f"Problem Card hrefs changed: expected {expected_hrefs}, found {hrefs}")

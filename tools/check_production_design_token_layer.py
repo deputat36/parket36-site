@@ -104,8 +104,9 @@ def main() -> int:
             "proof-card-polish.css",
             "process-step-polish.css",
             "logo-brand.css",
+            "editorial.css",
         )
-        if tuple(css_modules[-4:]) != expected_tail:
+        if tuple(css_modules[-5:]) != expected_tail:
             findings.append(
                 "component bundle order must remain breadcrumbs, proof-card, process-step, logo-brand"
             )

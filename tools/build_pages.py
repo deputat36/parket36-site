@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 
 from breadcrumb_schema import inject_breadcrumb_schemas
 from css_bundle import prepare_css_bundle
+from editorial_media import apply_editorial_media
 from image_attributes import normalize_image_attributes
 from js_assets import prepare_js_assets
 from service_callback_links import inject_service_callback_links
@@ -357,6 +358,7 @@ def main() -> int:
     normalize_public_copy(errors)
     inject_service_callback_links(DEST, errors)
     prepare_css_bundle(ROOT, DEST, errors)
+    apply_editorial_media(ROOT, DEST, errors)
     normalize_image_attributes(DEST, errors)
     inject_lead_reliability(errors)
     prepare_js_assets(DEST, errors)

@@ -1,0 +1,496 @@
+{
+  "version": 1,
+  "policy": "Иллюстрации и схемы не являются портфолио. Реальные кейсы добавляются отдельно с подтверждённым происхождением.",
+  "assets": {
+    "oak-parquet": {
+      "src": "/img/editorial/oak-parquet-960.webp",
+      "srcset": "/img/editorial/oak-parquet-480.webp 480w, /img/editorial/oak-parquet-960.webp 960w, /img/editorial/oak-parquet-1440.webp 1440w",
+      "width": 960,
+      "height": 640,
+      "alt": "Паркет с рисунком ёлочка в светлом интерьере",
+      "caption": "Паркет в интерьере · тематическая иллюстрация",
+      "provenance": {
+        "kind": "recovered-original-illustration",
+        "source": "design/source-images/recovered-01.png",
+        "source_commit": "4c3a4466b04578951266842246dcafcbd26d3e26",
+        "restriction": "Тематическая иллюстрация; не кейс и не документальное подтверждение работы Ивана"
+      }
+    },
+    "worn-parquet": {
+      "src": "/img/editorial/worn-parquet-960.webp",
+      "srcset": "/img/editorial/worn-parquet-480.webp 480w, /img/editorial/worn-parquet-960.webp 960w, /img/editorial/worn-parquet-1440.webp 1440w",
+      "width": 960,
+      "height": 640,
+      "alt": "Потёртости старого покрытия на паркетных планках",
+      "caption": "Изношенное покрытие · тематическая иллюстрация",
+      "provenance": {
+        "kind": "recovered-original-illustration",
+        "source": "design/source-images/recovered-02.png",
+        "source_commit": "4c3a4466b04578951266842246dcafcbd26d3e26",
+        "restriction": "Тематическая иллюстрация; не кейс и не документальное подтверждение работы Ивана"
+      }
+    },
+    "finish-application": {
+      "src": "/img/editorial/finish-application-960.webp",
+      "srcset": "/img/editorial/finish-application-480.webp 480w, /img/editorial/finish-application-960.webp 960w, /img/editorial/finish-application-1440.webp 1440w",
+      "width": 960,
+      "height": 640,
+      "alt": "Нанесение финишного покрытия на деревянный пол валиком",
+      "caption": "Нанесение покрытия · иллюстрация процесса",
+      "provenance": {
+        "kind": "recovered-original-illustration",
+        "source": "design/source-images/recovered-03.png",
+        "source_commit": "4c3a4466b04578951266842246dcafcbd26d3e26",
+        "restriction": "Тематическая иллюстрация; не кейс и не документальное подтверждение работы Ивана"
+      }
+    },
+    "parquet-laying": {
+      "src": "/img/editorial/parquet-laying-960.webp",
+      "srcset": "/img/editorial/parquet-laying-480.webp 480w, /img/editorial/parquet-laying-960.webp 960w, /img/editorial/parquet-laying-1440.webp 1440w",
+      "width": 960,
+      "height": 640,
+      "alt": "Укладка отдельных паркетных планок на подготовленное основание",
+      "caption": "Укладка паркета · иллюстрация процесса",
+      "provenance": {
+        "kind": "recovered-original-illustration",
+        "source": "design/source-images/recovered-04.png",
+        "source_commit": "4c3a4466b04578951266842246dcafcbd26d3e26",
+        "restriction": "Тематическая иллюстрация; не кейс и не документальное подтверждение работы Ивана"
+      }
+    },
+    "local-repair": {
+      "src": "/img/editorial/local-repair-960.webp",
+      "srcset": "/img/editorial/local-repair-480.webp 480w, /img/editorial/local-repair-960.webp 960w, /img/editorial/local-repair-1440.webp 1440w",
+      "width": 960,
+      "height": 640,
+      "alt": "Замена отдельной планки паркета с подгонкой по рисунку",
+      "caption": "Локальный ремонт · иллюстрация процесса",
+      "provenance": {
+        "kind": "recovered-original-illustration",
+        "source": "design/source-images/recovered-05.png",
+        "source_commit": "4c3a4466b04578951266842246dcafcbd26d3e26",
+        "restriction": "Тематическая иллюстрация; не кейс и не документальное подтверждение работы Ивана"
+      }
+    },
+    "floor-sanding": {
+      "src": "/img/editorial/floor-sanding-960.webp",
+      "srcset": "/img/editorial/floor-sanding-480.webp 480w, /img/editorial/floor-sanding-960.webp 960w, /img/editorial/floor-sanding-1440.webp 1440w",
+      "width": 960,
+      "height": 640,
+      "alt": "Шлифовальная машина на деревянном полу",
+      "caption": "Шлифовка деревянного пола · иллюстрация процесса",
+      "provenance": {
+        "kind": "recovered-original-illustration",
+        "source": "design/source-images/recovered-06.png",
+        "source_commit": "4c3a4466b04578951266842246dcafcbd26d3e26",
+        "restriction": "Тематическая иллюстрация; не кейс и не документальное подтверждение работы Ивана"
+      }
+    },
+    "defect-guide": {
+      "src": "/img/editorial/defect-guide.svg",
+      "width": 840,
+      "height": 540,
+      "alt": "Условные примеры потёртого покрытия, щелей и следов воды на паркете",
+      "caption": "Схема дефектов. Причину и способ ремонта уточняют при диагностике.",
+      "provenance": {
+        "kind": "original-vector-diagram",
+        "created": "2026-10-16",
+        "source": "img/editorial/defect-guide.svg",
+        "restriction": "Объясняющая схема, не фактический объект"
+      }
+    },
+    "finish-guide": {
+      "src": "/img/editorial/finish-guide.svg",
+      "width": 840,
+      "height": 540,
+      "alt": "Схема защитной плёнки лака, обработки верхнего слоя маслом и воскового покрытия",
+      "caption": "Условное сравнение финишей. Конкретную систему подбирают по покрытию, нагрузке и инструкции производителя.",
+      "provenance": {
+        "kind": "original-vector-diagram",
+        "created": "2026-10-16",
+        "source": "img/editorial/finish-guide.svg",
+        "restriction": "Объясняющая схема, не фактический объект"
+      }
+    },
+    "floor-layers": {
+      "src": "/img/editorial/floor-layers.svg",
+      "width": 840,
+      "height": 540,
+      "alt": "Различия конструкции штучного паркета, многослойной доски и ламината",
+      "caption": "Условный разрез, без масштаба. Ламинат не циклют; возможность шлифовки деревянной доски зависит от её конструкции и остаточного рабочего слоя.",
+      "provenance": {
+        "kind": "original-vector-diagram",
+        "created": "2026-10-16",
+        "source": "img/editorial/floor-layers.svg",
+        "restriction": "Объясняющая схема, не фактический объект"
+      }
+    },
+    "assessment-guide": {
+      "src": "/img/editorial/assessment-guide.svg",
+      "width": 840,
+      "height": 540,
+      "alt": "Три необходимых материала для оценки: общий вид комнаты, дефект крупно и видео при скрипе",
+      "caption": "Памятка для подготовки фотографий. В форму сайта файлы не прикрепляются.",
+      "provenance": {
+        "kind": "original-vector-diagram",
+        "created": "2026-10-16",
+        "source": "img/editorial/assessment-guide.svg",
+        "restriction": "Объясняющая схема, не фактический объект"
+      }
+    }
+  },
+  "pages": {
+    "ceny/index.html": {
+      "hero": "floor-sanding"
+    },
+    "index.html": {
+      "hero": "oak-parquet"
+    },
+    "kak-rabotaem/index.html": {
+      "hero": "oak-parquet"
+    },
+    "kontakty/index.html": {
+      "hero": "oak-parquet",
+      "diagram": "assessment-guide"
+    },
+    "o-mastere/index.html": {
+      "hero": "local-repair"
+    },
+    "portfolio/index.html": {
+      "hero": "worn-parquet"
+    },
+    "resheniya/dlya-rieltorov-i-sobstvennikov/index.html": {
+      "hero": "oak-parquet"
+    },
+    "resheniya/index.html": {
+      "hero": "oak-parquet"
+    },
+    "resheniya/obnovit-pol-posle-arendatorov/index.html": {
+      "hero": "worn-parquet",
+      "diagram": "defect-guide"
+    },
+    "resheniya/podgotovit-parket-k-prodazhe-kvartiry/index.html": {
+      "hero": "worn-parquet",
+      "diagram": "defect-guide"
+    },
+    "resheniya/podgotovka-kvartiry-k-prodazhe/index.html": {
+      "hero": "worn-parquet",
+      "diagram": "defect-guide"
+    },
+    "resheniya/remont-posle-arendatorov/index.html": {
+      "hero": "local-repair",
+      "diagram": "defect-guide"
+    },
+    "sovety/belye-pyatna-na-parkete/index.html": {
+      "hero": "local-repair",
+      "diagram": "defect-guide"
+    },
+    "sovety/carapiny-na-parkete-chto-delat/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/ciklevka-ili-zamena-parketa/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/ciklevka-parketa-do-ili-posle-remonta/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/index.html": {
+      "hero": "worn-parquet"
+    },
+    "sovety/kak-podgotovit-komnatu-k-ciklevke/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/kak-ponyat-chto-parket-mozhno-lakirovat/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/kak-prinyat-rabotu-posle-ciklevki-parketa/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/kak-proverit-shlifovku-parketa-pered-lakom/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/kak-provetrivat-komnatu-posle-lakirovki-parketa/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/kak-sfotografirovat-pol-dlya-ocenki/index.html": {
+      "hero": "oak-parquet",
+      "diagram": "assessment-guide"
+    },
+    "sovety/kak-ubrat-pyl-posle-ciklevki-pered-lakom/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/kak-uhazhivat-za-parketom-letom/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/kak-uhazhivat-za-parketom-osenyu/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/kak-uhazhivat-za-parketom-vesnoy/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/kak-uhazhivat-za-parketom-zimoy/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/kak-vybrat-mastera-po-parketu/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/kak-zashchitit-parket-ot-mebeli/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/kakoy-lak-vybrat-dlya-parketa/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/kogda-mozhno-hodit-po-parketu-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/kogda-mozhno-myt-parket-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/kogda-mozhno-stavit-mebel-posle-lakirovki-parketa/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/kogda-mozhno-stelit-kover-posle-lakirovki-parketa/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/kogda-nuzhen-osmotr-parketa/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/lak-ili-maslo-dlya-parketa/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/lak-na-parkete-otslaivaetsya/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/lokalnyy-remont-parketnyh-planok/index.html": {
+      "hero": "local-repair",
+      "diagram": "defect-guide"
+    },
+    "sovety/matovyy-ili-glyancevyy-lak-dlya-parketa/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/mozhno-li-ciklevat-krashenyy-derevyannyy-pol/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/mozhno-li-ciklevat-parketnuyu-dosku/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/mozhno-li-pokryt-parket-lakom-bez-ciklevki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/mozhno-li-vosstanovit-staryy-parket/index.html": {
+      "hero": "worn-parquet",
+      "diagram": "defect-guide"
+    },
+    "sovety/mozhno-li-zhit-v-kvartire-vo-vremya-ciklevki-parketa/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/nuzhna-li-mezhsloynaya-shlifovka-laka-na-parkete/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/nuzhno-li-gruntovat-parket-pered-lakom/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/nuzhno-li-snimat-plintusy-pered-ciklevkoy-parketa/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/ot-chego-zavisit-stoimost-ciklevki-parketa/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/parket-doska-ili-laminat-kak-ponyat/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/parket-otoshel-ot-osnovaniya/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/parket-posle-vody/index.html": {
+      "hero": "local-repair",
+      "diagram": "defect-guide"
+    },
+    "sovety/parket-potemnel-posle-laka/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/pochemu-lak-na-parkete-beleet-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/pochemu-lak-na-parkete-lipnet-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/pochemu-lak-na-parkete-puzyritsya-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/pochemu-lak-na-parkete-pyatnami-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/pochemu-lak-na-parkete-shelushitsya-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/pochemu-lak-na-parkete-shershavyy-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/pochemu-lak-na-parkete-treskaetsya-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/pochemu-parket-stal-skolzkim-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/pochemu-skripit-parket/index.html": {
+      "hero": "local-repair",
+      "diagram": "defect-guide"
+    },
+    "sovety/polosy-ot-valika-na-parkete-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/pyl-i-zapah-pri-ciklevke-parketa/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/pyl-pod-lakom-na-parkete-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/rassohsya-parket-chto-delat/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/raznyy-blesk-laka-na-parkete-posle-lakirovki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/shcheli-posle-ciklevki-parketa/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/shcheli-v-parkete/index.html": {
+      "hero": "local-repair",
+      "diagram": "defect-guide"
+    },
+    "sovety/skolko-derzhitsya-zapah-laka-na-parkete/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/skolko-dlitsya-ciklevka-parketa/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/skolko-raz-mozhno-ciklevat-parket/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/skolko-sloev-laka-nanosit-na-parket/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/skolko-sohnet-lak-na-parkete/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/skoly-na-parkete-chto-delat/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/skripit-parket-posle-ciklevki/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "sovety/sledy-ot-zhivotnyh-na-parkete/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/staryy-lak-na-parkete/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/temnye-pyatna-na-parkete/index.html": {
+      "hero": "local-repair",
+      "diagram": "defect-guide"
+    },
+    "sovety/tonirovka-parketa-posle-ciklevki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/uhod-za-parketom-posle-ciklevki/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "sovety/vmyatiny-na-parkete-chto-delat/index.html": {
+      "hero": "oak-parquet"
+    },
+    "sovety/vzdulsya-parket-chto-delat/index.html": {
+      "hero": "oak-parquet"
+    },
+    "uslugi/ciklevka-parketa/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "uslugi/index.html": {
+      "hero": "oak-parquet"
+    },
+    "uslugi/parket-i-poly/index.html": {
+      "hero": "oak-parquet"
+    },
+    "uslugi/pokrytie-lakom-i-maslom/index.html": {
+      "hero": "finish-application",
+      "diagram": "finish-guide"
+    },
+    "uslugi/restavraciya-parketa/index.html": {
+      "hero": "local-repair",
+      "diagram": "defect-guide"
+    },
+    "uslugi/shlifovka-doshchatogo-pola/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "uslugi/terrasy-i-derevyannye-poly/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "uslugi/ukladka-laminata/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "uslugi/ukladka-parketa/index.html": {
+      "hero": "parquet-laying",
+      "diagram": "floor-layers"
+    },
+    "voprosy-i-otvety/index.html": {
+      "hero": "oak-parquet"
+    },
+    "zayavka/index.html": {
+      "hero": "oak-parquet",
+      "diagram": "assessment-guide"
+    }
+  }
+}
