@@ -58,6 +58,7 @@ def apply_editorial_media(root: Path, destination: Path, errors: list[str]) -> N
                 original_aside = re.search(r'<aside\b[^>]*>.*?</aside>', inner, re.S)
                 if original_aside:
                     aside = original_aside[0].replace("person-card--photo-plan", "editorial-summary")
+                    aside = aside.replace("<h3>", "<h2>").replace("</h3>", "</h2>")
                     summary = '<section class="section section--summary"><div class="container">' + aside + '</div></section>'
                 inner, replaced = re.subn(r'<aside\b[^>]*>.*?</aside>', lambda _: media, inner, count=1, flags=re.S)
                 if not replaced:

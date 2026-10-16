@@ -39,6 +39,6 @@ html{scroll-padding-top:104px}body{color:var(--site-ink);background:var(--site-p
 }
 .section--summary{padding:0 0 32px;background:var(--site-paper)}
 .section--summary aside{padding:20px 24px;background:#fff;border:1px solid var(--site-line);border-radius:8px;box-shadow:none}
-.section--summary aside h3{font-size:18px}.section--summary aside p,.section--summary aside li{font-size:14px;line-height:1.6}
+.section--summary aside h2{font-size:18px}.section--summary aside p,.section--summary aside li{font-size:14px;line-height:1.6}
 .section--summary aside .number-list{display:flex;flex-wrap:wrap;gap:8px 32px;margin-bottom:0}
 .section--summary aside .number-list li{flex:1 1 230px}.section--summary aside .text-link{font-size:14px}
