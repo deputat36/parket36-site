@@ -42,3 +42,18 @@ html{scroll-padding-top:104px}body{color:var(--site-ink);background:var(--site-p
 .section--summary aside h2{font-size:18px}.section--summary aside p,.section--summary aside li{font-size:14px;line-height:1.6}
 .section--summary aside .number-list{display:flex;flex-wrap:wrap;gap:8px 32px;margin-bottom:0}
 .section--summary aside .number-list li{flex:1 1 230px}.section--summary aside .text-link{font-size:14px}
+
+/* Native section links stay available when JavaScript is disabled. */
+.page-guide{padding:0 0 28px;background:var(--site-paper)}
+.service-brief{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin:0 0 22px;padding:24px 0;border-block:1px solid var(--site-line)}
+.service-brief>div{min-width:0}.service-brief dt{font-size:13px;font-weight:700;color:var(--site-accent);margin-bottom:6px}.service-brief dd{margin:0;color:var(--site-muted);font-size:14px;line-height:1.6}
+.page-guide__contents{border:1px solid var(--site-line);border-radius:8px;background:#fff}
+.page-guide__contents>summary{cursor:pointer;padding:15px 20px;color:var(--site-accent);font-size:15px;font-weight:600;line-height:1.5}
+.page-guide__contents>summary::marker{color:var(--site-accent)}
+.page-guide__contents ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px;list-style:none;margin:0;padding:0 20px 16px}
+.page-guide__contents li{min-width:0;border-top:1px solid var(--site-line)}
+.page-guide__contents li a{display:block;padding:12px 0;font-size:14px;line-height:1.5;overflow-wrap:anywhere;text-decoration:underline;text-underline-offset:3px}
+.page-guide__contents a:hover{color:var(--site-ink)}
+.page-guide__contents :focus-visible,main h2[tabindex="-1"]:focus-visible{outline:2px solid var(--site-accent);outline-offset:4px}
+main h2[id^="razdel-"]{scroll-margin-top:16px}
+@media(max-width:640px){.page-guide{padding-bottom:20px}.service-brief{grid-template-columns:1fr;gap:15px;padding:18px 0;margin-bottom:18px}.service-brief>div{display:grid;grid-template-columns:100px minmax(0,1fr);gap:12px}.service-brief dt{margin:0;font-size:12px}.service-brief dd{font-size:13px}.page-guide__contents>summary{padding:14px 16px;font-size:14px}.page-guide__contents ul{grid-template-columns:1fr;padding:0 16px 12px}.page-guide__contents li a{padding:12px 0}}
