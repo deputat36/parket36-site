@@ -82,8 +82,8 @@ test('страница мастера рассказывает об услуга
   await expect(page.locator('.subhero a[href="tel:+79009267929"]')).toBeVisible();
 });
 
-test('встраиваемый блок услуг не обещает отправку фотографий через форму', async ({ page }) => {
-  await page.goto('/uslugi/ciklevka-parketa/');
+test('встраиваемый блок общего каталога не обещает отправку фотографий через форму', async ({ page }) => {
+  await page.goto('/uslugi/');
 
   const card = page.locator('.inline-lead__card');
   await expect(card).toBeVisible();

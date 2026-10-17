@@ -4,16 +4,18 @@ module.exports = {
       staticDistDir: './_site',
       url: [
         'http://localhost/',
-        'http://localhost/zayavka/'
+        'http://localhost/zayavka/',
+        'http://localhost/uslugi/ciklevka-parketa/',
+        'http://localhost/sovety/pochemu-skripit-parket/'
       ],
-      numberOfRuns: 1,
+      numberOfRuns: 3,
       settings: {
         chromeFlags: '--headless --no-sandbox --disable-dev-shm-usage'
       }
     },
     assert: {
       assertions: {
-        'categories:performance': ['warn', { minScore: 0.65 }],
+        'categories:performance': ['error', { minScore: 0.80, aggregationMethod: 'median' }],
         'categories:accessibility': ['error', { minScore: 0.90 }],
         'categories:best-practices': ['warn', { minScore: 0.85 }],
         'categories:seo': ['error', { minScore: 0.90 }]
