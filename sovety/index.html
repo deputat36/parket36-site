@@ -27,7 +27,6 @@
       <p class="form-help" id="advice-query-help">Например: «пол скрипит», «затопили паркет», «потёртости». Можно уточнить поиск выбором темы.</p>
       <div class="advice-search__controls">
         <input type="search" id="advice-query" aria-describedby="advice-query-help" aria-controls="advice-catalog" autocomplete="off" maxlength="120" placeholder="Что случилось с полом?">
-        <button class="btn btn--ghost" type="button" data-advice-reset hidden>Сбросить поиск</button>
       </div>
       <fieldset class="advice-topics" data-advice-topics>
         <legend>Или выберите тему</legend>
@@ -40,7 +39,10 @@
           <label><input type="radio" name="advice-topic" value="care"><span>Сушка и уход</span></label>
         </div>
       </fieldset>
-      <p class="advice-search__results" id="advice-results" role="status" aria-live="polite" aria-atomic="true"></p>
+      <div class="advice-search__feedback">
+        <p class="advice-search__results" id="advice-results" role="status" aria-live="polite" aria-atomic="true"></p>
+        <button class="advice-search__reset" type="button" data-advice-reset hidden>Сбросить поиск</button>
+      </div>
       <div class="advice-search__empty" data-advice-empty hidden>
         <p>Попробуйте назвать один признак: скрип, вода, щели или лак. Если вопрос остался, обсудите состояние пола с Иваном. После связи он подскажет, как передать фотографии.</p>
         <div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">Обсудить пол с Иваном</a><a class="btn btn--ghost" href="/zayavka/">Оставить обращение</a></div>

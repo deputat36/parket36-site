@@ -92,7 +92,33 @@
       : 'материалов';
   };
 
+  const historyKey = 'parket36AdviceSearch';
+  const restoreSearch = () => {
+    try {
+      const saved = history.state?.[historyKey];
+      if (!saved || typeof saved.query !== 'string') return;
+      const radio = Array.from(topics.querySelectorAll('input')).find(item => item.value === saved.topic);
+      if (!radio) return;
+      input.value = saved.query.slice(0, input.maxLength);
+      radio.checked = true;
+    } catch {
+      // Searching remains available when the browser restricts history access.
+    }
+  };
+  const rememberSearch = () => {
+    try {
+      const current = history.state && typeof history.state === 'object' ? { ...history.state } : {};
+      const topic = topics.querySelector('input:checked')?.value || 'all';
+      if (input.value || topic !== 'all') current[historyKey] = { query: input.value, topic };
+      else delete current[historyKey];
+      // Keep Back/Forward useful without changing the address or using persistent app storage.
+      history.replaceState(current, '');
+    } catch {
+      // Restricted history access must not stop searching or opening an article.
+    }
+  };
   let announcement;
+  let saveTimer;
   const render = ({ deferAnnouncement = false } = {}) => {
     const query = input.value.trim();
     const words = queryWords(query);
@@ -127,18 +153,38 @@
     else results.textContent = summary;
   };
 
-  input.addEventListener('input', () => render({ deferAnnouncement: true }));
-  topics.addEventListener('change', () => render());
+  input.addEventListener('input', () => {
+    render({ deferAnnouncement: true });
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(rememberSearch, 220);
+  });
+  input.addEventListener('change', rememberSearch);
+  topics.addEventListener('change', () => {
+    render();
+    rememberSearch();
+  });
   reset.addEventListener('click', () => {
     input.value = '';
     const all = topics.querySelector('input[value="all"]');
     if (all) all.checked = true;
+    clearTimeout(saveTimer);
+    rememberSearch();
     render();
     input.focus();
   });
-  // Read native form restoration after returning from an article. No query storage is needed.
-  window.addEventListener('pageshow', () => requestAnimationFrame(() => render()));
+  document.addEventListener('click', event => {
+    if (event.target instanceof Element && event.target.closest('a[href]')) rememberSearch();
+  });
+  window.addEventListener('pagehide', () => {
+    clearTimeout(saveTimer);
+    rememberSearch();
+  });
+  window.addEventListener('pageshow', () => requestAnimationFrame(() => {
+    restoreSearch();
+    render();
+  }));
 
+  restoreSearch();
   filter.hidden = false;
   render();
 })();

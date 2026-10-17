@@ -73,7 +73,10 @@ main h2[id^="razdel-"]{scroll-margin-top:16px}
 .advice-topics label span{display:flex;align-items:center;min-height:44px;padding:9px 14px;border:1px solid var(--site-line);border-radius:24px;background:var(--site-paper);color:var(--site-ink);font-size:14px;line-height:1.4}
 .advice-topics input:checked+span{background:var(--site-accent);border-color:var(--site-accent);color:#fff}
 .advice-topics input:focus-visible+span{outline:2px solid var(--site-accent);outline-offset:3px}
-.advice-hub .advice-search__results{font-size:14px;margin:20px 0 0}
+.advice-search__feedback{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 16px;min-height:44px;margin-top:14px}
+.advice-hub .advice-search__results{font-size:14px;margin:0}
+.advice-search__reset{min-height:44px;padding:8px 0;border:0;background:none;color:var(--site-accent);font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.advice-search__reset:focus-visible{outline:2px solid var(--site-accent);outline-offset:3px}
 .advice-search__empty{margin-top:18px;padding-top:16px;border-top:1px solid var(--site-line)}
 .advice-search__empty>p{max-width:700px;color:var(--site-muted);font-size:15px;margin:0}
 .advice-search__empty .hero__actions{margin-top:16px}
@@ -88,9 +91,9 @@ main h2[id^="razdel-"]{scroll-margin-top:16px}
 .advice-hub .advice-catalog .section__head p{font-size:16px}
 .advice-hub .advice-catalog .services-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .advice-hub .advice-catalog .service-card{min-height:0;border:1px solid var(--site-line);border-radius:8px;box-shadow:none;background:#fff}
-.advice-hub .advice-catalog .service-card a{padding:20px}
+.advice-hub .advice-catalog .service-card a{padding:20px;background:none;border:0;border-radius:inherit;box-shadow:none}
 .advice-hub .advice-catalog .service-card__icon{display:none}
-.advice-hub .advice-catalog .service-card h3{font-size:19px;line-height:1.3;margin:0 0 9px}
+.advice-hub .advice-catalog .service-card h3{font-size:19px;line-height:1.3;margin:0 0 9px;padding-right:36px;color:var(--site-accent)}
 .advice-hub .advice-catalog .service-card p{font-size:14px;line-height:1.6;margin:0;color:var(--site-muted)}
 @media(max-width:900px){.advice-hub .advice-catalog .services-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.advice-hub .advice-search__panel{padding:20px}.advice-hub .advice-search__panel>label{font-size:21px}.advice-topics label span{font-size:13px;padding:9px 12px}.advice-hub .advice-catalog .services-grid{grid-template-columns:1fr}.advice-hub .advice-catalog .section__head h2{font-size:27px}.advice-hub .advice-catalog .service-card a{padding:18px}.advice-shortcuts summary{padding:14px 16px}.advice-shortcuts ul{display:block;padding-inline:16px}}

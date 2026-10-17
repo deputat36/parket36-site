@@ -70,9 +70,12 @@ test('возврат из статьи восстанавливает запро
   await expect(page.getByRole('radio', { name: 'Вода и повреждения', exact: true })).toBeChecked();
   await expect(visibleCards(page).locator('a[href="/sovety/parket-posle-vody/"]')).toBeVisible();
   await expect(page.locator('#advice-results')).toContainText('Найдено:');
+  await page.reload();
+  await expect(page.getByRole('searchbox', { name: searchName })).toHaveValue('затопили паркет');
+  await expect(page.getByRole('radio', { name: 'Вода и повреждения', exact: true })).toBeChecked();
 });
 
-test('поисковый текст остаётся в браузере и не попадает в URL, аналитику или хранилища', async ({ page }) => {
+test('поиск не передаёт текст в URL, аналитику, localStorage или sessionStorage', async ({ page }) => {
   const privateQuery = 'PRIVATE-SEARCH-Иван-89001234567-улица-Тестовая';
   const requests = [];
   page.on('request', request => requests.push([request.url(), request.postData()]));
@@ -94,6 +97,8 @@ test('поисковый текст остаётся в браузере и не
   expect(JSON.stringify(snapshot)).not.toContain(privateQuery);
   expect(JSON.stringify(requests)).not.toContain(privateQuery);
   expect(JSON.stringify(requests)).not.toContain(encodeURIComponent(privateQuery));
+  await page.getByRole('button', { name: 'Сбросить поиск' }).click();
+  expect(await page.evaluate(() => JSON.stringify(history.state))).not.toContain(privateQuery);
 });
 
 for (const width of [320, 1440]) {
@@ -106,6 +111,13 @@ for (const width of [320, 1440]) {
     expect(axe.violations).toEqual([]);
     const bounds = await page.evaluate(() => ({ viewport: innerWidth, content: document.documentElement.scrollWidth }));
     expect(bounds.content).toBeLessThanOrEqual(bounds.viewport + 1);
+    // Capture from the top so fixed controls appear at the visible viewport edge.
+    await page.evaluate(() => {
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     const screenshot = testInfo.outputPath(`advice-discovery-${width}.png`);
     await page.screenshot({ path: screenshot, fullPage: true, animations: 'disabled' });
     await testInfo.attach('Раздел советов с выбранной темой', { path: screenshot, contentType: 'image/png' });
