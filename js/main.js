@@ -330,7 +330,7 @@
   });
 
   const addInlineLead = () => {
-    if (!main || document.getElementById('request-form') || document.querySelector('.inline-lead, [data-page-guide]')) return;
+    if (!main || document.getElementById('request-form') || document.querySelector('.inline-lead, [data-page-guide], [data-advice-search]')) return;
     const currentPath = normalizePath(location.pathname);
     if (!['/uslugi/', '/sovety/', '/resheniya/', '/portfolio/'].some(prefix => currentPath.startsWith(prefix))) return;
 

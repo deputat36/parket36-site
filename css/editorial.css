@@ -57,3 +57,43 @@ html{scroll-padding-top:104px}body{color:var(--site-ink);background:var(--site-p
 .page-guide__contents :focus-visible,main h2[tabindex="-1"]:focus-visible{outline:2px solid var(--site-accent);outline-offset:4px}
 main h2[id^="razdel-"]{scroll-margin-top:16px}
 @media(max-width:640px){.page-guide{padding-bottom:20px}.service-brief{grid-template-columns:1fr;gap:15px;padding:18px 0;margin-bottom:18px}.service-brief>div{display:grid;grid-template-columns:100px minmax(0,1fr);gap:12px}.service-brief dt{margin:0;font-size:12px}.service-brief dd{font-size:13px}.page-guide__contents>summary{padding:14px 16px;font-size:14px}.page-guide__contents ul{grid-template-columns:1fr;padding:0 16px 12px}.page-guide__contents li a{padding:12px 0}}
+
+/* Advice discovery: one compact search panel, native topic controls and readable results. */
+.advice-hub .advice-search{padding:0 0 20px}
+.advice-hub .advice-search__panel{max-width:none;margin:0;padding:24px;border:1px solid var(--site-line);border-radius:8px;background:#fff;box-shadow:none}
+.advice-hub .advice-search__panel>label{font-size:24px;line-height:1.3}
+.advice-hub .advice-search__panel .form-help{font-size:14px;color:var(--site-muted);margin:8px 0 16px}
+.advice-hub .advice-search__controls input[type="search"]{border-color:var(--site-line);border-radius:8px}
+.advice-hub .advice-search__controls input[type="search"]:focus-visible{outline:2px solid var(--site-accent);outline-offset:3px}
+.advice-topics{border:0;min-width:0;margin:20px 0 0;padding:0}
+.advice-topics legend{font-size:13px;color:var(--site-muted);padding:0;margin-bottom:10px}
+.advice-topics__options{display:flex;flex-wrap:wrap;gap:8px}
+.advice-topics label{position:relative;cursor:pointer;max-width:100%}
+.advice-topics input{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+.advice-topics label span{display:flex;align-items:center;min-height:44px;padding:9px 14px;border:1px solid var(--site-line);border-radius:24px;background:var(--site-paper);color:var(--site-ink);font-size:14px;line-height:1.4}
+.advice-topics input:checked+span{background:var(--site-accent);border-color:var(--site-accent);color:#fff}
+.advice-topics input:focus-visible+span{outline:2px solid var(--site-accent);outline-offset:3px}
+.advice-search__feedback{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 16px;min-height:44px;margin-top:14px}
+.advice-hub .advice-search__results{font-size:14px;margin:0}
+.advice-search__reset{min-height:44px;padding:8px 0;border:0;background:none;color:var(--site-accent);font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.advice-search__reset:focus-visible{outline:2px solid var(--site-accent);outline-offset:3px}
+.advice-search__empty{margin-top:18px;padding-top:16px;border-top:1px solid var(--site-line)}
+.advice-search__empty>p{max-width:700px;color:var(--site-muted);font-size:15px;margin:0}
+.advice-search__empty .hero__actions{margin-top:16px}
+.advice-shortcuts{padding:0 0 12px;background:var(--site-paper)}
+.advice-shortcuts details{border:1px solid var(--site-line);border-radius:8px;background:#fff}
+.advice-shortcuts summary{padding:14px 20px;cursor:pointer;font-size:14px;font-weight:600;color:var(--site-accent)}
+.advice-shortcuts ul{display:flex;flex-wrap:wrap;gap:8px 24px;list-style:none;margin:0;padding:0 20px 16px}
+.advice-shortcuts li a{display:block;padding:8px 0;text-decoration:underline;text-underline-offset:3px;font-size:14px}
+.advice-shortcuts :focus-visible{outline:2px solid var(--site-accent);outline-offset:3px}
+.advice-hub .advice-catalog .section{padding:44px 0}
+.advice-hub .advice-catalog .section__head h2{font-size:32px}
+.advice-hub .advice-catalog .section__head p{font-size:16px}
+.advice-hub .advice-catalog .services-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.advice-hub .advice-catalog .service-card{min-height:0;border:1px solid var(--site-line);border-radius:8px;box-shadow:none;background:#fff}
+.advice-hub .advice-catalog .service-card a{padding:20px;background:none;border:0;border-radius:inherit;box-shadow:none}
+.advice-hub .advice-catalog .service-card__icon{display:none}
+.advice-hub .advice-catalog .service-card h3{font-size:19px;line-height:1.3;margin:0 0 9px;padding-right:36px;color:var(--site-accent)}
+.advice-hub .advice-catalog .service-card p{font-size:14px;line-height:1.6;margin:0;color:var(--site-muted)}
+@media(max-width:900px){.advice-hub .advice-catalog .services-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.advice-hub .advice-search__panel{padding:20px}.advice-hub .advice-search__panel>label{font-size:21px}.advice-topics label span{font-size:13px;padding:9px 12px}.advice-hub .advice-catalog .services-grid{grid-template-columns:1fr}.advice-hub .advice-catalog .section__head h2{font-size:27px}.advice-hub .advice-catalog .service-card a{padding:18px}.advice-shortcuts summary{padding:14px 16px}.advice-shortcuts ul{display:block;padding-inline:16px}}
