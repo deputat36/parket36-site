@@ -12,6 +12,7 @@ Workflow: `.github/workflows/lighthouse.yml`.
 - форма оценки `/zayavka/`.
 - услуга `/uslugi/ciklevka-parketa/`;
 - статья `/sovety/pochemu-skripit-parket/`.
+- каталог советов `/sovety/`.
 
 Проверка запускается против локально собранной папки `_site`, поэтому не зависит от DNS, GitHub Pages и production Supabase.
 

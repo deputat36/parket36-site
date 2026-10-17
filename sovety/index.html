@@ -18,23 +18,39 @@
 </head>
 <body>
 <header class="topbar"><div class="container topbar__inner"><a class="brand" href="/"><span class="brand__mark">36</span><span><strong>Паркет36</strong><small>мастер Иван · Воронеж и область</small></span></a><button class="menu-toggle" type="button" data-menu-toggle aria-label="Открыть меню">☰</button><nav class="nav" data-nav><a href="/uslugi/">Услуги</a><a href="/o-mastere/">О мастере</a><a href="/portfolio/">Примеры задач</a><a href="/ceny/">Стоимость</a><a class="active" href="/sovety/">Советы</a><a href="/kontakty/">Контакты</a></nav><div class="topbar__contacts"><a class="phone" href="tel:+79009267929">8 (900) 926-79-29</a></div></div></header>
-<main>
-<section class="subhero"><div class="container"><p class="eyebrow">Полезные материалы</p><h1>Советы по паркету и деревянным полам</h1><p>Без сложных терминов и рекламных обещаний: как оценить состояние пола, подготовить помещение, понять тип покрытия и не потратить деньги на неподходящее решение.</p><div class="hero__actions"><a class="btn btn--primary" href="/zayavka/">Оценить по фото</a><a class="btn btn--ghost" href="tel:+79009267929">Позвонить Ивану</a></div></div></section>
-<section class="section"><div class="container"><div class="section__head"><p class="eyebrow">Быстрая диагностика</p><h2>Выберите проблему, с которой пришли</h2><p>Так проще понять, какую статью читать первой и какие материалы приложить к обращению.</p></div><div class="price-grid"><article><h3>Пол скрипит или двигается</h3><p>Начните со статьи <a href="/sovety/pochemu-skripit-parket/">почему скрипит паркет</a>. Для оценки полезно короткое видео с нагрузкой на проблемное место.</p></article><article><h3>Не знаю, что за покрытие</h3><p>Откройте статью <a href="/sovety/parket-doska-ili-laminat-kak-ponyat/">паркет, доска или ламинат</a>. Там указано, какие стыки, пороги и дефекты лучше показать.</p></article><article><h3>Была вода или пятна</h3><p>Сначала прочитайте <a href="/sovety/parket-posle-vody/">что делать после воды</a>. Важно показать границы повреждения и не закрывать проблему новым лаком слишком рано.</p></article><article><h3>Не ясно, нужен ли выезд</h3><p>Откройте статью <a href="/sovety/kogda-nuzhen-osmotr-parketa/">когда нужен осмотр</a>. Там разобрано, где хватает фото, а где лучше смотреть пол на месте.</p></article><article><h3>Нужно понять стоимость</h3><p>Разберите, <a href="/sovety/ot-chego-zavisit-stoimost-ciklevki-parketa/">от чего зависит стоимость циклёвки</a>: площадь, состояние, старое покрытие, ремонт и материалы.</p></article></div><div class="lead-card lead-card--wide"><p>Если не хотите разбираться в статьях, отправьте фото пола, площадь, район и короткое описание. При скрипе или подвижности добавьте видео.</p><div class="hero__actions"><a class="btn btn--primary" href="/zayavka/">Получить оценку по фото</a><a class="btn btn--ghost" href="/sovety/kak-sfotografirovat-pol-dlya-ocenki/">Как подготовить фото</a></div></div></div></section>
+<main class="advice-hub">
+<section class="subhero"><div class="container"><p class="eyebrow">Полезные материалы</p><h1>Советы по паркету и деревянным полам</h1><p>Как понять причину скрипа, оценить повреждения и подготовиться к работам. Найдите свою ситуацию или выберите тему — от старого лака до ухода за обновлённым полом.</p><div class="hero__actions"><a class="btn btn--primary" href="/zayavka/">Оценить по фото</a><a class="btn btn--ghost" href="tel:+79009267929">Позвонить Ивану</a></div></div></section>
 <section class="section advice-search" id="advice-search" data-advice-search hidden>
   <div class="container">
     <div class="advice-search__panel" role="search" aria-label="Поиск по советам о паркете">
       <label for="advice-query">Найдите совет по вашей проблеме</label>
-      <p class="form-help" id="advice-query-help">Поиск по заголовкам и кратким описаниям статей ниже. Например: скрип, щели, вода, лак.</p>
+      <p class="form-help" id="advice-query-help">Например: «пол скрипит», «затопили паркет», «потёртости». Можно уточнить поиск выбором темы.</p>
       <div class="advice-search__controls">
-        <input type="search" id="advice-query" aria-describedby="advice-query-help" autocomplete="off" placeholder="Что случилось с полом?">
+        <input type="search" id="advice-query" aria-describedby="advice-query-help" aria-controls="advice-catalog" autocomplete="off" maxlength="120" placeholder="Что случилось с полом?">
         <button class="btn btn--ghost" type="button" data-advice-reset hidden>Сбросить поиск</button>
       </div>
+      <fieldset class="advice-topics" data-advice-topics>
+        <legend>Или выберите тему</legend>
+        <div class="advice-topics__options">
+          <label><input type="radio" name="advice-topic" value="all" checked><span>Все темы</span></label>
+          <label><input type="radio" name="advice-topic" value="movement"><span>Скрип и щели</span></label>
+          <label><input type="radio" name="advice-topic" value="damage"><span>Вода и повреждения</span></label>
+          <label><input type="radio" name="advice-topic" value="sanding"><span>Циклёвка и ремонт</span></label>
+          <label><input type="radio" name="advice-topic" value="finish"><span>Лак и масло</span></label>
+          <label><input type="radio" name="advice-topic" value="care"><span>Сушка и уход</span></label>
+        </div>
+      </fieldset>
       <p class="advice-search__results" id="advice-results" role="status" aria-live="polite" aria-atomic="true"></p>
+      <div class="advice-search__empty" data-advice-empty hidden>
+        <p>Попробуйте назвать один признак: скрип, вода, щели или лак. Если вопрос остался, обсудите состояние пола с Иваном. После связи он подскажет, как передать фотографии.</p>
+        <div class="hero__actions"><a class="btn btn--primary" href="tel:+79009267929">Обсудить пол с Иваном</a><a class="btn btn--ghost" href="/zayavka/">Оставить обращение</a></div>
+      </div>
     </div>
   </div>
 </section>
-<section class="section section--white"><div class="container"><div class="section__head"><p class="eyebrow">Диагностика и выбор решения</p><h2>Сначала понять состояние пола</h2><p>Эти материалы помогают собрать информацию до разговора с мастером и отличить поверхностный дефект от проблемы основания.</p></div><div class="services-grid services-grid--featured">
+<section class="advice-shortcuts"><div class="container"><details><summary>Частые ситуации — с чего начать</summary><nav aria-label="С чего начать"><ul><li><a href="/sovety/pochemu-skripit-parket/">Пол скрипит</a></li><li><a href="/sovety/parket-posle-vody/">Паркет после воды</a></li><li><a href="/sovety/parket-doska-ili-laminat-kak-ponyat/">Какое у меня покрытие</a></li><li><a href="/sovety/kogda-nuzhen-osmotr-parketa/">Нужен ли осмотр</a></li><li><a href="/sovety/ot-chego-zavisit-stoimost-ciklevki-parketa/">Что влияет на стоимость</a></li></ul></nav></details></div></section>
+
+<div id="advice-catalog" class="advice-catalog"><section class="section section--white"><div class="container"><div class="section__head"><p class="eyebrow">Диагностика и выбор решения</p><h2>Сначала понять состояние пола</h2><p>Эти материалы помогают собрать информацию до разговора с мастером и отличить поверхностный дефект от проблемы основания.</p></div><div class="services-grid services-grid--featured">
 <article class="service-card"><a href="/sovety/mozhno-li-vosstanovit-staryy-parket/"><span class="service-card__icon">01</span><h3>Можно ли восстановить старый паркет</h3><p>Какие признаки говорят в пользу реставрации, а когда нужен более серьёзный ремонт пола.</p></a></article>
 <article class="service-card"><a href="/sovety/parket-doska-ili-laminat-kak-ponyat/"><span class="service-card__icon">02</span><h3>Паркет, доска или ламинат</h3><p>Как показать стыки, пороги и повреждения, если тип покрытия пока не ясен.</p></a></article>
 <article class="service-card"><a href="/sovety/mozhno-li-ciklevat-parketnuyu-dosku/"><span class="service-card__icon">Д</span><h3>Можно ли циклевать паркетную доску</h3><p>Когда верхний слой позволяет шлифовку, а когда лучше не рисковать без осмотра.</p></a></article>
@@ -117,7 +133,7 @@
 <article class="service-card"><a href="/resheniya/remont-posle-arendatorov/"><span class="service-card__icon">17</span><h3>Пол после арендаторов</h3><p>Как оценить пятна, царапины, скрип, плинтусы и общее состояние пола перед новой сдачей.</p></a></article>
 <article class="service-card"><a href="/resheniya/dlya-rieltorov-i-sobstvennikov/"><span class="service-card__icon">18</span><h3>Для риелторов и собственников</h3><p>Как быстро понять, стоит ли обновлять пол перед показами, фото, продажей или сдачей.</p></a></article>
 <article class="service-card"><a href="/uslugi/parket-i-poly/"><span class="service-card__icon">19</span><h3>Все работы с полом</h3><p>Циклёвка, реставрация, укладка, шлифовка доски и защитные покрытия.</p></a></article>
-</div></div></section>
+</div></div></section></div>
 <section class="section"><div class="container faq-grid"><div><p class="eyebrow">Нужен совет по конкретному объекту?</p><h2>Фотографии полезнее общего описания</h2></div><div class="lead-card"><p>Снимите помещение общим планом, затем проблемные места, стыки, пороги и зоны у стен крупно. Укажите площадь, возраст покрытия, район и желаемый результат.</p><div class="hero__actions"><a class="btn btn--primary" href="/zayavka/">Получить оценку по фото</a><a class="btn btn--ghost" href="/sovety/parket-doska-ili-laminat-kak-ponyat/">Как понять тип пола</a></div></div></div></section>
 <section class="final-cta"><div class="container"><h2>Не нашли точный ответ?</h2><p>Опишите состояние пола своими словами. Для предварительного ориентира достаточно фото, площади, района и видео, если проблема связана со скрипом или движением планок.</p><div class="hero__actions"><a class="btn btn--light" href="tel:+79009267929">Позвонить</a><a class="btn btn--dark" href="/zayavka/">Оценить по фото</a></div></div></section>
 </main>
