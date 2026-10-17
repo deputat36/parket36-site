@@ -15,7 +15,7 @@ html{scroll-padding-top:104px}body{color:var(--site-ink);background:var(--site-p
 .quick-choice__grid>a{position:relative}
 .quick-choice__grid>a::before,.quick-choice__grid>a::after{display:none}
 .service-card a>img{margin:0;max-width:100%}
-.hero__content a.text-link{display:inline;padding:0;border:0;border-radius:0;box-shadow:none;background:none;text-align:left;line-height:1.5;font-size:13px}
+.hero__content a.text-link,.subhero a.text-link{display:inline;padding:0;border:0;border-radius:0;box-shadow:none;background:none;text-align:left;line-height:1.5;font-size:13px;text-decoration:underline;text-underline-offset:3px}
 .hero__content>.trust{display:flex;justify-content:flex-start}
 .hero__content>.trust span{width:auto;display:inline;min-width:0}
 .request-grid .photo-board{min-height:0}

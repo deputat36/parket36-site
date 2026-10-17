@@ -47,9 +47,16 @@ for (const width of [320, 1440]) {
     const href = await link.getAttribute('href');
     await link.click();
     await expect(page.locator(href)).toBeFocused();
-    await page.reload();
     await expect(page.locator(href)).toBeInViewport({ ratio: 1 });
-    await nav.locator('summary').click();
+    // Open the shared URL as a new visit. Reloading 50 ms after a click interrupts
+    // native smooth scrolling and tests scroll restoration, rather than a direct link.
+    const directPage = await page.context().newPage();
+    await directPage.setViewportSize({ width, height: 900 });
+    await directPage.goto(page.url());
+    await expect(directPage.locator(href)).toBeInViewport({ ratio: 1 });
+    await directPage.reload();
+    await expect(directPage.locator(href)).toBeInViewport({ ratio: 1 });
+    await directPage.close();
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     expect(results.violations).toEqual([]);
     const widthResult = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: innerWidth }));
