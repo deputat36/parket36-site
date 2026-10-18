@@ -6,7 +6,8 @@ module.exports = {
         'http://localhost/',
         'http://localhost/zayavka/',
         'http://localhost/uslugi/ciklevka-parketa/',
-        'http://localhost/sovety/pochemu-skripit-parket/'
+        'http://localhost/sovety/pochemu-skripit-parket/',
+        'http://localhost/sovety/'
       ],
       numberOfRuns: 3,
       settings: {
