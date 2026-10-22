@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 from html.parser import HTMLParser
 import json
 from pathlib import Path
@@ -173,7 +175,7 @@ def main() -> int:
     html_files = [
         path
         for path in sorted(ROOT.rglob("*.html"))
-        if "_site" not in path.parts and "node_modules" not in path.parts
+        if not any(part in QA_OUTPUT_DIRS for part in path.parts) and "_site" not in path.parts and "node_modules" not in path.parts
     ]
     total_bars = 0
     for path in html_files:

@@ -106,6 +106,8 @@ python tools/run_quality_checks.py
 
 Внутри него запускаются:
 
+- `check_source_tree.py` — регрессионная проверка: HTML из `test-results`, `playwright-report`, `lighthouse-report` и `.lighthouseci` не считается исходником сайта; повторный quality gate после браузерных тестов использует те же публичные страницы.
+
 - `site_settings.py --check` — self-test и синхронизация общих настроек в HTML и canonical fragments shared shell;
 - `check_domain_settings.py` — соответствие `CNAME` и sitemap в `robots.txt` домену из `data/site.json`;
 - `check_workflows.py` — версии GitHub Actions и обязательные шаги CI/деплоя;

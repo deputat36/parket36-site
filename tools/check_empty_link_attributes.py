@@ -3,12 +3,14 @@
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 from html.parser import HTMLParser
 from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
+IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"} | QA_OUTPUT_DIRS
 
 
 class LinkAttributeParser(HTMLParser):

@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-22",
+  "tool": "built-in image_gen",
+  "purpose": "Тематические иллюстрации типовых дефектов, не фотографии заказов Ивана",
+  "prompts": [
+    {
+      "key": "water-damage",
+      "source": "design/source-images/water-damage-20261022.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: explanatory editorial image for a Russian parquet restoration website. Create one realistic close-up of oak herringbone parquet with localized damage after a past water leak: a few boards have subtly lifted edges, darker uneven moisture marks around joints, and intact surrounding oak visible. Dry scene, no standing water, no mold, no tools, no people, no text, no labels, no watermark. Natural soft side light, warm oak and neutral colors, restrained honest texture, high photographic detail, landscape 3:2 composition. It must help a homeowner understand what water-damaged parquet can look like; avoid dramatic destruction or before-after comparison. This is an illustrative typical problem, never a claimed customer project."
+    },
+    {
+      "key": "parquet-gaps",
+      "source": "design/source-images/parquet-gaps-20261022.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: explanatory editorial image for a parquet repair website. Create one realistic landscape 3:2 close-up of older oak herringbone parquet showing visible narrow open gaps between several boards and a small chipped board edge, enough intact surrounding pattern to understand scale. Worn satin old finish, natural grain, soft diffused daylight, neutral warm oak palette. No giant holes, no hands, no tools, no measuring ruler, no glue, no filler, no text, no logos, no watermark, no before-after collage. Gaps must be physically plausible, several millimeters, not dramatic damage. This is a clearly illustrative typical defect, never a claimed client photograph."
+    }
+  ]
+}

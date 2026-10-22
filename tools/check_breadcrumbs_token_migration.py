@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 import ast
 from html import unescape
 import json
@@ -37,7 +39,7 @@ RAW_COLOR_PATTERNS = (
     re.compile(r"var\(--wood\)"),
     re.compile(r"var\(--gold\)"),
 )
-SKIP_PARTS = {"_site", "design", "node_modules", "vendor", ".git"}
+SKIP_PARTS = {"_site", "design", "node_modules", "vendor", ".git"} | QA_OUTPUT_DIRS
 
 EXPECTED_DIMENSIONS = {
     "minimumHeight": 40,

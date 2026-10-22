@@ -13,6 +13,8 @@ endpoint and the optional Yandex Metrika snippet generated from data/site.json.
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 import argparse
 import json
 import re
@@ -28,7 +30,7 @@ LEAD_ENDPOINT_DOCS = (
     ROOT / "docs" / "lead-endpoint-test-mode.md",
 )
 SHARED_FRAGMENT_DIR = Path("data/shared-shell")
-IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
+IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"} | QA_OUTPUT_DIRS
 
 TEL_RE = re.compile(r"tel:\+7\d{10}")
 DISPLAY_PHONE_RE = re.compile(r"8\s*\(\d{3}\)\s*\d{3}[\-– ]\d{2}[\-– ]\d{2}")

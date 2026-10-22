@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 from html.parser import HTMLParser
 import fcntl
 from pathlib import Path
@@ -103,7 +105,7 @@ PUBLIC_FILES = {
     ".nojekyll",
     "manifest.webmanifest",
 }
-IGNORED_DIRS = {".git", ".github", "tools", "data", "node_modules", "_site"}
+IGNORED_DIRS = {".git", ".github", "tools", "data", "node_modules", "_site"} | QA_OUTPUT_DIRS
 INTERNAL_WORKING_PATHS = {
     Path("foto-dlya-sajta"),
     Path("portfolio") / "shablon-kejsa",

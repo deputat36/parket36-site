@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 import ast
 import json
 from pathlib import Path
@@ -160,7 +162,7 @@ def main() -> int:
     public_html = [
         path
         for path in sorted(ROOT.rglob("*.html"))
-        if "_site" not in path.parts and "design" not in path.parts
+        if not any(part in QA_OUTPUT_DIRS for part in path.parts) and "_site" not in path.parts and "design" not in path.parts
     ]
     forms: list[tuple[str, str]] = []
     for path in public_html:
