@@ -10,12 +10,14 @@ import re
 SUBHERO = re.compile(r'(<section\b[^>]*class="subhero"[^>]*>)(.*?)(</section>)', re.S)
 
 
-def figure(asset: dict, *, hero: bool = False, classes: str = "") -> str:
+def figure(asset: dict, *, hero: bool = False, classes: str = "", card: bool = False) -> str:
     """Use intrinsic dimensions and responsive sources without inventing photo provenance."""
     src = escape(asset["src"], quote=True)
     alt = escape(asset["alt"], quote=True)
     caption = escape(asset["caption"])
     sizes = "(max-width: 640px) calc(100vw - 32px), (max-width: 1000px) 90vw, 560px"
+    if card:
+        sizes = "(max-width: 640px) calc(100vw - 32px), (max-width: 1000px) 44vw, 360px"
     responsive = ""
     if asset.get("srcset"):
         responsive = f' srcset="{escape(asset["srcset"], quote=True)}" sizes="{sizes}"'
@@ -28,9 +30,36 @@ def figure(asset: dict, *, hero: bool = False, classes: str = "") -> str:
     )
 
 
+def render_explainer(entry: dict, assets: dict) -> str:
+    """Keep explanatory text in HTML so it remains readable at mobile sizes."""
+    cards = []
+    for item in entry["cards"]:
+        media = figure(assets[item["asset"]], classes="visual-explainer__figure", card=True)
+        cards.append(
+            '<article class="visual-explainer__card">' + media
+            + '<div class="visual-explainer__copy"><h3>' + escape(item["title"])
+            + '</h3><p>' + escape(item["text"]) + '</p></div></article>'
+        )
+    note = '<p class="visual-explainer__note">' + escape(entry["note"]) + '</p>' if entry.get("note") else ""
+    return (
+        '<section class="section visual-explainer" data-visual-explainer>'
+        '<div class="container"><div class="section__head"><h2>'
+        + escape(entry["title"]) + '</h2><p>' + escape(entry["intro"])
+        + '</p></div><div class="visual-explainer__grid">' + ''.join(cards)
+        + '</div>' + note + '</div></section>'
+    )
+
+
 def apply_editorial_media(root: Path, destination: Path, errors: list[str]) -> None:
     manifest = json.loads((root / "data" / "editorial-media.json").read_text(encoding="utf-8"))
     assets = manifest["assets"]
+    explainers = manifest.get("explainers", {})
+    for key, entry in explainers.items():
+        for item in entry["cards"]:
+            if item["asset"] not in assets:
+                errors.append(f"Visual explainer {key}: unknown asset {item['asset']}")
+    if errors:
+        return
     for key, asset in assets.items():
         if not asset.get("provenance") or not asset.get("caption"):
             errors.append(f"Editorial asset {key}: provenance/caption is missing")
@@ -75,7 +104,21 @@ def apply_editorial_media(root: Path, destination: Path, errors: list[str]) -> N
             text = text[:match.start()] + match[1] + inner + match[3] + summary + text[match.end():]
 
         # Supplement a commercial page or article with a topic-specific explanatory diagram.
-        if entry.get("diagram"):
+        if entry.get("explainer"):
+            key = entry["explainer"]
+            if key not in explainers:
+                errors.append(f"Visual explainer is missing: {key} on {relative}")
+                continue
+            block = render_explainer(explainers[key], assets)
+            hero = SUBHERO.search(text)
+            if not hero:
+                errors.append(f"Visual explainer: no subhero on {relative}")
+                continue
+            # A page's useful original summary stays ahead of the visual explanation.
+            summary = re.match(r'<section class="section section--summary">.*?</section>', text[hero.end():], re.S)
+            position = hero.end() + (summary.end() if summary else 0)
+            text = text[:position] + block + text[position:]
+        elif entry.get("diagram"):
             diagram = figure(assets[entry["diagram"]], classes="editorial-figure--diagram")
             block = '<section class="section section--visual"><div class="container">' + diagram + '</div></section>'
             cta = text.find('<section class="final-cta"')

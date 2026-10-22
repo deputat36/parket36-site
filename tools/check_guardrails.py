@@ -7,6 +7,8 @@ from the broader static audit in tools/check_site.py.
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 from html.parser import HTMLParser
 from pathlib import Path
 import re
@@ -15,7 +17,7 @@ import sys
 from site_settings import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
-IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"}
+IGNORED_DIRS = {".git", ".github", "tools", "node_modules", "_site"} | QA_OUTPUT_DIRS
 PUBLIC_SUFFIXES = {".html", ".css", ".js", ".json", ".xml", ".txt"}
 SITE_CONFIG = load_config()
 SITE_URL = str(SITE_CONFIG["domain"])

@@ -10,6 +10,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 
 CHECKS = [
+    ("Validate source tree boundaries", ["tools/check_source_tree.py"]),
     ("Validate shared settings", ["tools/site_settings.py", "--check"]),
     ("Validate domain settings", ["tools/check_domain_settings.py"]),
     ("Validate workflow configuration", ["tools/check_workflows.py"]),

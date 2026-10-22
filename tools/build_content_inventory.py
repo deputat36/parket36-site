@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 import argparse
 import csv
 from collections import Counter, defaultdict
@@ -20,7 +22,7 @@ from site_settings import load_config
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = load_config()
 DOMAIN = str(CONFIG["domain"]).rstrip("/")
-IGNORED_DIRS = {".git", ".github", "tools", "data", "node_modules", "_site"}
+IGNORED_DIRS = {".git", ".github", "tools", "data", "node_modules", "_site"} | QA_OUTPUT_DIRS
 INTERNAL_WORKING_PATHS = {
     Path("foto-dlya-sajta") / "index.html",
     Path("portfolio") / "shablon-kejsa" / "index.html",

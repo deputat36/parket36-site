@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 import ast
 from collections import Counter
 from html.parser import HTMLParser
@@ -45,7 +47,7 @@ EXPECTED_ACCESSIBILITY = {
     "titleRequired": True,
     "descriptionRequired": True,
 }
-SKIP_PARTS = {".git", "_site", "design", "node_modules", "vendor"}
+SKIP_PARTS = {".git", "_site", "design", "node_modules", "vendor"} | QA_OUTPUT_DIRS
 SCRIPT_RE = re.compile(
     r'<script\s+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
     re.IGNORECASE | re.DOTALL,

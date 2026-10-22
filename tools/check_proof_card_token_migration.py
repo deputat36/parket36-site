@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 import ast
 from html.parser import HTMLParser
 import json
@@ -277,7 +279,7 @@ def main() -> int:
 
     discovered = []
     for html_file in sorted(ROOT.rglob("*.html")):
-        if any(part in {".git", "_site", "node_modules"} for part in html_file.parts):
+        if any(part in ({".git", "_site", "node_modules"} | QA_OUTPUT_DIRS) for part in html_file.parts):
             continue
         text = html_file.read_text(encoding="utf-8")
         if 'class="proof-card"' in text:

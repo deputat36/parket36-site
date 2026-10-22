@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 import ast
 import json
 from pathlib import Path
@@ -139,7 +141,7 @@ def main() -> int:
     section_header_count = sum(
         path.read_text(encoding="utf-8").count('class="section__head"')
         for path in html_files
-        if "_site" not in path.parts
+        if not any(part in QA_OUTPUT_DIRS for part in path.parts) and "_site" not in path.parts
     )
     if section_header_count < 10:
         findings.append(

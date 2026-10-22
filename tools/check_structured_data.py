@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from source_tree import QA_OUTPUT_DIRS
+
 from datetime import date
 from html.parser import HTMLParser
 import json
@@ -15,7 +17,7 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 DOMAIN = "https://parket36.ru"
 PHONE = "+79009267929"
-IGNORED_DIRS = {".git", ".github", "tools", "data", "node_modules", "_site"}
+IGNORED_DIRS = {".git", ".github", "tools", "data", "node_modules", "_site"} | QA_OUTPUT_DIRS
 INTERNAL_PATHS = {Path("foto-dlya-sajta"), Path("portfolio") / "shablon-kejsa"}
 FORBIDDEN_TYPES = {"AggregateRating", "Review", "Offer"}
 FORBIDDEN_PROPERTIES = {"aggregateRating", "review", "reviews", "offers"}

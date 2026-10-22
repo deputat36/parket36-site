@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RUNNER_PATH = ROOT / "tools" / "run_quality_checks.py"
 
 EXPECTED_CHECKS = [
+    ["tools/check_source_tree.py"],
     ["tools/site_settings.py", "--check"],
     ["tools/check_domain_settings.py"],
     ["tools/check_workflows.py"],
