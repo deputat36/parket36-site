@@ -146,4 +146,6 @@ main h2[id^="razdel-"]{scroll-margin-top:16px}
 .advice-article .faq details p{padding:0 18px 18px;margin:0;font-size:16px}
 .advice-article .article-related a{display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-underline-offset:3px}
 .advice-article .final-cta{margin-top:24px}
+/* Native scrolling must reserve the area covered by the fixed call panel. */
+@media(max-width:1000px){html{scroll-padding-bottom:calc(112px + env(safe-area-inset-bottom))}}
 @media(max-width:640px){.advice-route a,.advice-route [aria-current]{padding:10px 13px;font-size:14px}.advice-article .article-content{padding:24px 0}.advice-article .article-content p,.advice-article .article-content li{font-size:16px;line-height:1.7}.article-table{font-size:15px;line-height:1.55}.article-table th,.article-table td{padding:12px 10px}.article-table th:first-child{width:36%}.advice-article .faq summary{padding:15px;font-size:15px}}

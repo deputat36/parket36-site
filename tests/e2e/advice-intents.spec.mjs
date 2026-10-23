@@ -72,3 +72,25 @@ test('путь от первой ходьбы до уборки работает
   await expect(page.locator('.final-cta a[href="tel:+79009267929"]')).toHaveCount(1);
   await context.close();
 });
+
+for (const height of [700, 900]) {
+  test(`нижняя панель не перекрывает содержание после нативной прокрутки: ${height}px`, async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 320, height } });
+    const page = await context.newPage();
+    await page.goto(`/sovety/${drying[4]}/`);
+    const summary = page.locator('[data-page-guide] summary');
+    // Native end alignment reproduces the position at which a fixed panel used
+    // to cover an otherwise visible control. The click remains an ordinary click.
+    await summary.evaluate(node => node.scrollIntoView({ block: 'end', behavior: 'instant' }));
+    const clearance = await summary.evaluate(node => {
+      const panel = document.querySelector('.mobile-cta').getBoundingClientRect();
+      return panel.top - node.getBoundingClientRect().bottom;
+    });
+    expect(clearance).toBeGreaterThanOrEqual(0);
+    await summary.click();
+    await expect(page.locator('[data-page-guide] details')).toHaveAttribute('open', '');
+    await page.locator('[data-page-guide] a').first().click();
+    await expect(page.locator('h2:target')).toBeInViewport({ ratio: 1 });
+    await context.close();
+  });
+}
