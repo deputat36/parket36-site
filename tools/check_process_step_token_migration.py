@@ -25,8 +25,10 @@ RUNNER = ROOT / "tools" / "run_quality_checks.py"
 DOC = ROOT / "docs" / "design" / "parket36-process-step-token-migration-v1.md"
 PRODUCTION_DOC = ROOT / "docs" / "design" / "parket36-production-token-layer-v1.md"
 
-EXPECTED_PAGE_COUNT = 86
-EXPECTED_LIST_COUNT = 87
+# Seven advice articles replaced generic six-step lists with focused prose on 2026-10-23.
+# Keep exact inventory checks for the remaining production component instances.
+EXPECTED_PAGE_COUNT = 79
+EXPECTED_LIST_COUNT = 80
 EXPECTED_DIMENSIONS = {
     "minimumHeight": 164,
     "paddingTop": 64,

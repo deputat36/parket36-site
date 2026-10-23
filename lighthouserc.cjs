@@ -7,7 +7,9 @@ module.exports = {
         'http://localhost/zayavka/',
         'http://localhost/uslugi/ciklevka-parketa/',
         'http://localhost/sovety/pochemu-skripit-parket/',
-        'http://localhost/sovety/'
+        'http://localhost/sovety/',
+        'http://localhost/sovety/skolko-sohnet-lak-na-parkete/',
+        'http://localhost/sovety/pochemu-lak-na-parkete-shelushitsya-posle-lakirovki/'
       ],
       numberOfRuns: 3,
       settings: {

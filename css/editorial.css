@@ -115,3 +115,35 @@ main h2[id^="razdel-"]{scroll-margin-top:16px}
 .advice-hub .advice-catalog .service-card p{font-size:14px;line-height:1.6;margin:0;color:var(--site-muted)}
 @media(max-width:900px){.advice-hub .advice-catalog .services-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.advice-hub .advice-search__panel{padding:20px}.advice-hub .advice-search__panel>label{font-size:21px}.advice-topics label span{font-size:13px;padding:9px 12px}.advice-hub .advice-catalog .services-grid{grid-template-columns:1fr}.advice-hub .advice-catalog .section__head h2{font-size:27px}.advice-hub .advice-catalog .service-card a{padding:18px}.advice-shortcuts summary{padding:14px 16px}.advice-shortcuts ul{display:block;padding-inline:16px}}
+
+/* Focused advice keeps the answer, adjacent questions and reading column together. */
+.advice-article .article-answer p{font-size:16px;margin-bottom:0}
+.advice-route{padding:0 0 28px;background:var(--site-paper)}
+.advice-route .container{padding-block:18px;border-block:1px solid var(--site-line)}
+.advice-route p{margin:0 0 10px;font-size:14px;font-weight:700;color:var(--site-muted)}
+.advice-route ul{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+.advice-route li{min-width:0}
+.advice-route a,.advice-route [aria-current]{display:flex;align-items:center;min-height:44px;padding:10px 18px;border:1px solid var(--site-line);border-radius:6px;font-size:15px;line-height:1.5}
+.advice-route a{background:#fff;text-decoration:underline;text-underline-offset:3px}
+.advice-route [aria-current]{background:var(--site-accent);color:#fff;border-color:var(--site-accent);font-weight:700}
+.advice-route a:hover{border-color:var(--site-accent)}
+.advice-route a:focus-visible,.article-content a:focus-visible{outline:2px solid var(--site-accent);outline-offset:3px}
+.advice-article .article-content{padding:32px 0}
+.advice-article .article-content .prose{max-width:78ch;margin-inline:auto;min-width:0}
+.advice-article .article-content h2{font-size:clamp(25px,3vw,34px);margin:0 0 18px}
+.advice-article .article-content p,.advice-article .article-content li{font-size:17px;line-height:1.75}
+.advice-article .article-content p:last-child,.advice-article .article-content ul:last-child{margin-bottom:0}
+.advice-article .article-content ul{padding-left:22px}
+.advice-article .article-content li+li{margin-top:8px}
+.article-table{width:100%;border-collapse:collapse;margin-top:22px;font-size:16px;line-height:1.6;table-layout:fixed}
+.article-table caption{text-align:left;font-size:14px;color:var(--site-muted);padding:0 0 10px}
+.article-table th,.article-table td{padding:14px 16px;text-align:left;vertical-align:top;border:1px solid var(--site-line);overflow-wrap:break-word}
+.article-table thead{background:var(--site-accent);color:#fff}
+.article-table th:first-child{width:30%}
+.article-table tbody th{background:#fff;font-weight:600}
+.advice-article .faq details{padding:0;border-radius:8px;border-color:var(--site-line)}
+.advice-article .faq summary{padding:16px 18px;font-weight:600;font-size:16px;line-height:1.5}
+.advice-article .faq details p{padding:0 18px 18px;margin:0;font-size:16px}
+.advice-article .article-related a{display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-underline-offset:3px}
+.advice-article .final-cta{margin-top:24px}
+@media(max-width:640px){.advice-route a,.advice-route [aria-current]{padding:10px 13px;font-size:14px}.advice-article .article-content{padding:24px 0}.advice-article .article-content p,.advice-article .article-content li{font-size:16px;line-height:1.7}.article-table{font-size:15px;line-height:1.55}.article-table th,.article-table td{padding:12px 10px}.article-table th:first-child{width:36%}.advice-article .faq summary{padding:15px;font-size:15px}}
